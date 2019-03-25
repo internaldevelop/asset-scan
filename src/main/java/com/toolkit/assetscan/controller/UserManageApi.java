@@ -1,24 +1,48 @@
 package com.toolkit.assetscan.controller;
 
-import com.alibaba.fastjson.JSONObject;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import com.toolkit.assetscan.bean.UserProps;
+import com.toolkit.assetscan.dao.mybatis.UsersMapper;
+import com.toolkit.assetscan.service.UserManageService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
-@RequestMapping(value = "/api/user")
+@CrossOrigin(origins = "*",maxAge = 3600)
+@RequestMapping(value = "/api/users")
 public class UserManageApi {
-    @RequestMapping(value = "/version", method = RequestMethod.POST)
+    private Logger logger = LoggerFactory.getLogger(UserManageApi.class);
+    private final UserManageService userManageService;
+
+    @Autowired
+    public UserManageApi(UserManageService userManageService) {
+        this.userManageService = userManageService;
+    }
+
+    @RequestMapping(value = "/all", method = RequestMethod.GET)
     public @ResponseBody
-    Object getVersion() {
-        JSONObject response = new JSONObject();
-        response.put("sysName", "主站和终端配置检查系统");
-        response.put("desc", "按照指定策略，对本机或指定远程系统进行系统安全配置核查。");
-        response.put("sysVer", "1.0.0.1001");
-        response.put("copyright", "Copyright ©2019-2022 中国电科院");
-        response.put("status", "运行中");
-        response.put("overview", "主站和终端配置检查系统 Bla Bla ... Bla Bla ... again ");
-        return response;
+    Object getAllUsers() {
+        return userManageService.getAllUsers();
+    }
+
+    @RequestMapping(value = "/add", method = RequestMethod.POST)
+    public @ResponseBody
+    Object addUser(@ModelAttribute UserProps user, BindingResult bindingResult) {
+        return userManageService.addUser(user);
+    }
+
+    @RequestMapping(value = "/user-by-uuid", method = RequestMethod.GET)
+    public @ResponseBody
+    Object getUserByUuid(@RequestParam("uuid") String uuid) {
+        logger.info("---> getUserByUuid: " + uuid);
+        return userManageService.getUserByUuid( uuid);
+    }
+
+    @RequestMapping(value = "/update", method = RequestMethod.POST)
+    public @ResponseBody
+    Object updateUser(@ModelAttribute UserProps userProps) {
+        return userManageService. updateUserByUuid(userProps);
     }
 }
