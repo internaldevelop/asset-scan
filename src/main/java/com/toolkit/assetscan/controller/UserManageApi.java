@@ -3,6 +3,7 @@ package com.toolkit.assetscan.controller;
 import com.toolkit.assetscan.bean.UserProps;
 import com.toolkit.assetscan.dao.mybatis.UsersMapper;
 import com.toolkit.assetscan.service.UserManageService;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 @RestController
 @CrossOrigin(origins = "*",maxAge = 3600)
 @RequestMapping(value = "/api/users")
+@Api(value = "02. 用户管理控制器", tags = "02-Users Manager API")
 public class UserManageApi {
     private Logger logger = LoggerFactory.getLogger(UserManageApi.class);
     private final UserManageService userManageService;
