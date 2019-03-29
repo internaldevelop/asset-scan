@@ -1,5 +1,6 @@
 package com.toolkit.assetscan.dao.mybatis;
 
+import com.toolkit.assetscan.bean.PasswordProps;
 import com.toolkit.assetscan.bean.UserProps;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
@@ -32,14 +33,16 @@ public interface UsersMapper {
      * @return 1：成功；0：失败；其它：未知错误
      */
     @Insert("INSERT INTO users( " +
-                "uuid, account, password, password_salt, " +
+                "uuid, account, password, " +
+                "pwd_mat, pwd_rat, " +
                 "status, name, address, email, " +
-                "phone, description, group, " +
+                "phone, description, user_group, " +
                 "expire_time, create_time) " +
             "VALUES ( " +
-                "#{uuid}, #{account}, #{password}, #{password_salt}, " +
+                "#{uuid}, #{account}, #{password}, " +
+                "#{pwd_mat}, #{pwd_rat}, " +
                 "#{status}, #{name}, #{address}, #{email}, " +
-                "#{phone}, #{description}, #{group}" +
+                "#{phone}, #{description}, #{user_group}, " +
                 "#{expire_time, jdbcType=TIMESTAMP}, #{create_time, jdbcType=TIMESTAMP}) ")
     int addUser(UserProps userProps);
 
@@ -53,16 +56,24 @@ public interface UsersMapper {
     @Update("UPDATE users u SET " +
                 "uuid=#{uuid}, account=#{account}, " +
                 "status=#{status}, name=#{name}, address=#{address}, email=#{email}, " +
-                "phone=#{phone}, description=#{description}, group=#{group}" +
+                "phone=#{phone}, description=#{description}, user_group=#{user_group}," +
                 "expire_time=#{expire_time, jdbcType=TIMESTAMP}, create_time=#{create_time, jdbcType=TIMESTAMP} " +
             "WHERE " +
                 "uuid=#{uuid} AND u.status>=0  ")
     int updateUserByUuid(UserProps userProps);
 
     @Update("UPDATE users u SET " +
-                "password=#{password}" +
+                "password=#{password} " +
             "WHERE " +
                 "uuid=#{uuid} AND u.status>=0  ")
-    int changePassword(String userUuid, String password);
+    int changePassword(@Param("uuid") String userUuid, @Param("password")String password);
 
+    @Update("UPDATE users u SET " +
+                "pwd_rat=#{pwd_rat} " +
+            "WHERE " +
+                "uuid=#{uuid} AND u.status>=0  ")
+    int updateRAT(@Param("uuid") String userUuid, @Param("pwd_rat")int pwd_rat);
+
+    @Select("SELECT password, pwd_mat, pwd_rat FROM users u WHERE uuid=#{uuid} AND u.status>=0")
+    PasswordProps getPasswordByUuid(@Param("uuid") String userUuid);
 }

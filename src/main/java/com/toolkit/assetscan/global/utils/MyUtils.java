@@ -10,10 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 public class MyUtils {
     static public String generatePrintableRandom(int length) {
@@ -70,6 +67,20 @@ public class MyUtils {
         Date currentDate = getCurrentDate();
 
         return new Timestamp(currentDate.getTime());
+    }
+
+    /**
+     * 根据起始时间和有效天数，获取失效时间
+     * @param start 起始时间
+     * @param days 有效天数
+     * @return Timestamp 格式的 失效时间
+     */
+    static public Timestamp calculateExpireTimeStamp(Timestamp start, int days) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(start);
+        calendar.add(Calendar.DAY_OF_MONTH, days);
+
+        return new Timestamp(calendar.getTime().getTime());
     }
 
     /**

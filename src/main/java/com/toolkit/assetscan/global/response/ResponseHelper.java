@@ -1,16 +1,23 @@
 package com.toolkit.assetscan.global.response;
 
+import com.alibaba.fastjson.JSONObject;
 import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
+import com.toolkit.assetscan.global.utils.MyUtils;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ResponseHelper {
     public ResponseBean error(ErrorCodeEnum err) {
+        return  error(err, null);
+    }
+
+    public ResponseBean error(ErrorCodeEnum err, Object data) {
         ResponseBean responseBean = new ResponseBean();
         responseBean.setCode(err.getCode());
         responseBean.setError(err.getMsg());
-        responseBean.setPayload(null);
+        responseBean.setTimeStamp(MyUtils.getCurrentSystemTimestamp());
+        responseBean.setPayload(data);
         return responseBean;
     }
 
@@ -19,10 +26,13 @@ public class ResponseHelper {
     }
 
     public ResponseBean success(Object data) {
-        ResponseBean responseBean = new ResponseBean();
-        responseBean.setCode(ErrorCodeEnum.ERROR_OK.getCode());
-        responseBean.setError(ErrorCodeEnum.ERROR_OK.getMsg());
-        responseBean.setPayload(data);
-        return responseBean;
+        return error(ErrorCodeEnum.ERROR_OK, data);
+    }
+
+    public boolean isSuccess(ResponseBean response) {
+        if ( response.getCode() == ErrorCodeEnum.ERROR_OK.getCode())
+            return true;
+        else
+            return false;
     }
 }

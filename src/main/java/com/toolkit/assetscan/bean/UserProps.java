@@ -4,6 +4,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.stereotype.Component;
 
+/**
+ * UserProps 对应数据库中users表，
+ * 各字段名称一致，各字段定义略，可参考users表的各字段注释
+ */
 @Component
 @Data
 public class UserProps {
@@ -12,6 +16,10 @@ public class UserProps {
     private String account;
     private String password;
     private String password_salt;
+    private int pwd_mat;
+    private int pwd_rat;
+    // 不能用group，否则含group字段的SQL语句执行失败
+    private int user_group;
     private int status;
     private String name;
     private String address;
