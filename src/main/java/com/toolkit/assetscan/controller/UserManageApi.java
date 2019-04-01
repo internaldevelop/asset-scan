@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 @RestController
 @CrossOrigin(origins = "*",maxAge = 3600)
 @RequestMapping(value = "/api/users")
-@Api(value = "02. 用户管理控制器", tags = "02-Users Manager API")
+@Api(value = "02. 用户管理接口", tags = "02-Users Manager API")
 public class UserManageApi {
     private Logger logger = LoggerFactory.getLogger(UserManageApi.class);
     private final UserManageService userManageService;
@@ -21,16 +21,6 @@ public class UserManageApi {
     @Autowired
     public UserManageApi(UserManageService userManageService) {
         this.userManageService = userManageService;
-    }
-
-    /**
-     * 2.2 获取所有用户
-     * @return payload，用户记录（数组形式）
-     */
-    @RequestMapping(value = "/all", method = RequestMethod.GET)
-    public @ResponseBody
-    Object getAllUsers() {
-        return userManageService.getAllUsers();
     }
 
     /**
@@ -46,15 +36,25 @@ public class UserManageApi {
     }
 
     /**
-     * 2.3 根据指定的用户 UUID 查找用户记录
-     * @param userUuid 用户 UUID
-     * @return payload: 用户记录
+     * 2.2 获取所有用户
+     * @return payload，用户记录（数组形式）
      */
-    @RequestMapping(value = "/user-by-uuid", method = RequestMethod.GET)
+    @RequestMapping(value = "/all", method = RequestMethod.GET)
     public @ResponseBody
-    Object getUserByUuid(@RequestParam("uuid") String userUuid) {
-        logger.info("---> getUserByUuid: " + userUuid);
-        return userManageService.getUserByUuid( userUuid );
+    Object getAllUsers() {
+        return userManageService.getAllUsers();
+    }
+
+    /**
+     * 2.3 根据指定的用户 账号 获取用户UUID
+     * @param account 用户 账号
+     * @return payload: 用户 UUID 和 账号
+     */
+    @RequestMapping(value = "/user-by-account", method = RequestMethod.GET)
+    public @ResponseBody
+    Object getUserUuidByAccount(@RequestParam("account") String account) {
+        logger.info("---> getUserUuidByAccount: " + account);
+        return userManageService.getUserUuidByAccount( account );
     }
 
     /**
@@ -96,4 +96,18 @@ public class UserManageApi {
     Object verifyPassword(@RequestParam("uuid") String userUuid, @RequestParam("password") String password) {
         return userManageService.verifyPassword( userUuid, password );
     }
+
+    /**
+     * 2.7 根据指定的用户 UUID 查找用户记录
+     * @param userUuid 用户 UUID
+     * @return payload: 用户记录
+     */
+    @RequestMapping(value = "/user-by-uuid", method = RequestMethod.GET)
+    public @ResponseBody
+    Object getUserByUuid(@RequestParam("uuid") String userUuid) {
+        logger.info("---> getUserByUuid: " + userUuid);
+        return userManageService.getUserByUuid( userUuid );
+    }
+
+
 }

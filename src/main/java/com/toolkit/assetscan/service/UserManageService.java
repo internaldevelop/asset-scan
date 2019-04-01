@@ -69,6 +69,10 @@ public class UserManageService {
         if (!iCheckParams(userProps))
             return responseBean;
 
+        // 检查新建账户名是否已存在
+        if (usersManageHelper.isUserAccount(userProps.getAccount()))
+            return responseHelper.error(ErrorCodeEnum.ERROR_USERNAME_USED);
+
         // 设置新用户的创建时间和失效时间
         java.sql.Timestamp currentTime = MyUtils.getCurrentSystemTimestamp();
         userProps.setCreate_time(currentTime);
@@ -105,6 +109,22 @@ public class UserManageService {
         userProps.setPassword("********");
         userProps.setPassword_salt("********");
         return responseHelper.success(userProps);
+    }
+
+    /**
+     * 根据指定的用户账号获取用户 UUID
+     * @param account 用户账号
+     * @return payload: 用户账号和 UUID
+     */
+    public ResponseBean getUserUuidByAccount(String account) {
+        String userUuid = usersMapper.getUserUuidByAccount(account);
+        if (userUuid == null || userUuid.isEmpty())
+            return responseHelper.error(ErrorCodeEnum.ERROR_USER_NOT_FOUND);
+
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("account", account);
+        jsonData.put("uuid", userUuid);
+        return responseHelper.success(jsonData);
     }
 
     /**

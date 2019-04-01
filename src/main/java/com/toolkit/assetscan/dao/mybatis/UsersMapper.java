@@ -27,6 +27,9 @@ public interface UsersMapper {
     @Select("SELECT * FROM users u WHERE uuid=#{uuid} AND u.status>=0 ")
     UserProps getUserByUuid(@Param("uuid") String uuid);
 
+    @Select("SELECT uuid FROM users u WHERE u.account=#{account} AND u.status>=0 ")
+    String getUserUuidByAccount(@Param("account") String account);
+
     /**
      * 添加一条用户记录
      * @param userProps 用户属性，和 users 表对应，除自增主键 id，包含其它所有字段
@@ -76,4 +79,7 @@ public interface UsersMapper {
 
     @Select("SELECT password, pwd_mat, pwd_rat FROM users u WHERE uuid=#{uuid} AND u.status>=0")
     PasswordProps getPasswordByUuid(@Param("uuid") String userUuid);
+
+    @Select("SELECT count(*) from users u where  u.account=#{account} AND u.status>=0")
+    int getExistAccountCount(@Param("account") String account);
 }

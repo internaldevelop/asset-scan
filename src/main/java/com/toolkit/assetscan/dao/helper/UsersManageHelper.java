@@ -18,6 +18,11 @@ public class UsersManageHelper {
         this.usersMapper = usersMapper;
     }
 
+    public boolean isUserAccount(String account) {
+        int count = usersMapper.getExistAccountCount(account);
+        return ( (count > 0) ? true : false);
+    }
+
     public boolean addUser(UserProps userProps) {
         int rv = usersMapper.addUser(userProps);
         return ( (rv == 1) ? true : false );
