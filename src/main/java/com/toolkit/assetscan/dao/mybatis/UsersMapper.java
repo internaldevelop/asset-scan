@@ -77,7 +77,7 @@ public interface UsersMapper {
                 "uuid=#{uuid} AND u.status>=0  ")
     int updateRAT(@Param("uuid") String userUuid, @Param("pwd_rat")int pwd_rat);
 
-    @Select("SELECT password, pwd_mat, pwd_rat FROM users u WHERE uuid=#{uuid} AND u.status>=0")
+    @Select("SELECT uuid AS user_uuid, password, pwd_mat, pwd_rat FROM users u WHERE uuid=#{uuid} AND u.status>=0")
     PasswordProps getPasswordByUuid(@Param("uuid") String userUuid);
 
     @Select("SELECT count(*) from users u where  u.account=#{account} AND u.status>=0")

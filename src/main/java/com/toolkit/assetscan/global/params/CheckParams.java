@@ -1,18 +1,19 @@
 package com.toolkit.assetscan.global.params;
 
+import com.toolkit.assetscan.global.utils.StringUtils;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CheckParams {
     public boolean isValidUserUuid(String userUuid) {
-        if (userUuid == null || userUuid.isEmpty())
+        if (!StringUtils.isValid(userUuid))
             return false;
 
         return true;
     }
 
     public boolean isValidPassword(String password) {
-        if (password == null || password.isEmpty())
+        if (!StringUtils.isValid(password))
             return false;
 
         return true;

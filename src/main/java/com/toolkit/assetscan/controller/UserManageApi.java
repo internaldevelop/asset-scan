@@ -1,7 +1,9 @@
 package com.toolkit.assetscan.controller;
 
 import com.toolkit.assetscan.bean.UserProps;
-import com.toolkit.assetscan.dao.mybatis.UsersMapper;
+import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
+import com.toolkit.assetscan.global.response.ResponseHelper;
+import com.toolkit.assetscan.global.utils.StringUtils;
 import com.toolkit.assetscan.service.UserManageService;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +19,12 @@ import org.slf4j.LoggerFactory;
 public class UserManageApi {
     private Logger logger = LoggerFactory.getLogger(UserManageApi.class);
     private final UserManageService userManageService;
+    private final ResponseHelper responseHelper;
 
     @Autowired
-    public UserManageApi(UserManageService userManageService) {
+    public UserManageApi(UserManageService userManageService, ResponseHelper responseHelper) {
         this.userManageService = userManageService;
+        this.responseHelper = responseHelper;
     }
 
     /**
@@ -87,14 +91,23 @@ public class UserManageApi {
 
     /**
      * 2.6 校验用户密码
-     * @param userUuid 用户 UUID
+     * @param userUuid 用户 UUID （和用户账号二选一，优先UUID）
+     * @param account 用户账号
      * @param password 待校验的用户密码
      * @return payload: 账户名和系统分配的用户UUID
      */
     @RequestMapping(value = "/verify-pwd", method = RequestMethod.POST)
     public @ResponseBody
-    Object verifyPassword(@RequestParam("uuid") String userUuid, @RequestParam("password") String password) {
-        return userManageService.verifyPassword( userUuid, password );
+    Object verifyPassword(
+            @RequestParam(value = "uuid", required = false) String userUuid,
+            @RequestParam(value = "account", required = false) String account,
+            @RequestParam("password") String password) {
+        if ( StringUtils.isValid(userUuid) )
+            return userManageService.verifyPasswordByUuid( userUuid, password );
+        else if ( StringUtils.isValid(account) )
+            return userManageService.verifyPasswordByAccount( account, password );
+        else
+            return responseHelper.error(ErrorCodeEnum.ERROR_NEED_PARAMETER);
     }
 
     /**

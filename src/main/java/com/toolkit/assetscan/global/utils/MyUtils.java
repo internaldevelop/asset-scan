@@ -52,7 +52,7 @@ public class MyUtils {
      * false -- 字符串中找不到指定属性
      */
     static public boolean isPropertyExist(String props, int property) {
-        if ((props == null) || props.isEmpty())
+        if (!StringUtils.isValid(props))
             return false;
         String propertyString = Integer.toString(property);
         return props.contains(propertyString);

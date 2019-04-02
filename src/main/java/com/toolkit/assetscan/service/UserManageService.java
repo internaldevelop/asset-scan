@@ -13,6 +13,7 @@ import com.toolkit.assetscan.global.params.SystemParams;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.security.VerifyHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
+import com.toolkit.assetscan.global.utils.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -118,7 +119,7 @@ public class UserManageService {
      */
     public ResponseBean getUserUuidByAccount(String account) {
         String userUuid = usersMapper.getUserUuidByAccount(account);
-        if (userUuid == null || userUuid.isEmpty())
+        if (!StringUtils.isValid(userUuid))
             return responseHelper.error(ErrorCodeEnum.ERROR_USER_NOT_FOUND);
 
         JSONObject jsonData = new JSONObject();
@@ -157,7 +158,7 @@ public class UserManageService {
             return responseHelper.error(ErrorCodeEnum.ERROR_PARAMETER);
 
         // 校验旧密码
-        ResponseBean verifyResponse = verifyPassword(userUuid, oldPwd);
+        ResponseBean verifyResponse = verifyPasswordByUuid(userUuid, oldPwd);
         if (!responseHelper.isSuccess(verifyResponse))
             return verifyResponse;
 
@@ -173,13 +174,29 @@ public class UserManageService {
         return responseHelper.success(jsonData);
     }
 
+    public ResponseBean verifyPasswordByAccount(String account, String password) {
+        String userUuid = usersMapper.getUserUuidByAccount(account);
+        if (!StringUtils.isValid(userUuid))
+            return responseHelper.error(ErrorCodeEnum.ERROR_USER_NOT_FOUND);
+
+        return verifyPasswordByUuid(userUuid, password);
+    }
+
+    private ResponseBean _buildVerifyResponse(ErrorCodeEnum err, PasswordProps passwordProps) {
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("user_uuid", passwordProps.getUser_uuid());
+        jsonData.put("mat", passwordProps.getPwd_mat());
+        jsonData.put("rat", passwordProps.getPwd_rat());
+        return responseHelper.error(err, jsonData);
+    }
+
     /**
      * 校验用户密码
      * @param userUuid 用户 UUID
      * @param password 待校验的用户密码
      * @return payload: 无
      */
-    public ResponseBean verifyPassword(String userUuid, String password) {
+    public ResponseBean verifyPasswordByUuid(String userUuid, String password) {
         if (!checkParams.isValidUserUuid(userUuid) ||  !checkParams.isValidPassword(password))
             return responseHelper.error(ErrorCodeEnum.ERROR_PARAMETER);
 
@@ -188,10 +205,7 @@ public class UserManageService {
 
         // 剩余尝试次数为0时，表示密码已锁定
         if (passwordProps.getPwd_rat() == 0) {
-            JSONObject jsonData = new JSONObject();
-            jsonData.put("mat", passwordProps.getPwd_mat());
-            jsonData.put("rat", passwordProps.getPwd_rat());
-            return responseHelper.error(ErrorCodeEnum.ERROR_USER_PASSWORD_LOCKED, jsonData);
+            return _buildVerifyResponse(ErrorCodeEnum.ERROR_USER_PASSWORD_LOCKED, passwordProps);
         }
 
         // 校验用户输入的密码
@@ -204,23 +218,20 @@ public class UserManageService {
 
             // 再检查是否已触发锁定条件
             int currentRAT = passwordProps.getPwd_rat() - 1;
-            JSONObject jsonData = new JSONObject();
-            jsonData.put("mat", passwordProps.getPwd_mat());
-            jsonData.put("rat", currentRAT);
+            passwordProps.setPwd_rat(currentRAT);
             if ( currentRAT <= 0) {
-                return responseHelper.error(ErrorCodeEnum.ERROR_USER_PASSWORD_LOCKED, jsonData);
+                return _buildVerifyResponse(ErrorCodeEnum.ERROR_USER_PASSWORD_LOCKED, passwordProps);
             } else {
-                return responseHelper.error(ErrorCodeEnum.ERROR_INVALID_PASSWORD, jsonData);
+                return _buildVerifyResponse(ErrorCodeEnum.ERROR_INVALID_PASSWORD, passwordProps);
             }
         } else {
-            // 校验成功，则重置尝试次数
-            if (!usersManageHelper.resetPasswordRAT(userUuid))
-                return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
-
-            JSONObject jsonData = new JSONObject();
-            jsonData.put("mat", passwordProps.getPwd_mat());
-            jsonData.put("rat", passwordProps.getPwd_mat());
-            return responseHelper.success(jsonData);
+            // 校验成功，如果尝试次数RAT不等于MAT，则重置 RAT
+            if (passwordProps.getPwd_rat() != passwordProps.getPwd_mat()) {
+                if (!usersManageHelper.resetPasswordRAT(userUuid))
+                    return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
+                passwordProps.setPwd_rat(passwordProps.getPwd_mat());
+            }
+            return _buildVerifyResponse(ErrorCodeEnum.ERROR_OK, passwordProps);
         }
     }
 }
