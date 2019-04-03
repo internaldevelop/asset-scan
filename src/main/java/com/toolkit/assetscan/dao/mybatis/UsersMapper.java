@@ -82,4 +82,10 @@ public interface UsersMapper {
 
     @Select("SELECT count(*) from users u where  u.account=#{account} AND u.status>=0")
     int getExistAccountCount(@Param("account") String account);
+
+    @Update("UPDATE users u SET " +
+            "u.status=#{status} " +
+            "WHERE " +
+            "uuid=#{uuid} ")
+    int updateStatus(@Param("uuid") String userUuid, @Param("status")int status);
 }

@@ -79,12 +79,12 @@ public class UserManageApi {
      * @param newPwd  新用户密码
      * @return payload: 无
      */
-    @RequestMapping(value = "/change-pwd", method = RequestMethod.PUT)
+    @RequestMapping(value = "/change-pwd", method = RequestMethod.POST)
     public @ResponseBody
     Object changePassword(
             @RequestParam("uuid") String userUuid,
-            @RequestParam("old-pwd") String oldPwd,
-            @RequestParam("new-pwd") String newPwd
+            @RequestParam("old_pwd") String oldPwd,
+            @RequestParam("new_pwd") String newPwd
             ) {
         return userManageService.changePassword(userUuid, oldPwd, newPwd);
     }
@@ -118,9 +118,20 @@ public class UserManageApi {
     @RequestMapping(value = "/user-by-uuid", method = RequestMethod.GET)
     public @ResponseBody
     Object getUserByUuid(@RequestParam("uuid") String userUuid) {
-        logger.info("---> getUserByUuid: " + userUuid);
         return userManageService.getUserByUuid( userUuid );
     }
 
+    @RequestMapping(value = "/activate", method = RequestMethod.POST)
+    public @ResponseBody
+    Object activateUser(
+            @RequestParam(value = "uuid", required = false) String userUuid,
+            @RequestParam(value = "account", required = false) String account) {
+        if ( StringUtils.isValid(userUuid) )
+            return userManageService.activateUserByUuid( userUuid );
+        else if ( StringUtils.isValid(account) )
+            return userManageService.activateUserByAccount( account );
+        else
+            return responseHelper.error(ErrorCodeEnum.ERROR_NEED_PARAMETER);
+    }
 
 }

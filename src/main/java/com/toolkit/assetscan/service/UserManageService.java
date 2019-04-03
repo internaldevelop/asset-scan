@@ -234,4 +234,23 @@ public class UserManageService {
             return _buildVerifyResponse(ErrorCodeEnum.ERROR_OK, passwordProps);
         }
     }
+
+    public ResponseBean activateUserByAccount(String account) {
+        String userUuid = usersMapper.getUserUuidByAccount(account);
+        if (!StringUtils.isValid(userUuid))
+            return responseHelper.error(ErrorCodeEnum.ERROR_USER_NOT_FOUND);
+
+        return activateUserByUuid(userUuid);
+    }
+
+    public ResponseBean activateUserByUuid(String userUuid) {
+        int rv = usersMapper.updateStatus(userUuid, UserStatusEnum.USER_ACTIVE.getStatus());
+        if (rv != 1)
+            return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
+
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("user_uuid", userUuid);
+        jsonData.put("status", UserStatusEnum.USER_ACTIVE.getStatus());
+        return responseHelper.success(jsonData);
+    }
 }
