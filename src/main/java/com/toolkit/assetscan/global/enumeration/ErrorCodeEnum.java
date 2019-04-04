@@ -10,7 +10,7 @@ public enum ErrorCodeEnum {
     ERROR_USER_NOT_FOUND(1006, "用户未找到"),
     ERROR_APP_NOT_FOUND(1009, "应用未找到"),
     ERROR_USER_INACTIVE(1010, "用户未激活"),
-    ERROR_DEVICE_INACTIVE(1011, "设备未激活"),
+    ERROR_POLICY_NOT_FOUND(1011, "策略未找到"),
     ERROR_APP_INACTIVE(1012, "应用未激活"),
     ERROR_USER_NOT_ENROLLED(1013, "用户未绑定"),
     ERROR_AUTH_FAILED(1014, "认证失败"),

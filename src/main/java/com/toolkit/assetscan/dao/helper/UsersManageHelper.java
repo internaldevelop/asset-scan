@@ -25,22 +25,22 @@ public class UsersManageHelper {
 
     public boolean addUser(UserProps userProps) {
         int rv = usersMapper.addUser(userProps);
-        return ( (rv == 1) ? true : false );
+        return (rv > 0);
     }
 
     public boolean updateUserByUuid(UserProps userProps) {
         int rv = usersMapper.updateUserByUuid(userProps);
-        return ( (rv == 1) ? true : false );
+        return (rv > 0);
     }
 
     public boolean changePassword(String userUuid, String newPwd) {
         int rv = usersMapper.changePassword(userUuid, newPwd);
-        return ( (rv == 1) ? true : false );
+        return (rv > 0);
     }
 
     public boolean resetPasswordRAT(String userUuid) {
         int rv = usersMapper.updateRAT(userUuid, SystemParams.USER_PWD_MAT);
-        return ( (rv == 1) ? true : false );
+        return (rv > 0);
     }
 
     public boolean decreasePasswordRAT(String userUuid, int currentRAT) {
@@ -49,6 +49,6 @@ public class UsersManageHelper {
             return true;
 
         int rv = usersMapper.updateRAT(userUuid, currentRAT - 1);
-        return ( (rv == 1) ? true : false );
+        return (rv > 0);
     }
 }
