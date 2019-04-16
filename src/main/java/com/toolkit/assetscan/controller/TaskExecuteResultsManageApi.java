@@ -41,8 +41,17 @@ public class TaskExecuteResultsManageApi {
     @RequestMapping(value = "/statistical", method = RequestMethod.GET)
     public @ResponseBody
     Object getTasksResultsStat() {
-
         return taskExecuteResultsManageService.getAllTasksResults();
+    }
+
+    /**
+     * 5.9 获取IEE漏洞数（测试第二数据源）
+     * @return
+     */
+    @RequestMapping(value = "/all-iie-vul", method = RequestMethod.GET)
+    public @ResponseBody
+    Object getAllIieVulInfo() {
+        return taskExecuteResultsManageService.getAllIieVulInfo();
     }
 
 
