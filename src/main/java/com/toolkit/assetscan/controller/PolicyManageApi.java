@@ -1,6 +1,6 @@
 package com.toolkit.assetscan.controller;
 
-import com.toolkit.assetscan.bean.PolicyProps;
+import com.toolkit.assetscan.bean.po.PolicyPo;
 import com.toolkit.assetscan.service.PolicyManageService;
 import io.swagger.annotations.Api;
 import org.slf4j.Logger;
@@ -28,7 +28,7 @@ public class PolicyManageApi {
      */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public @ResponseBody
-    Object addPolicy(@ModelAttribute PolicyProps policy, BindingResult bindingResult) {
+    Object addPolicy(@ModelAttribute PolicyPo policy, BindingResult bindingResult) {
         return policyManageService.addPolicy(policy);
     }
 
@@ -71,7 +71,7 @@ public class PolicyManageApi {
      */
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public @ResponseBody
-    Object  updatePolicy(@ModelAttribute PolicyProps policy) {
+    Object  updatePolicy(@ModelAttribute PolicyPo policy) {
         return policyManageService.updatePolicy(policy);
     }
 

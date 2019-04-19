@@ -1,7 +1,7 @@
 package com.toolkit.assetscan.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.toolkit.assetscan.bean.PolicyProps;
+import com.toolkit.assetscan.bean.po.PolicyPo;
 import com.toolkit.assetscan.dao.helper.PoliciesManageHelper;
 import com.toolkit.assetscan.dao.mybatis.PoliciesMapper;
 import com.toolkit.assetscan.global.bean.ResponseBean;
@@ -24,7 +24,7 @@ public class PolicyManageService {
         this.policiesManageHelper = policiesManageHelper;
         this.policiesMapper = policiesMapper;
     }
-    private boolean iCheckParams(PolicyProps policyProps) {
+    private boolean iCheckParams(PolicyPo policyPo) {
         responseBean = responseHelper.success();
         return true;
     }
@@ -37,29 +37,29 @@ public class PolicyManageService {
         return responseHelper.success(jsonData);
     }
 
-    public ResponseBean addPolicy(PolicyProps policyProps) {
+    public ResponseBean addPolicy(PolicyPo policyPo) {
         // 检查参数
-        if (!iCheckParams(policyProps))
+        if (!iCheckParams(policyPo))
             return responseBean;
 
         // 为新策略随机分配一个UUID
-        policyProps.setUuid(MyUtils.generateUuid());
+        policyPo.setUuid(MyUtils.generateUuid());
 
         // 记录新策略的创建时间
         java.sql.Timestamp currentTime = MyUtils.getCurrentSystemTimestamp();
-        policyProps.setCreate_time(currentTime);
+        policyPo.setCreate_time(currentTime);
 
         // 往数据库里写入这条新策略
-        if (!policiesManageHelper.addPolicy(policyProps))
+        if (!policiesManageHelper.addPolicy(policyPo))
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
 
-        return successReturnInfo( policyProps.getName(), policyProps.getCode(), policyProps.getUuid() );
+        return successReturnInfo( policyPo.getName(), policyPo.getCode(), policyPo.getUuid() );
     }
 
     public ResponseBean removePolicy(String policyUuid) {
         // 获取策略数据，找不到则返回错误
-        PolicyProps policyProps = policiesMapper.getPolicyByUuid(policyUuid);
-        if (policyProps == null) {
+        PolicyPo policyPo = policiesMapper.getPolicyByUuid(policyUuid);
+        if (policyPo == null) {
             return responseHelper.error(ErrorCodeEnum.ERROR_POLICY_NOT_FOUND);
         }
 
@@ -69,11 +69,11 @@ public class PolicyManageService {
         }
 
         // 返回数据包含已删除策略的名称、代码和 UUID
-        return successReturnInfo( policyProps.getName(), policyProps.getCode(), policyProps.getUuid() );
+        return successReturnInfo( policyPo.getName(), policyPo.getCode(), policyPo.getUuid() );
     }
 
     public ResponseBean getAllPolicies() {
-        List<PolicyProps> policiesList = policiesMapper.allPolicies();
+        List<PolicyPo> policiesList = policiesMapper.allPolicies();
         if ( (policiesList == null) || (policiesList.size() == 0) )
             return responseHelper.error(ErrorCodeEnum.ERROR_POLICY_NOT_FOUND);
 
@@ -81,7 +81,7 @@ public class PolicyManageService {
     }
 
     public ResponseBean getPolicy(String policyUuid) {
-        PolicyProps policy = policiesMapper.getPolicyByUuid(policyUuid);
+        PolicyPo policy = policiesMapper.getPolicyByUuid(policyUuid);
         if (policy == null) {
             return responseHelper.error(ErrorCodeEnum.ERROR_POLICY_NOT_FOUND);
         }
@@ -89,9 +89,9 @@ public class PolicyManageService {
         return responseHelper.success(policy);
     }
 
-    public ResponseBean updatePolicy(PolicyProps policyProps) {
-        if (!policiesManageHelper.updatePolicy(policyProps))
+    public ResponseBean updatePolicy(PolicyPo policyPo) {
+        if (!policiesManageHelper.updatePolicy(policyPo))
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
-        return successReturnInfo( policyProps.getName(), policyProps.getCode(), policyProps.getUuid() );
+        return successReturnInfo( policyPo.getName(), policyPo.getCode(), policyPo.getUuid() );
     }
 }

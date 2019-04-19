@@ -1,7 +1,7 @@
 package com.toolkit.assetscan.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.toolkit.assetscan.bean.PolicyGroupProps;
+import com.toolkit.assetscan.bean.po.PolicyGroupPo;
 import com.toolkit.assetscan.dao.mybatis.PolicyGroupsMapper;
 import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
@@ -22,14 +22,14 @@ public class PolicyGroupService {
     }
 
     public ResponseBean getAllGroups() {
-        List<PolicyGroupProps> groupPropsList = policyGroupsMapper.allGroups();
+        List<PolicyGroupPo> groupPropsList = policyGroupsMapper.allGroups();
         if ( (groupPropsList == null) || (groupPropsList.size() == 0) )
             return responseHelper.error(ErrorCodeEnum.ERROR_POLICY_NOT_FOUND);
 
         return responseHelper.success(groupPropsList);
     }
 
-    public ResponseBean addGroup(PolicyGroupProps groupProps) {
+    public ResponseBean addGroup(PolicyGroupPo groupProps) {
         // 为新策略随机分配一个UUID
         groupProps.setUuid(MyUtils.generateUuid());
 

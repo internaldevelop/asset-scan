@@ -1,6 +1,6 @@
 package com.toolkit.assetscan.controller;
 
-import com.toolkit.assetscan.bean.AssetProps;
+import com.toolkit.assetscan.bean.po.AssetPo;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.service.AssetManageService;
 import io.swagger.annotations.Api;
@@ -26,13 +26,13 @@ public class AssetManageApi {
 
     /**
      * 6.1 添加新资产
-     * @param assetProps
+     * @param assetPo
      * @return
      */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     @ResponseBody
-    public Object addUser(@ModelAttribute AssetProps assetProps) {
-        return mAssetManageService.addAsset(assetProps);
+    public Object addUser(@ModelAttribute AssetPo assetPo) {
+        return mAssetManageService.addAsset(assetPo);
     }
 
     /**
@@ -47,13 +47,13 @@ public class AssetManageApi {
 
     /**
      * 6.3 根据uuid更新资产信息
-     * @param assetProps
+     * @param assetPo
      * @return
      */
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @ResponseBody
-    public Object updateUser(@ModelAttribute AssetProps assetProps) {
-        return mAssetManageService.updateAssetByUuid(assetProps);
+    public Object updateUser(@ModelAttribute AssetPo assetPo) {
+        return mAssetManageService.updateAssetByUuid(assetPo);
     }
 
     /**

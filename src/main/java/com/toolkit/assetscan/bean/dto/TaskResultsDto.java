@@ -1,13 +1,15 @@
-package com.toolkit.assetscan.dto;
+package com.toolkit.assetscan.bean.dto;
 
-import com.toolkit.assetscan.bean.TaskExecuteResultsProps;
+import com.toolkit.assetscan.bean.po.TaskExecuteResultsPo;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 任务结果集
  */
 @Data
-public class TaskResultsDto extends TaskExecuteResultsProps {
+@EqualsAndHashCode(callSuper = false)
+public class TaskResultsDto extends TaskExecuteResultsPo {
 
     private String task_id;  // 任务id
     private String task_name;  // 任务名称

@@ -1,4 +1,4 @@
-package com.toolkit.assetscan.bean;
+package com.toolkit.assetscan.bean.po;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Data
-public class UserProps {
+public class UserPo {
     private int id;
     private String uuid;
     private String account;

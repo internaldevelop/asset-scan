@@ -1,13 +1,10 @@
 package com.toolkit.assetscan.dao.helper;
 
-import com.toolkit.assetscan.bean.UserProps;
+import com.toolkit.assetscan.bean.po.UserPo;
 import com.toolkit.assetscan.dao.mybatis.UsersMapper;
-import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.params.SystemParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class UsersManageHelper {
@@ -23,13 +20,13 @@ public class UsersManageHelper {
         return ( (count > 0) ? true : false);
     }
 
-    public boolean addUser(UserProps userProps) {
-        int rv = usersMapper.addUser(userProps);
+    public boolean addUser(UserPo userPo) {
+        int rv = usersMapper.addUser(userPo);
         return (rv > 0);
     }
 
-    public boolean updateUserByUuid(UserProps userProps) {
-        int rv = usersMapper.updateUserByUuid(userProps);
+    public boolean updateUserByUuid(UserPo userPo) {
+        int rv = usersMapper.updateUserByUuid(userPo);
         return (rv > 0);
     }
 

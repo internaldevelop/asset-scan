@@ -1,7 +1,6 @@
 package com.toolkit.assetscan.dao.mybatis;
 
-import com.toolkit.assetscan.bean.TaskExecuteResultsProps;
-import com.toolkit.assetscan.dto.TaskResultsDto;
+import com.toolkit.assetscan.bean.dto.TaskResultsDto;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Component;
 

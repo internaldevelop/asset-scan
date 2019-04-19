@@ -1,6 +1,6 @@
 package com.toolkit.assetscan.controller;
 
-import com.toolkit.assetscan.bean.UserProps;
+import com.toolkit.assetscan.bean.po.UserPo;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.StringUtils;
@@ -35,7 +35,7 @@ public class UserManageApi {
      */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public @ResponseBody
-    Object addUser(@ModelAttribute UserProps user, BindingResult bindingResult) {
+    Object addUser(@ModelAttribute UserPo user, BindingResult bindingResult) {
         return userManageService.addUser(user);
     }
 
@@ -63,13 +63,13 @@ public class UserManageApi {
 
     /**
      * 2.4 更新用户记录
-     * @param userProps 用户记录
+     * @param userPo 用户记录
      * @return payload: 账户名和系统分配的用户UUID
      */
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public @ResponseBody
-    Object updateUser(@ModelAttribute UserProps userProps) {
-        return userManageService. updateUserByUuid(userProps);
+    Object updateUser(@ModelAttribute UserPo userPo) {
+        return userManageService. updateUserByUuid(userPo);
     }
 
     /**

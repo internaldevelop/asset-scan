@@ -1,6 +1,6 @@
 package com.toolkit.assetscan.dao.mybatis;
 
-import com.toolkit.assetscan.bean.PolicyProps;
+import com.toolkit.assetscan.bean.po.PolicyPo;
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Component;
 
@@ -25,14 +25,14 @@ public interface PoliciesMapper {
             "#{risk_level}, #{solutions}, " +
             "#{create_user_uuid}, #{status}, " +
             "#{create_time, jdbcType=TIMESTAMP}) ")
-    int addPolicy(PolicyProps policy);
+    int addPolicy(PolicyPo policy);
 
     /**
      * 获得所有有效的策略记录
      * @return PolicyProps 的集合
      */
     @Select("SELECT * FROM policies p WHERE p.status>=0 ")
-    List<PolicyProps> allPolicies();
+    List<PolicyPo> allPolicies();
 
     /**
      * 根据UUID，获取指定的策略记录
@@ -40,7 +40,7 @@ public interface PoliciesMapper {
      * @return PolicyProps 策略记录的全部数据
      */
     @Select("SELECT * FROM policies p WHERE p.uuid=#{uuid} AND p.status>=0 ")
-    PolicyProps getPolicyByUuid(@Param("uuid") String policyUuid);
+    PolicyPo getPolicyByUuid(@Param("uuid") String policyUuid);
 
     /**
      * 更新指定的策略记录
@@ -54,7 +54,7 @@ public interface PoliciesMapper {
             "create_user_uuid=#{create_user_uuid}, status=#{status} " +
             "WHERE " +
             "p.uuid=#{uuid} AND p.status>=0  ")
-    int updatePolicy(PolicyProps policy);
+    int updatePolicy(PolicyPo policy);
 
     /**
      * 永久删除一条策略记录

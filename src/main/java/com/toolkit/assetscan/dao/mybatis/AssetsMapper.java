@@ -1,6 +1,6 @@
 package com.toolkit.assetscan.dao.mybatis;
 
-import com.toolkit.assetscan.bean.AssetProps;
+import com.toolkit.assetscan.bean.po.AssetPo;
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Component;
 
@@ -23,18 +23,18 @@ public interface AssetsMapper {
             "#{password}, #{os_type}, " +
             "#{os_ver}, #{create_user_uuid}, " +
             "#{create_time, jdbcType=TIMESTAMP}) ")
-    int addAsset(AssetProps assetProps);
+    int addAsset(AssetPo assetPo);
 
     /**
      * 获得所有的资产记录
      * @return
      */
     @Select("SELECT * FROM assets ")
-    List<AssetProps> getAllAssets();
+    List<AssetPo> getAllAssets();
 
     /**
      * 更新指定资产信息
-     * @param assetProps
+     * @param assetPo
      * @return
      */
     @Update("UPDATE assets a SET " +
@@ -44,15 +44,15 @@ public interface AssetsMapper {
             "create_user_uuid=#{create_user_uuid}, os_ver=#{os_ver} " +
             "WHERE " +
             "a.uuid=#{uuid} ")
-    int updateAsset(AssetProps assetProps);
+    int updateAsset(AssetPo assetPo);
 
     /**
      * 删除指定的一条资产
-     * @param assetProps
+     * @param assetPo
      * @return
      */
     @Delete("DELETE FROM assets WHERE uuid=#{uuid} ")
-    int deleteAsset(AssetProps assetProps);
+    int deleteAsset(AssetPo assetPo);
 
     /**
      * 根据UUID获取指定资产记录
@@ -60,5 +60,5 @@ public interface AssetsMapper {
      * @return
      */
     @Select("SELECT * FROM assets a WHERE a.uuid=#{uuid}")
-    AssetProps getAssetByUuid(@Param("uuid") String assetUuid);
+    AssetPo getAssetByUuid(@Param("uuid") String assetUuid);
 }

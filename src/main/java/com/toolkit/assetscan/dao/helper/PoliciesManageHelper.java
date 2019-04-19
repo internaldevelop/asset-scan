@@ -1,6 +1,6 @@
 package com.toolkit.assetscan.dao.helper;
 
-import com.toolkit.assetscan.bean.PolicyProps;
+import com.toolkit.assetscan.bean.po.PolicyPo;
 import com.toolkit.assetscan.dao.mybatis.PoliciesMapper;
 import com.toolkit.assetscan.global.enumeration.DeleteModeEnum;
 import com.toolkit.assetscan.global.enumeration.PolicyStatusEnum;
@@ -16,13 +16,13 @@ public class PoliciesManageHelper {
         this.policiesMapper = policiesMapper;
     }
 
-    public boolean addPolicy(PolicyProps policyProps) {
-        int rv = policiesMapper.addPolicy(policyProps);
+    public boolean addPolicy(PolicyPo policyPo) {
+        int rv = policiesMapper.addPolicy(policyPo);
         return (rv > 0);
     }
 
-    public boolean updatePolicy(PolicyProps policyProps) {
-        int rv = policiesMapper.updatePolicy(policyProps);
+    public boolean updatePolicy(PolicyPo policyPo) {
+        int rv = policiesMapper.updatePolicy(policyPo);
         return (rv > 0);
     }
 

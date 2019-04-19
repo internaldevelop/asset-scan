@@ -1,6 +1,5 @@
 package com.toolkit.assetscan.controller;
 
-import com.toolkit.assetscan.bean.UserProps;
 import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

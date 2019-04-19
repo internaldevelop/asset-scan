@@ -1,7 +1,6 @@
 package com.toolkit.assetscan.dao.mybatis;
 
-import com.toolkit.assetscan.bean.PolicyGroupProps;
-import com.toolkit.assetscan.bean.PolicyProps;
+import com.toolkit.assetscan.bean.po.PolicyGroupPo;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Component;
@@ -16,7 +15,7 @@ public interface PolicyGroupsMapper {
      * @return PolicyGroupProps 的集合
      */
     @Select("SELECT * FROM groups ")
-    List<PolicyGroupProps> allGroups();
+    List<PolicyGroupPo> allGroups();
 
     /**
      * 新建一条分组记录
@@ -29,6 +28,6 @@ public interface PolicyGroupsMapper {
             "VALUES ( " +
             "#{uuid}, " +
             "#{name}) ")
-    int addGroup(PolicyGroupProps group);
+    int addGroup(PolicyGroupPo group);
 
 }

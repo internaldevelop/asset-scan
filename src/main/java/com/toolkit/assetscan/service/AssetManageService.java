@@ -1,7 +1,7 @@
 package com.toolkit.assetscan.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.toolkit.assetscan.bean.AssetProps;
+import com.toolkit.assetscan.bean.po.AssetPo;
 import com.toolkit.assetscan.dao.mybatis.AssetsMapper;
 import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
@@ -26,7 +26,7 @@ public class AssetManageService {
      * @return
      */
     public ResponseBean getAllAssets() {
-        List<AssetProps> assetsList = mAssetsMapper.getAllAssets();
+        List<AssetPo> assetsList = mAssetsMapper.getAllAssets();
         if ( (assetsList == null) || (assetsList.size() == 0) )
             return mResponseHelper.error(ErrorCodeEnum.ERROR_USER_NOT_FOUND);
 
@@ -35,46 +35,46 @@ public class AssetManageService {
 
     /**
      * 新建资产
-     * @param assetProps
+     * @param assetPo
      * @return
      */
-    public ResponseBean addAsset(AssetProps assetProps) {
+    public ResponseBean addAsset(AssetPo assetPo) {
         // 分配资产UUID
-        assetProps.setUuid(MyUtils.generateUuid());
+        assetPo.setUuid(MyUtils.generateUuid());
 
         // 添加新用户的记录
-        if (mAssetsMapper.addAsset(assetProps) <= 0)
+        if (mAssetsMapper.addAsset(assetPo) <= 0)
             return mResponseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
 
-        return successReturnAssetInfo(assetProps.getName(), assetProps.getUuid());
+        return successReturnAssetInfo(assetPo.getName(), assetPo.getUuid());
     }
 
     /**
      * 根据uuid更新资产信息
-     * @param assetProps
+     * @param assetPo
      * @return
      */
-    public ResponseBean updateAssetByUuid(AssetProps assetProps) {
-        if (mAssetsMapper.updateAsset(assetProps) <= 0)
+    public ResponseBean updateAssetByUuid(AssetPo assetPo) {
+        if (mAssetsMapper.updateAsset(assetPo) <= 0)
             return mResponseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
 
         JSONObject jsonData = new JSONObject();
-        jsonData.put("name", assetProps.getName());
-        jsonData.put("uuid", assetProps.getUuid());
+        jsonData.put("name", assetPo.getName());
+        jsonData.put("uuid", assetPo.getUuid());
         return mResponseHelper.success(jsonData);
     }
 
     public ResponseBean deleteAsset(String assetUuid) {
-        AssetProps assetProps = mAssetsMapper.getAssetByUuid(assetUuid);
-        if (assetProps == null) {
+        AssetPo assetPo = mAssetsMapper.getAssetByUuid(assetUuid);
+        if (assetPo == null) {
             return mResponseHelper.error(ErrorCodeEnum.ERROR_POLICY_NOT_FOUND);
         }
 
-        if (mAssetsMapper.deleteAsset(assetProps) <= 0) {
+        if (mAssetsMapper.deleteAsset(assetPo) <= 0) {
             return mResponseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
         }
 
-        return successReturnAssetInfo(assetProps.getName(), assetProps.getUuid());
+        return successReturnAssetInfo(assetPo.getName(), assetPo.getUuid());
     }
 
     private ResponseBean successReturnAssetInfo(String name, String uuid) {

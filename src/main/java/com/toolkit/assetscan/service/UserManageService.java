@@ -1,8 +1,8 @@
 package com.toolkit.assetscan.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.toolkit.assetscan.bean.PasswordProps;
-import com.toolkit.assetscan.bean.UserProps;
+import com.toolkit.assetscan.bean.po.PasswordPo;
+import com.toolkit.assetscan.bean.po.UserPo;
 import com.toolkit.assetscan.dao.helper.UsersManageHelper;
 import com.toolkit.assetscan.dao.mybatis.UsersMapper;
 import com.toolkit.assetscan.global.bean.ResponseBean;
@@ -35,7 +35,7 @@ public class UserManageService {
         this.verifyHelper = verifyHelper;
     }
 
-    private boolean iCheckParams(UserProps userProps) {
+    private boolean iCheckParams(UserPo userPo) {
         responseBean = responseHelper.success();
         return true;
     }
@@ -52,7 +52,7 @@ public class UserManageService {
      * @return payload: 所有用户的记录
      */
     public ResponseBean getAllUsers() {
-        List<UserProps> usersList = usersMapper.allUsers();
+        List<UserPo> usersList = usersMapper.allUsers();
         if ( (usersList == null) || (usersList.size() == 0) )
             return responseHelper.error(ErrorCodeEnum.ERROR_USER_NOT_FOUND);
 
@@ -62,38 +62,38 @@ public class UserManageService {
     /**
      * 添加新用户
      * 新用户添加后，状态为未激活，需要系统管理员审核后激活用户
-     * @param userProps
+     * @param userPo
      * @return payload: 账户名和系统分配的用户UUID
      */
-    public ResponseBean addUser(UserProps userProps) {
+    public ResponseBean addUser(UserPo userPo) {
         // 检查参数
-        if (!iCheckParams(userProps))
+        if (!iCheckParams(userPo))
             return responseBean;
 
         // 检查新建账户名是否已存在
-        if (usersManageHelper.isUserAccount(userProps.getAccount()))
+        if (usersManageHelper.isUserAccount(userPo.getAccount()))
             return responseHelper.error(ErrorCodeEnum.ERROR_USERNAME_USED);
 
         // 设置新用户的创建时间和失效时间
         java.sql.Timestamp currentTime = MyUtils.getCurrentSystemTimestamp();
-        userProps.setCreate_time(currentTime);
-        userProps.setExpire_time(MyUtils.calculateExpireTimeStamp(currentTime, 365));
+        userPo.setCreate_time(currentTime);
+        userPo.setExpire_time(MyUtils.calculateExpireTimeStamp(currentTime, 365));
 
         // 分配用户UUID
-        userProps.setUuid(MyUtils.generateUuid());
+        userPo.setUuid(MyUtils.generateUuid());
 
         // 初始化设置最大尝试次数和剩余尝试次数
-        userProps.setPwd_mat(SystemParams.USER_PWD_MAT);
-        userProps.setPwd_rat(SystemParams.USER_PWD_MAT);
+        userPo.setPwd_mat(SystemParams.USER_PWD_MAT);
+        userPo.setPwd_rat(SystemParams.USER_PWD_MAT);
 
         // 新用户状态设置为未激活
-        userProps.setStatus(UserStatusEnum.USER_INACTIVE.getStatus());
+        userPo.setStatus(UserStatusEnum.USER_INACTIVE.getStatus());
 
         // 添加新用户的记录
-        if ( !usersManageHelper.addUser(userProps) )
+        if ( !usersManageHelper.addUser(userPo) )
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
 
-        return successReturnUserInfo(userProps.getAccount(), userProps.getUuid());
+        return successReturnUserInfo(userPo.getAccount(), userPo.getUuid());
     }
 
     /**
@@ -102,14 +102,14 @@ public class UserManageService {
      * @return payload: 用户记录
      */
     public ResponseBean getUserByUuid(String uuid) {
-        UserProps userProps = usersMapper.getUserByUuid(uuid);
-        if (userProps == null)
+        UserPo userPo = usersMapper.getUserByUuid(uuid);
+        if (userPo == null)
             return responseHelper.error(ErrorCodeEnum.ERROR_USER_NOT_FOUND);
 
         // 目前实现方式，返回数据有用户密码相关数据，需要做数据隐藏处理
-        userProps.setPassword("********");
-        userProps.setPassword_salt("********");
-        return responseHelper.success(userProps);
+        userPo.setPassword("********");
+        userPo.setPassword_salt("********");
+        return responseHelper.success(userPo);
     }
 
     /**
@@ -130,19 +130,19 @@ public class UserManageService {
 
     /**
      * 根据用户 UUID 更新用户记录
-     * @param userProps 用户记录
+     * @param userPo 用户记录
      * @return payload: 账户名和系统分配的用户UUID
      */
-    public ResponseBean updateUserByUuid(UserProps userProps) {
-        if (!iCheckParams(userProps))
+    public ResponseBean updateUserByUuid(UserPo userPo) {
+        if (!iCheckParams(userPo))
             return responseBean;
 
-        if ( !usersManageHelper.updateUserByUuid(userProps) )
+        if ( !usersManageHelper.updateUserByUuid(userPo) )
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
 
         JSONObject jsonData = new JSONObject();
-        jsonData.put("account", userProps.getAccount());
-        jsonData.put("uuid", userProps.getUuid());
+        jsonData.put("account", userPo.getAccount());
+        jsonData.put("uuid", userPo.getUuid());
         return responseHelper.success(jsonData);
     }
 
@@ -167,10 +167,10 @@ public class UserManageService {
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
 
         // 获取用户密码参数
-        PasswordProps passwordProps = usersMapper.getPasswordByUuid(userUuid);
+        PasswordPo passwordPo = usersMapper.getPasswordByUuid(userUuid);
         JSONObject jsonData = new JSONObject();
-        jsonData.put("mat", passwordProps.getPwd_mat());
-        jsonData.put("rat", passwordProps.getPwd_rat());
+        jsonData.put("mat", passwordPo.getPwd_mat());
+        jsonData.put("rat", passwordPo.getPwd_rat());
         return responseHelper.success(jsonData);
     }
 
@@ -182,11 +182,11 @@ public class UserManageService {
         return verifyPasswordByUuid(userUuid, password);
     }
 
-    private ResponseBean _buildVerifyResponse(ErrorCodeEnum err, PasswordProps passwordProps) {
+    private ResponseBean _buildVerifyResponse(ErrorCodeEnum err, PasswordPo passwordPo) {
         JSONObject jsonData = new JSONObject();
-        jsonData.put("user_uuid", passwordProps.getUser_uuid());
-        jsonData.put("mat", passwordProps.getPwd_mat());
-        jsonData.put("rat", passwordProps.getPwd_rat());
+        jsonData.put("user_uuid", passwordPo.getUser_uuid());
+        jsonData.put("mat", passwordPo.getPwd_mat());
+        jsonData.put("rat", passwordPo.getPwd_rat());
         return responseHelper.error(err, jsonData);
     }
 
@@ -201,37 +201,37 @@ public class UserManageService {
             return responseHelper.error(ErrorCodeEnum.ERROR_PARAMETER);
 
         // 获取用户密码参数
-        PasswordProps passwordProps = usersMapper.getPasswordByUuid(userUuid);
+        PasswordPo passwordPo = usersMapper.getPasswordByUuid(userUuid);
 
         // 剩余尝试次数为0时，表示密码已锁定
-        if (passwordProps.getPwd_rat() == 0) {
-            return _buildVerifyResponse(ErrorCodeEnum.ERROR_USER_PASSWORD_LOCKED, passwordProps);
+        if (passwordPo.getPwd_rat() == 0) {
+            return _buildVerifyResponse(ErrorCodeEnum.ERROR_USER_PASSWORD_LOCKED, passwordPo);
         }
 
         // 校验用户输入的密码
-        ErrorCodeEnum errorCode = verifyHelper.verifyUserPassword(password, passwordProps.getPassword());
+        ErrorCodeEnum errorCode = verifyHelper.verifyUserPassword(password, passwordPo.getPassword());
 
         if (errorCode != ErrorCodeEnum.ERROR_OK) {
             // 校验密码失败，减密码尝试次数
-            if (!usersManageHelper.decreasePasswordRAT(userUuid, passwordProps.getPwd_rat()))
+            if (!usersManageHelper.decreasePasswordRAT(userUuid, passwordPo.getPwd_rat()))
                 return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
 
             // 再检查是否已触发锁定条件
-            int currentRAT = passwordProps.getPwd_rat() - 1;
-            passwordProps.setPwd_rat(currentRAT);
+            int currentRAT = passwordPo.getPwd_rat() - 1;
+            passwordPo.setPwd_rat(currentRAT);
             if ( currentRAT <= 0) {
-                return _buildVerifyResponse(ErrorCodeEnum.ERROR_USER_PASSWORD_LOCKED, passwordProps);
+                return _buildVerifyResponse(ErrorCodeEnum.ERROR_USER_PASSWORD_LOCKED, passwordPo);
             } else {
-                return _buildVerifyResponse(ErrorCodeEnum.ERROR_INVALID_PASSWORD, passwordProps);
+                return _buildVerifyResponse(ErrorCodeEnum.ERROR_INVALID_PASSWORD, passwordPo);
             }
         } else {
             // 校验成功，如果尝试次数RAT不等于MAT，则重置 RAT
-            if (passwordProps.getPwd_rat() != passwordProps.getPwd_mat()) {
+            if (passwordPo.getPwd_rat() != passwordPo.getPwd_mat()) {
                 if (!usersManageHelper.resetPasswordRAT(userUuid))
                     return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
-                passwordProps.setPwd_rat(passwordProps.getPwd_mat());
+                passwordPo.setPwd_rat(passwordPo.getPwd_mat());
             }
-            return _buildVerifyResponse(ErrorCodeEnum.ERROR_OK, passwordProps);
+            return _buildVerifyResponse(ErrorCodeEnum.ERROR_OK, passwordPo);
         }
     }
 

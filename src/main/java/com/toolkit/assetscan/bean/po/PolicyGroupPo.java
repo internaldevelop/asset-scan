@@ -1,4 +1,4 @@
-package com.toolkit.assetscan.bean;
+package com.toolkit.assetscan.bean.po;
 
 import lombok.Data;
 import org.springframework.stereotype.Component;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Data
-public class PolicyGroupProps {
+public class PolicyGroupPo {
     private int id;
     private String uuid;
     private String name;

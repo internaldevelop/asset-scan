@@ -1,4 +1,4 @@
-package com.toolkit.assetscan.datasource.config;
+package com.toolkit.assetscan.dao.config;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;

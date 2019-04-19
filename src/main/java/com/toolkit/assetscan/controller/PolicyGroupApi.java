@@ -1,6 +1,6 @@
 package com.toolkit.assetscan.controller;
 
-import com.toolkit.assetscan.bean.PolicyGroupProps;
+import com.toolkit.assetscan.bean.po.PolicyGroupPo;
 import com.toolkit.assetscan.service.PolicyGroupService;
 import io.swagger.annotations.Api;
 import org.springframework.validation.BindingResult;
@@ -34,7 +34,7 @@ public class PolicyGroupApi {
      */
     @RequestMapping(value = "add", method = RequestMethod.POST)
     public @ResponseBody
-    Object addGroup(@ModelAttribute PolicyGroupProps groupProps, BindingResult bindingResult) {
+    Object addGroup(@ModelAttribute PolicyGroupPo groupProps, BindingResult bindingResult) {
         return policyGroupService.addGroup(groupProps);
     }
 
