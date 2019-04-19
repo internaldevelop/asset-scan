@@ -1,6 +1,5 @@
 package com.toolkit.assetscan.service;
 
-import com.toolkit.assetscan.bean.TaskExecuteResultsProps;
 import com.toolkit.assetscan.dao.loophole.IieVulInfoMapper;
 import com.toolkit.assetscan.dao.mybatis.TaskExecuteResultsMapper;
 import com.toolkit.assetscan.dto.TaskResultsDto;

@@ -1,10 +1,12 @@
 package com.toolkit.assetscan.dto;
 
 import com.toolkit.assetscan.bean.TaskExecuteResultsProps;
+import lombok.Data;
 
 /**
  * 任务结果集
  */
+@Data
 public class TaskResultsDto extends TaskExecuteResultsProps {
 
     private String task_id;  // 任务id
