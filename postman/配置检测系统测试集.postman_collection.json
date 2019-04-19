@@ -1,0 +1,1027 @@
+{
+	"info": {
+		"_postman_id": "aaa5e0f2-9564-4de9-b9d9-7527cbfe1e51",
+		"name": "配置检测系统测试集",
+		"description": "主站和终端系统自动化配置检测工具，后台Restful接口测试集",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. 系统信息",
+			"item": [
+				{
+					"name": "1.1 获取系统版本信息",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/sysinfo/version",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sysinfo",
+								"version"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. 用户管理",
+			"item": [
+				{
+					"name": "2.1 添加新用户",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+								"exec": [
+									"var num = Math.ceil(Math.random() * 10000);",
+									"pm.environment.set(\"account_name\", \"user\" + num);",
+									"pm.environment.set(\"nick_name\", \"测试--\" + num);",
+									"var phone = \"13\" + Math.ceil(Math.random() * 100000) + num;",
+									"pm.environment.set(\"phone\", phone);",
+									"pm.environment.set(\"email\", \"u\" + num + \"@163.com\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+								"exec": [
+									"pm.test(\"add user\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"    ",
+									"    pm.environment.set(\"user_uuid\", jsonData.payload.uuid);",
+									"    pm.environment.set(\"account_name\", jsonData.payload.account);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "name",
+									"value": "{{nick_name}}",
+									"type": "text"
+								},
+								{
+									"key": "phone",
+									"value": "{{phone}}",
+									"type": "text"
+								},
+								{
+									"key": "account",
+									"value": "{{account_name}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{default_password}}",
+									"type": "text"
+								},
+								{
+									"key": "address",
+									"value": "addr1",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "{{email}}",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "1111",
+									"type": "text"
+								},
+								{
+									"key": "user_group",
+									"value": "1",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/users/add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.2 获取所有用户",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/users/all",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.3 账号获取用户uuid",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/users/user-by-account?account=测试--538",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"user-by-account"
+							],
+							"query": [
+								{
+									"key": "account",
+									"value": "测试--538"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.4 更新用户",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "name",
+									"value": "user333",
+									"type": "text"
+								},
+								{
+									"key": "phone",
+									"value": "13910011234",
+									"type": "text"
+								},
+								{
+									"key": "account",
+									"value": "acc1",
+									"type": "text"
+								},
+								{
+									"key": "address",
+									"value": "addr1",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "111@1.cn",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "1111",
+									"type": "text"
+								},
+								{
+									"key": "user_group",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "uuid",
+									"value": "{{user_uuid}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/users/update",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.5 修改用户密码",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "uuid",
+									"value": "{{user_uuid}}",
+									"type": "text"
+								},
+								{
+									"key": "old_pwd",
+									"value": "12345678",
+									"type": "text"
+								},
+								{
+									"key": "new_pwd",
+									"value": "22345678",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/users/change-pwd",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"change-pwd"
+							],
+							"query": [
+								{
+									"key": "uuid",
+									"value": "{{user_uuid}}",
+									"disabled": true
+								},
+								{
+									"key": "old-pwd",
+									"value": "123456",
+									"disabled": true
+								},
+								{
+									"key": "new-pwd",
+									"value": "223456",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.6 校验用户密码",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "uuid",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "account",
+									"value": "user1326",
+									"description": "account 和 uuid二选一，uuid优先",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "12345678",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/users/verify-pwd",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"verify-pwd"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.7 uuid 查找用户",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/users/user-by-uuid?uuid={{user_uuid}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"user-by-uuid"
+							],
+							"query": [
+								{
+									"key": "uuid",
+									"value": "{{user_uuid}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.8 激活用户",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "uuid",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "account",
+									"value": "user1326",
+									"description": "account 和 uuid二选一，uuid优先",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/users/activate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"activate"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. 任务管理",
+			"item": [
+				{
+					"name": "3.1 添加新任务",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+								"exec": [
+									"// var num = Math.ceil(Math.random() * 10000);",
+									"// pm.environment.set(\"account_name\", \"user\" + num);",
+									"// pm.environment.set(\"nick_name\", \"测试--\" + num);",
+									"// var phone = \"13\" + Math.ceil(Math.random() * 100000) + num;",
+									"// pm.environment.set(\"phone\", phone);",
+									"// pm.environment.set(\"email\", \"u\" + num + \"@163.com\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+								"exec": [
+									"pm.test(\"add task\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"    ",
+									"    // pm.environment.set(\"user_uuid\", jsonData.payload.uuid);",
+									"    // pm.environment.set(\"account_name\", jsonData.payload.account);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "name",
+									"value": "{{nick_name}}",
+									"type": "text"
+								},
+								{
+									"key": "phone",
+									"value": "{{phone}}",
+									"type": "text"
+								},
+								{
+									"key": "account",
+									"value": "{{account_name}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{default_password}}",
+									"type": "text"
+								},
+								{
+									"key": "address",
+									"value": "addr1",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "{{email}}",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "1111",
+									"type": "text"
+								},
+								{
+									"key": "user_group",
+									"value": "1",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"add"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. 策略管理",
+			"item": [
+				{
+					"name": "4.1 添加新策略",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+								"exec": [
+									"var num = Math.ceil(Math.random() * 10000);",
+									"pm.environment.set(\"policy_name\", \"policy-\" + num);",
+									"pm.environment.set(\"policy_code\", \"code-\" + num);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+								"exec": [
+									"pm.test(\"add policy\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"    ",
+									"    pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "name",
+									"value": "{{policy_name}}",
+									"type": "text"
+								},
+								{
+									"key": "code",
+									"value": "{{policy_code}}",
+									"type": "text"
+								},
+								{
+									"key": "group_uuid",
+									"value": "111",
+									"type": "text"
+								},
+								{
+									"key": "type",
+									"value": "t1",
+									"type": "text"
+								},
+								{
+									"key": "risk_level",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "solutions",
+									"value": "fdpgkflg",
+									"type": "text"
+								},
+								{
+									"key": "create_user_uuid",
+									"value": "{{user_uuid}}",
+									"type": "text"
+								},
+								{
+									"key": "status",
+									"value": "1",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/policies/add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"policies",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.2 删除策略",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+								"exec": [
+									"pm.test(\"delete policy\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"    ",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "uuid",
+									"value": "{{policy_uuid}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/policies/remove",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"policies",
+								"remove"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.3 获取所有策略",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4f03d584-0050-4232-99b5-5867aa484743",
+								"exec": [
+									"pm.test(\"get all policies\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/policies/all",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"policies",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.4 获取指定的策略",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "c449b75b-5096-43ea-993a-1992d435f975",
+								"exec": [
+									"pm.test(\"get policy\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/policies/get-policy?uuid={{policy_uuid}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"policies",
+								"get-policy"
+							],
+							"query": [
+								{
+									"key": "uuid",
+									"value": "{{policy_uuid}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.5 更新策略",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+								"exec": [
+									"var num = Math.ceil(Math.random() * 10000);",
+									"pm.environment.set(\"policy_name\", \"policy-\" + num);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+								"exec": [
+									"pm.test(\"update policy\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "uuid",
+									"value": "{{policy_uuid}}",
+									"type": "text"
+								},
+								{
+									"key": "name",
+									"value": "{{policy_name}}",
+									"type": "text"
+								},
+								{
+									"key": "code",
+									"value": "{{policy_code}}",
+									"type": "text"
+								},
+								{
+									"key": "group_uuid",
+									"value": "111",
+									"type": "text"
+								},
+								{
+									"key": "type",
+									"value": "t1",
+									"type": "text"
+								},
+								{
+									"key": "risk_level",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "solutions",
+									"value": "fdpgkflg",
+									"type": "text"
+								},
+								{
+									"key": "create_user_uuid",
+									"value": "{{user_uuid}}",
+									"type": "text"
+								},
+								{
+									"key": "status",
+									"value": "1",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/policies/update",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"policies",
+								"update"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "A. 字典表",
+			"item": [
+				{
+					"name": "51. 策略分组",
+					"item": [
+						{
+							"name": "51.1 获取所有分组",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4f03d584-0050-4232-99b5-5867aa484743",
+										"exec": [
+											"pm.test(\"get all groups\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/policy_group/all",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policy_group",
+										"all"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "51.2 添加新分组",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"var num = Math.ceil(Math.random() * 10000);",
+											"pm.environment.set(\"group_name\", \"分组-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add group\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    pm.environment.set(\"group_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "{{group_name}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policy_group/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policy_group",
+										"add"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				}
+			],
+			"description": "包括：分组等字典表"
+		}
+	]
+}
