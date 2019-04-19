@@ -3,6 +3,7 @@ package com.toolkit.assetscan.service;
 import com.toolkit.assetscan.bean.TaskExecuteResultsProps;
 import com.toolkit.assetscan.dao.loophole.IieVulInfoMapper;
 import com.toolkit.assetscan.dao.mybatis.TaskExecuteResultsMapper;
+import com.toolkit.assetscan.dto.TaskResultsDto;
 import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.params.CheckParams;
@@ -37,7 +38,7 @@ public class TaskExecuteResultsManageService {
      * @return: 获取所有任务检测结果
      */
     public ResponseBean getAllTasksResults() {
-        List<TaskExecuteResultsProps> tasksList = taskExecuteResultsMapper.allTaskResults();
+        List<TaskResultsDto> tasksList = taskExecuteResultsMapper.allTaskResults();
         if ( (tasksList == null) || (tasksList.size() == 0) )
             return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND);
 

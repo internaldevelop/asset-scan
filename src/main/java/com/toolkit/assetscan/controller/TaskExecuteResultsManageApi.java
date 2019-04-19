@@ -29,8 +29,7 @@ public class TaskExecuteResultsManageApi {
      * @return payload: 所有任务的数组 （JSON 格式）
      */
     @RequestMapping(value = "/all", method = RequestMethod.GET)
-    public @ResponseBody
-    Object getAllTasks() {
+    public @ResponseBody Object getAllTasks() {
         return taskExecuteResultsManageService.getAllTasksResults();
     }
 
