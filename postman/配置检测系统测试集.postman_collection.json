@@ -457,12 +457,10 @@
 							"script": {
 								"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
 								"exec": [
-									"// var num = Math.ceil(Math.random() * 10000);",
-									"// pm.environment.set(\"account_name\", \"user\" + num);",
-									"// pm.environment.set(\"nick_name\", \"测试--\" + num);",
-									"// var phone = \"13\" + Math.ceil(Math.random() * 100000) + num;",
-									"// pm.environment.set(\"phone\", phone);",
-									"// pm.environment.set(\"email\", \"u\" + num + \"@163.com\");"
+									"var num = Math.ceil(Math.random() * 10000);",
+									"pm.environment.set(\"task_name\", \"task_\" + num);",
+									"pm.environment.set(\"task_code\", \"C_\" + num);",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -476,8 +474,8 @@
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData.code).to.eql(0);",
 									"    ",
-									"    // pm.environment.set(\"user_uuid\", jsonData.payload.uuid);",
-									"    // pm.environment.set(\"account_name\", jsonData.payload.account);",
+									"    pm.environment.set(\"task_uuid\", jsonData.payload.uuid);",
+									"    pm.environment.set(\"task_name\", jsonData.payload.name);",
 									"});",
 									""
 								],
@@ -500,42 +498,32 @@
 							"urlencoded": [
 								{
 									"key": "name",
-									"value": "{{nick_name}}",
+									"value": "{{task_name}}",
 									"type": "text"
 								},
 								{
-									"key": "phone",
-									"value": "{{phone}}",
-									"type": "text"
-								},
-								{
-									"key": "account",
-									"value": "{{account_name}}",
-									"type": "text"
-								},
-								{
-									"key": "password",
-									"value": "{{default_password}}",
-									"type": "text"
-								},
-								{
-									"key": "address",
-									"value": "addr1",
-									"type": "text"
-								},
-								{
-									"key": "email",
-									"value": "{{email}}",
+									"key": "code",
+									"value": "{{task_code}}",
 									"type": "text"
 								},
 								{
 									"key": "description",
-									"value": "1111",
+									"value": "some description",
 									"type": "text"
 								},
 								{
-									"key": "user_group",
-									"value": "1",
+									"key": "asset_uuid",
+									"value": "{{asset_uuid}}",
+									"type": "text"
+								},
+								{
+									"key": "policies_name",
+									"value": "some policies",
+									"type": "text"
+								},
+								{
+									"key": "create_user_uuid",
+									"value": "{{user_uuid}}",
 									"type": "text"
 								}
 							]
@@ -548,6 +536,215 @@
 							"path": [
 								"tasks",
 								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.2 移除任务",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "uuid",
+									"value": "{{task_uuid}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/remove",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"remove"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.3 获取所有的任务",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/all",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.4 读取指定任务",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/get-task?uuid={{task_uuid}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"get-task"
+							],
+							"query": [
+								{
+									"key": "uuid",
+									"value": "{{task_uuid}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.5 更新任务",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+								"exec": [
+									"var num = Math.ceil(Math.random() * 10000);",
+									"pm.environment.set(\"new_task_name\", \"NewT_\" + num);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+								"exec": [
+									"pm.test(\"update task\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"    ",
+									"    pm.environment.set(\"task_uuid\", jsonData.payload.uuid);",
+									"    pm.environment.set(\"task_name\", jsonData.payload.name);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "uuid",
+									"value": "{{task_uuid}}",
+									"type": "text"
+								},
+								{
+									"key": "name",
+									"value": "{{new_task_name}}",
+									"type": "text"
+								},
+								{
+									"key": "code",
+									"value": "{{task_code}}",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "some description",
+									"type": "text"
+								},
+								{
+									"key": "asset_uuid",
+									"value": "{{asset_uuid}}",
+									"type": "text"
+								},
+								{
+									"key": "policies_name",
+									"value": "some policies",
+									"type": "text"
+								},
+								{
+									"key": "create_user_uuid",
+									"value": "{{user_uuid}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/update",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.6 执行任务（未实现）",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/execute?uuid={{task_uuid}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"execute"
+							],
+							"query": [
+								{
+									"key": "uuid",
+									"value": "{{task_uuid}}"
+								}
 							]
 						}
 					},
@@ -901,6 +1098,371 @@
 							"path": [
 								"policies",
 								"update"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. 任务检测结果",
+			"item": [
+				{
+					"name": "5.1 任务检测结果查询（所有）",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/results/all",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"results",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5.2 任务结果（统计图表）",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/results/statistical",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"results",
+								"statistical"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5.9 获取IEE漏洞数",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/results/all-iie-vul",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"results",
+								"all-iie-vul"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "6. 资产管理",
+			"item": [
+				{
+					"name": "6.1 添加新资产",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+								"exec": [
+									"var num = Math.ceil(Math.random() * 10000);",
+									"pm.environment.set(\"asset_name\", \"asset_\" + num);",
+									"pm.environment.set(\"asset_code\", \"C_\" + num);",
+									"",
+									"var ip1 = Math.ceil(Math.random() * 255) + \".\";",
+									"var ip2 = Math.ceil(Math.random() * 255) + \".\";",
+									"var ip3 = Math.ceil(Math.random() * 255) + \".\";",
+									"var ip4 = Math.ceil(Math.random() * 255);",
+									"pm.environment.set(\"asset_ip\", ip1 + ip2 + ip3 + ip4);",
+									"pm.environment.set(\"asset_port\", Math.ceil(Math.random() * 100000));",
+									"",
+									"pm.environment.set(\"default_asset_user\", \"root\");",
+									"pm.environment.set(\"default_asset_pwd\", \"root\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+								"exec": [
+									"pm.test(\"add asset\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"    ",
+									"    pm.environment.set(\"asset_uuid\", jsonData.payload.uuid);",
+									"    pm.environment.set(\"asset_name\", jsonData.payload.name);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "name",
+									"value": "{{asset_name}}",
+									"type": "text"
+								},
+								{
+									"key": "code",
+									"value": "{{asset_code}}",
+									"type": "text"
+								},
+								{
+									"key": "ip",
+									"value": "{{asset_ip}}",
+									"type": "text"
+								},
+								{
+									"key": "port",
+									"value": "{{asset_port}}",
+									"type": "text"
+								},
+								{
+									"key": "user",
+									"value": "{{default_asset_user}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{default_asset_pwd}}",
+									"type": "text"
+								},
+								{
+									"key": "os_type",
+									"value": "Ubuntu",
+									"type": "text"
+								},
+								{
+									"key": "os_ver",
+									"value": "18.0.4",
+									"type": "text"
+								},
+								{
+									"key": "create_user_uuid",
+									"value": "{{user_uuid}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/assets/add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"assets",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6.2 获取所有资产信息",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/assets/all",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"assets",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6.3 更新资产数据",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+								"exec": [
+									"var num = Math.ceil(Math.random() * 10000);",
+									"pm.environment.set(\"asset_name\", \"new_\" + num);",
+									"",
+									"pm.environment.set(\"asset_user\", \"power_user\");",
+									"pm.environment.set(\"asset_pwd\", \"root123\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+								"exec": [
+									"pm.test(\"update asset\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"    ",
+									"    pm.environment.set(\"asset_uuid\", jsonData.payload.uuid);",
+									"    pm.environment.set(\"asset_name\", jsonData.payload.name);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "uuid",
+									"value": "{{asset_uuid}}",
+									"type": "text"
+								},
+								{
+									"key": "name",
+									"value": "{{asset_name}}",
+									"type": "text"
+								},
+								{
+									"key": "code",
+									"value": "{{asset_code}}",
+									"type": "text"
+								},
+								{
+									"key": "ip",
+									"value": "{{asset_ip}}",
+									"type": "text"
+								},
+								{
+									"key": "port",
+									"value": "{{asset_port}}",
+									"type": "text"
+								},
+								{
+									"key": "user",
+									"value": "{{asset_user}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{asset_pwd}}",
+									"type": "text"
+								},
+								{
+									"key": "os_type",
+									"value": "Ubuntu",
+									"type": "text"
+								},
+								{
+									"key": "os_ver",
+									"value": "18.0.4",
+									"type": "text"
+								},
+								{
+									"key": "create_user_uuid",
+									"value": "{{user_uuid}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/assets/update",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"assets",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6.4 删除资产",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "uuid",
+									"value": "{{asset_uuid}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/assets/delete",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"assets",
+								"delete"
 							]
 						}
 					},

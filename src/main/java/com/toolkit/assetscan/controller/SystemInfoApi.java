@@ -16,6 +16,10 @@ public class SystemInfoApi {
         this.systemInfoService = systemInfoService;
     }
 
+    /**
+     * 1.1 获取系统版本信息
+     * @return
+     */
     @RequestMapping(value = "/version", method = RequestMethod.GET)
     public @ResponseBody Object getVersion() {
         return systemInfoService.getSystemInfo();

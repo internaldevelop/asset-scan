@@ -1,8 +1,13 @@
 package com.toolkit.assetscan.controller;
 
+import com.toolkit.assetscan.bean.po.TaskPo;
+import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
+import com.toolkit.assetscan.global.response.ResponseHelper;
+import com.toolkit.assetscan.service.TaskManageService;
 import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +18,15 @@ import org.springframework.web.bind.annotation.*;
 public class TaskManageApi {
     private Logger logger = LoggerFactory.getLogger(TaskManageApi.class);
 
+    private final TaskManageService taskManageService;
+    private final ResponseHelper responseHelper;
+
+    @Autowired
+    public TaskManageApi(TaskManageService taskManageService, ResponseHelper responseHelper) {
+        this.taskManageService = taskManageService;
+        this.responseHelper = responseHelper;
+    }
+
     /**
      * 3.1 添加一个新的任务
      * @param task task 参数
@@ -21,8 +35,8 @@ public class TaskManageApi {
      */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public @ResponseBody
-    Object addTask(@ModelAttribute Object task, BindingResult bindingResult) {
-        return null;
+    Object addTask(@ModelAttribute TaskPo task, BindingResult bindingResult) {
+        return taskManageService.addTask(task);
     }
 
     /**
@@ -33,7 +47,7 @@ public class TaskManageApi {
     @RequestMapping(value = "/remove", method = RequestMethod.POST)
     public @ResponseBody
     Object removeTask(@RequestParam("uuid") String taskUuid) {
-        return null;
+        return taskManageService.deleteTask(taskUuid);
     }
 
     /**
@@ -43,7 +57,7 @@ public class TaskManageApi {
     @RequestMapping(value = "/all", method = RequestMethod.GET)
     public @ResponseBody
     Object getAllTasks() {
-        return null;
+        return taskManageService.getAllTasks();
     }
 
     /**
@@ -54,7 +68,7 @@ public class TaskManageApi {
     @RequestMapping(value = "/get-task", method = RequestMethod.GET)
     public @ResponseBody
     Object getTask(@RequestParam("uuid") String taskUuid) {
-        return null;
+        return taskManageService.getTaskByUuid(taskUuid);
     }
 
     /**
@@ -64,8 +78,8 @@ public class TaskManageApi {
      */
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public @ResponseBody
-    Object  updateTask(@ModelAttribute Object task) {
-        return null;
+    Object  updateTask(@ModelAttribute TaskPo task) {
+        return taskManageService.updateTask(task);
     }
 
     /**
@@ -76,7 +90,7 @@ public class TaskManageApi {
     @RequestMapping(value = "/execute", method = RequestMethod.POST)
     public @ResponseBody
     Object  executeTask(@RequestParam("uuid") String taskUuid) {
-        return null;
+        return responseHelper.error(ErrorCodeEnum.ERROR_NOT_IMPLEMENTED);
     }
 
 }

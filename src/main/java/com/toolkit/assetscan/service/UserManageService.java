@@ -122,10 +122,7 @@ public class UserManageService {
         if (!StringUtils.isValid(userUuid))
             return responseHelper.error(ErrorCodeEnum.ERROR_USER_NOT_FOUND);
 
-        JSONObject jsonData = new JSONObject();
-        jsonData.put("account", account);
-        jsonData.put("uuid", userUuid);
-        return responseHelper.success(jsonData);
+        return successReturnUserInfo(account, userUuid);
     }
 
     /**
@@ -140,10 +137,7 @@ public class UserManageService {
         if ( !usersManageHelper.updateUserByUuid(userPo) )
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
 
-        JSONObject jsonData = new JSONObject();
-        jsonData.put("account", userPo.getAccount());
-        jsonData.put("uuid", userPo.getUuid());
-        return responseHelper.success(jsonData);
+        return successReturnUserInfo(userPo.getAccount(), userPo.getUuid());
     }
 
     /**
