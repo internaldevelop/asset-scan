@@ -2,7 +2,6 @@ package com.toolkit.assetscan.controller;
 
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.service.TaskExecuteResultsManageService;
-import com.toolkit.assetscan.service.UserManageService;
 import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,10 +36,10 @@ public class TaskExecuteResultsManageApi {
      * 5.2 任务检测结果 统计图表数据获取
      * @return : 任务检测结果 统计图表数据获取
      */
-    @RequestMapping(value = "/statistical", method = RequestMethod.GET)
+    @RequestMapping(value = "/statistics", method = RequestMethod.GET)
     public @ResponseBody
-    Object getTasksResultsStat() {
-        return taskExecuteResultsManageService.getAllTasksResults();
+    Object getResultsStatistics() {
+        return taskExecuteResultsManageService.getResultsStatistics();
     }
 
     /**

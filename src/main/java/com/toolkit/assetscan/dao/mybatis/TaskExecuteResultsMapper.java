@@ -1,6 +1,7 @@
 package com.toolkit.assetscan.dao.mybatis;
 
 import com.toolkit.assetscan.bean.dto.TaskResultsDto;
+import com.toolkit.assetscan.bean.dto.TaskResultsStatisticsDto;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Component;
 
@@ -21,14 +22,31 @@ public interface TaskExecuteResultsMapper {
             "	ter.results,\n" +
             "	ter.process_flag,\n" +
             "	t. NAME AS task_name,\n" +
+            "	t.description AS description,\n" +
             "	t.id AS task_id,\n" +
             "	a. NAME AS assets_name,\n" +
-            "	a.ip AS assets_ip\n" +
+            "	a.ip AS assets_ip,\n" +
+            "	p.solutions,\n" +
+            "   p.risk_level,\n" +
+            "   p.name AS policie_name\n" +
             " FROM\n" +
             "	task_execute_results ter\n" +
             " INNER JOIN tasks t ON ter.task_uuid = t.uuid\n" +
-            " INNER JOIN assets a ON t.asset_uuid = a.uuid")
+            " INNER JOIN assets a ON t.asset_uuid = a.uuid\n" +
+            " INNER JOIN policies p ON ter.policie_uuid = p.uuid")
     List<TaskResultsDto> allTaskResults();
 
-
+    @Select("SELECT\n" +
+            "	p.`name` AS policie_name,\n" +
+            "	a.os_type AS os_type,\n" +
+            "	COUNT(1) AS num\n" +
+            " FROM\n" +
+            "	task_execute_results ter\n" +
+            " INNER JOIN tasks t ON ter.task_uuid = t.uuid\n" +
+            " INNER JOIN assets a ON t.asset_uuid = a.uuid\n" +
+            " INNER JOIN policies p ON ter.policie_uuid = p.uuid\n" +
+            " GROUP BY\n" +
+            "	p.id,\n" +
+            "	a.os_type")
+    List<TaskResultsStatisticsDto> getResultsStatistics();
 }
