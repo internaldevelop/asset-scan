@@ -80,7 +80,7 @@ public class AssetManageService {
     private ResponseBean successReturnAssetInfo(String name, String uuid) {
         JSONObject jsonData = new JSONObject();
         jsonData.put("name", name);
-        jsonData.put("uuid", uuid);
+        jsonData.put("asset_uuid", uuid);
         return mResponseHelper.success(jsonData);
     }
 }

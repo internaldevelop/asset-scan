@@ -1,6 +1,7 @@
 package com.toolkit.assetscan.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.toolkit.assetscan.bean.dto.TaskInfosDto;
 import com.toolkit.assetscan.bean.po.TaskPo;
 import com.toolkit.assetscan.dao.helper.TasksManageHelper;
 import com.toolkit.assetscan.dao.mybatis.TasksMapper;
@@ -47,6 +48,14 @@ public class TaskManageService {
             responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND);
 
         return responseHelper.success(taskPoList);
+    }
+
+    public ResponseBean getAllTaskInfos() {
+        List<TaskInfosDto> taskInfosList = tasksMapper.getAllTaskInfos();
+        if ( (taskInfosList == null) || (taskInfosList.size() == 0))
+            responseHelper.error(ErrorCodeEnum.ERROR_TASK_INFO_NOT_FOUND);
+
+        return responseHelper.success(taskInfosList);
     }
 
     public ResponseBean addTask(TaskPo taskPo) {
@@ -98,6 +107,10 @@ public class TaskManageService {
         // 检查参数
         if (!iCheckParams(taskPo))
             return responseBean;
+
+        // 设置任务的更新时间
+        java.sql.Timestamp currentTime = MyUtils.getCurrentSystemTimestamp();
+        taskPo.setUpdate_time(currentTime);
 
         if (!tasksManageHelper.updateTask(taskPo))
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);

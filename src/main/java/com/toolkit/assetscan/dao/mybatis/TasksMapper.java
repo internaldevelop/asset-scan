@@ -1,5 +1,6 @@
 package com.toolkit.assetscan.dao.mybatis;
 
+import com.toolkit.assetscan.bean.dto.TaskInfosDto;
 import com.toolkit.assetscan.bean.po.TaskPo;
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Component;
@@ -24,11 +25,13 @@ public interface TasksMapper {
             "uuid, name, code, " +
             "description, asset_uuid, policies_name, " +
             "create_user_uuid, status, " +
+            "update_time, " +
             "create_time) " +
             "VALUES ( " +
             "#{uuid}, #{name}, #{code}, " +
             "#{description}, #{asset_uuid}, #{policies_name}, " +
             "#{create_user_uuid}, #{status}, " +
+            "#{update_time, jdbcType=TIMESTAMP}, " +
             "#{create_time, jdbcType=TIMESTAMP}) "
     )
     int addTask(TaskPo taskPo);
@@ -41,6 +44,7 @@ public interface TasksMapper {
     @Update("UPDATE tasks t SET " +
             "name=#{name}, code=#{code}, " +
             "description=#{description}, asset_uuid=#{asset_uuid}, policies_name=#{policies_name}, " +
+            "update_time=#{update_time}," +
             "create_user_uuid=#{create_user_uuid} " +
             "WHERE " +
             "uuid=#{uuid} AND t.status>=0  "
@@ -62,4 +66,26 @@ public interface TasksMapper {
      */
     @Select("SELECT * FROM tasks t WHERE t.uuid=#{uuid} AND t.status>=0 ")
     TaskPo getTaskByUuid(@Param("uuid") String taskUuid);
+
+
+    /**
+     * 任务结果
+     * @return 成功时返回 TaskExecuteResultsProps 的列表，失败时返回 null1
+     */
+    @Select("SELECT\n" +
+            "	t.uuid,\n" +
+            "	t.id AS task_id,\n" +
+            "	t.name AS task_name,\n" +
+            "	t.status,\n" +
+            "	t.update_time,\n" +
+            "	a.uuid AS asset_uuid,\n" +
+            "	a.name AS assets_name,\n" +
+            "	a.ip AS assets_ip,\n" +
+            "	a.port AS assets_port,\n" +
+            "	a.os_type,\n" +
+            "	a.os_ver\n" +
+            " FROM\n" +
+            "	tasks t\n" +
+            " INNER JOIN assets a ON t.asset_uuid = a.uuid")
+    List<TaskInfosDto> getAllTaskInfos();
 }

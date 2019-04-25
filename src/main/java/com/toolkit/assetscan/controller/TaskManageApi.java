@@ -93,4 +93,13 @@ public class TaskManageApi {
         return responseHelper.error(ErrorCodeEnum.ERROR_NOT_IMPLEMENTED);
     }
 
+    /**
+     * 3.7 获取所有任务资产信息
+     * @return
+     */
+    @RequestMapping(value = "/allTaskInfos", method = RequestMethod.GET)
+    public @ResponseBody
+    Object getAllTaskInfos() {
+        return taskManageService.getAllTaskInfos();
+    }
 }

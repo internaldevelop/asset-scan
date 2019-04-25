@@ -17,5 +17,7 @@ public class TaskPo {
     private String create_user_uuid;
     private int status;
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    private java.sql.Timestamp update_time;
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private java.sql.Timestamp create_time;
 }
