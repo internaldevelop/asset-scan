@@ -53,6 +53,7 @@ public enum ErrorCodeEnum {
     ERROR_INTERFACE_NOT_FOUND(2005, "请求接口不存在"),
     ERROR_TASK_NOT_FOUND(2030, "任务未找到"),
     ERROR_TASK_INFO_NOT_FOUND(2031, "任务信息未找到"),
+    ERROR_GROUP_NOT_FOUND(2032, "策略组未找到"),
     ;
 
     private Integer code;

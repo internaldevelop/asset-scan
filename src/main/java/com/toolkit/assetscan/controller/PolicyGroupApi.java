@@ -38,4 +38,15 @@ public class PolicyGroupApi {
         return policyGroupService.addGroup(groupProps);
     }
 
+    /**
+     * 根据id获取策略组
+     * @param groupId
+     * @return
+     */
+    @RequestMapping(value = "/get-group", method = RequestMethod.GET)
+    public @ResponseBody
+    Object getPolicyGroupById(@RequestParam("id") int groupId) {
+        return policyGroupService.getPolicyGroup(groupId);
+    }
+
 }

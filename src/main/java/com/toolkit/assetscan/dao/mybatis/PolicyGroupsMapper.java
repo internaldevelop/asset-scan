@@ -2,6 +2,7 @@ package com.toolkit.assetscan.dao.mybatis;
 
 import com.toolkit.assetscan.bean.po.PolicyGroupPo;
 import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Component;
 
@@ -29,5 +30,8 @@ public interface PolicyGroupsMapper {
             "#{uuid}, " +
             "#{name}) ")
     int addGroup(PolicyGroupPo group);
+
+    @Select("SELECT * FROM groups g WHERE g.id=#{id} ")
+    PolicyGroupPo getGroupById(@Param("id") int groupId);
 
 }

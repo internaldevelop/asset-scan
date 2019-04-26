@@ -43,6 +43,14 @@ public interface PoliciesMapper {
     PolicyPo getPolicyByUuid(@Param("uuid") String policyUuid);
 
     /**
+     *  根据group uuid获取所在组所有的策略
+     * @param policyGroupUuid
+     * @return
+     */
+    @Select("SELECT * FROM policies p WHERE p.group_uuid=#{group_uuid} AND p.status>=0 ")
+    List<PolicyPo> getPoliciesByGroup(@Param("group_uuid") String policyGroupUuid);
+
+    /**
      * 更新指定的策略记录
      * @param policy 策略的数据
      * @return >=1：成功；<=0：失败；

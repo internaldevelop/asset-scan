@@ -89,6 +89,14 @@ public class PolicyManageService {
         return responseHelper.success(policy);
     }
 
+    public ResponseBean getPoliciesByGroup(String policyGroupUuid) {
+        List<PolicyPo> policiesList = policiesMapper.getPoliciesByGroup(policyGroupUuid);
+        if ( (policiesList == null) || (policiesList.size() == 0) )
+            return responseHelper.error(ErrorCodeEnum.ERROR_POLICY_NOT_FOUND);
+
+        return responseHelper.success(policiesList);
+    }
+
     public ResponseBean updatePolicy(PolicyPo policyPo) {
         if (!policiesManageHelper.updatePolicy(policyPo))
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);

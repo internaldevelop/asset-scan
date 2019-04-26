@@ -44,4 +44,18 @@ public class PolicyGroupService {
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
         }
     }
+
+    /**
+     * 根据id获取策略组
+     * @param groupId
+     * @return
+     */
+    public ResponseBean getPolicyGroup(int groupId) {
+        PolicyGroupPo group = policyGroupsMapper.getGroupById(groupId);
+        if (group == null) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_GROUP_NOT_FOUND);
+        }
+
+        return responseHelper.success(group);
+    }
 }
