@@ -5,6 +5,7 @@ public enum TaskStatusEnum {
     TASK_INACTIVE(0),
     TASK_ACTIVE(1),
     TASK_RUNNING(2),
+    TASK_FINISHED(3),
     ;
 
     private int status;

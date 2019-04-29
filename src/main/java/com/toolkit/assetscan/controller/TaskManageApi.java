@@ -97,9 +97,9 @@ public class TaskManageApi {
      * 3.7 获取所有任务资产信息
      * @return
      */
-    @RequestMapping(value = "/allTaskInfos", method = RequestMethod.GET)
+    @RequestMapping(value = "/all-task-details", method = RequestMethod.GET)
     public @ResponseBody
-    Object getAllTaskInfos() {
-        return taskManageService.getAllTaskInfos();
+    Object getAllTaskDetails() {
+        return taskManageService.getAllTaskDetails();
     }
 }

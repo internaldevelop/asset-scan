@@ -749,6 +749,28 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "3.7 获取所有的任务详细信息",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/all-task-details",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"all-task-details"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -1216,7 +1238,7 @@
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData.code).to.eql(0);",
 									"    ",
-									"    pm.environment.set(\"asset_uuid\", jsonData.payload.uuid);",
+									"    pm.environment.set(\"asset_uuid\", jsonData.payload.asset_uuid);",
 									"    pm.environment.set(\"asset_name\", jsonData.payload.name);",
 									"});",
 									""

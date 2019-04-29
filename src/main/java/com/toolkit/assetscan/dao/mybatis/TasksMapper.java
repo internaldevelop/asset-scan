@@ -73,11 +73,10 @@ public interface TasksMapper {
      * @return 成功时返回 TaskExecuteResultsProps 的列表，失败时返回 null1
      */
     @Select("SELECT\n" +
-            "	t.uuid,\n" +
-            "	t.id AS task_id,\n" +
-            "	t.name AS task_name,\n" +
-            "	t.status,\n" +
-            "	t.update_time,\n" +
+            "	t.*,\n" +
+            "	u.uuid AS user_uuid,\n" +
+            "	u.account AS user_account,\n" +
+            "	u.name AS user_name,\n" +
             "	a.uuid AS asset_uuid,\n" +
             "	a.name AS assets_name,\n" +
             "	a.ip AS assets_ip,\n" +
@@ -86,6 +85,9 @@ public interface TasksMapper {
             "	a.os_ver\n" +
             " FROM\n" +
             "	tasks t\n" +
-            " INNER JOIN assets a ON t.asset_uuid = a.uuid")
-    List<TaskInfosDto> getAllTaskInfos();
+            " INNER JOIN assets a ON t.asset_uuid = a.uuid\n" +
+            " INNER JOIN users u ON t.create_user_uuid=u.uuid\n" +
+            " WHERE\n" +
+            "   t.status>=0")
+    List<TaskInfosDto> getAllTaskDto();
 }

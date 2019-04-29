@@ -50,8 +50,8 @@ public class TaskManageService {
         return responseHelper.success(taskPoList);
     }
 
-    public ResponseBean getAllTaskInfos() {
-        List<TaskInfosDto> taskInfosList = tasksMapper.getAllTaskInfos();
+    public ResponseBean getAllTaskDetails() {
+        List<TaskInfosDto> taskInfosList = tasksMapper.getAllTaskDto();
         if ( (taskInfosList == null) || (taskInfosList.size() == 0))
             responseHelper.error(ErrorCodeEnum.ERROR_TASK_INFO_NOT_FOUND);
 
