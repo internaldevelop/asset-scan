@@ -38,8 +38,8 @@ public class TaskExecuteResultsManageService {
      * 获取所有任务检测结果
      * @return: 获取所有任务检测结果
      */
-    public ResponseBean getAllTasksResults() {
-        List<TaskResultsDto> tasksList = taskExecuteResultsMapper.allTaskResults();
+    public ResponseBean getAllTasksResults(String taskNameIpType) {
+        List<TaskResultsDto> tasksList = taskExecuteResultsMapper.allTaskResults(taskNameIpType);
         if ( (tasksList == null) || (tasksList.size() == 0) )
             return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND);
 
@@ -56,38 +56,30 @@ public class TaskExecuteResultsManageService {
             return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND);
 
         return responseHelper.success(tasksList);
+    }
 
-//        TaskResultsStatisticsDto retDto = new TaskResultsStatisticsDto();
-//
-//        List<String> sysType = new ArrayList<String>();  // 系统类型
-//        sysType.add("product");
-//
-//        List<Map<String, Object>> policieTypeNum = new ArrayList<Map<String, Object>>();
-//        List<String> policieNames = new ArrayList<String>();  // 策略
-//        for (TaskResultsStatisticsDto trsDto : tasksList) {
-//            String oType = trsDto.getOs_type();  // 系统名称
-//            if (!sysType.contains(oType)) {
-//                sysType.add(oType);
-//            }
-//
-//            String pName = trsDto.getPolicie_name();  // 策略名称
-//            if (!policieNames.contains(pName)) {
-//                policieNames.add(pName);
-//
-//                Map<String, Object> pMap = new HashMap<>();
-//                pMap.put("product", pName);
-//                policieTypeNum.add(pMap);
-//            }
-//        }
-//
-//
-//        for (TaskResultsStatisticsDto trsDto : tasksList) {
-//            String polName = trsDto.getPolicie_name();
-//
-//
-//        }
-//
-//        return retDto;
+    /**
+     * 任务统计（策略数量）
+     * @return
+     */
+    public Object getResultsPolicieStatistics() {
+        List<TaskResultsStatisticsDto> tasksList = taskExecuteResultsMapper.getResultsPolicieStatistics();
+        if ( (tasksList == null) || (tasksList.size() == 0) )
+            return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND);
+
+        return responseHelper.success(tasksList);
+    }
+
+    /**
+     * 任务统计(系统数量)
+     * @return
+     */
+    public Object getResultsSysStatistics() {
+        List<TaskResultsStatisticsDto> tasksList = taskExecuteResultsMapper.getResultsSysStatistics();
+        if ( (tasksList == null) || (tasksList.size() == 0) )
+            return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND);
+
+        return responseHelper.success(tasksList);
     }
 
     /**

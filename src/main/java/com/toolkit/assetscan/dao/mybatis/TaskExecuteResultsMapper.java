@@ -2,6 +2,7 @@ package com.toolkit.assetscan.dao.mybatis;
 
 import com.toolkit.assetscan.bean.dto.TaskResultsDto;
 import com.toolkit.assetscan.bean.dto.TaskResultsStatisticsDto;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Component;
 
@@ -33,8 +34,9 @@ public interface TaskExecuteResultsMapper {
             "	task_execute_results ter\n" +
             " INNER JOIN tasks t ON ter.task_uuid = t.uuid\n" +
             " INNER JOIN assets a ON t.asset_uuid = a.uuid\n" +
-            " INNER JOIN policies p ON ter.policie_uuid = p.uuid")
-    List<TaskResultsDto> allTaskResults();
+            " INNER JOIN policies p ON ter.policie_uuid = p.uuid\n" +
+            " where t.`name` LIKE '%${taskNameIpType}%' OR a.ip LIKE '%${taskNameIpType}%' OR p.name LIKE '%${taskNameIpType}%'")
+    List<TaskResultsDto> allTaskResults(@Param("taskNameIpType") String taskNameIpType);
 
     @Select("SELECT\n" +
             "	p.`name` AS policie_name,\n" +
@@ -49,4 +51,26 @@ public interface TaskExecuteResultsMapper {
             "	p.id,\n" +
             "	a.os_type")
     List<TaskResultsStatisticsDto> getResultsStatistics();
+
+    @Select("SELECT\n" +
+            "	p.`name` AS policie_name,\n" +
+            "	COUNT(1) AS num\n" +
+            " FROM\n" +
+            "	task_execute_results ter\n" +
+            " INNER JOIN tasks t ON ter.task_uuid = t.uuid\n" +
+            " INNER JOIN policies p ON ter.policie_uuid = p.uuid\n" +
+            " GROUP BY\n" +
+            "	p.id")
+    List<TaskResultsStatisticsDto> getResultsPolicieStatistics();
+
+    @Select("SELECT\n" +
+            "	a.os_type AS os_type,\n" +
+            "	COUNT(1) AS num\n" +
+            " FROM\n" +
+            "	task_execute_results ter\n" +
+            " INNER JOIN tasks t ON ter.task_uuid = t.uuid\n" +
+            " INNER JOIN assets a ON t.asset_uuid = a.uuid\n" +
+            " GROUP BY\n" +
+            "	a.os_type")
+    List<TaskResultsStatisticsDto> getResultsSysStatistics();
 }

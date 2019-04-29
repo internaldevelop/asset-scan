@@ -1,7 +1,9 @@
 package com.toolkit.assetscan.controller;
 
 import com.toolkit.assetscan.bean.po.UserPo;
+import com.toolkit.assetscan.global.common.VerifyUtil;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
+import com.toolkit.assetscan.global.redis.IRedisClient;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.StringUtils;
 import com.toolkit.assetscan.service.UserManageService;
@@ -12,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.HttpServletRequest;
+
 @RestController
 @CrossOrigin(origins = "*",maxAge = 3600)
 @RequestMapping(value = "/api/users")
@@ -20,6 +24,8 @@ public class UserManageApi {
     private Logger logger = LoggerFactory.getLogger(UserManageApi.class);
     private final UserManageService userManageService;
     private final ResponseHelper responseHelper;
+    @Autowired
+    private IRedisClient redisClient;
 
     @Autowired
     public UserManageApi(UserManageService userManageService, ResponseHelper responseHelper) {
@@ -132,6 +138,19 @@ public class UserManageApi {
             return userManageService.activateUserByAccount( account );
         else
             return responseHelper.error(ErrorCodeEnum.ERROR_NEED_PARAMETER);
+    }
+
+    /**
+     * 2.8 生成动态验证码
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = "/get-img-code",method = RequestMethod.GET)
+    public Object getImgCode(HttpServletRequest request){
+        Object[] objs = VerifyUtil.createImage();
+        String randomStr = (String) objs[0];
+        redisClient.set(randomStr.toLowerCase(), System.currentTimeMillis());
+        return (byte[]) objs[1];
     }
 
 }
