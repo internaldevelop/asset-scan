@@ -643,7 +643,7 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("key={}  list not existing !", key);
                 }
                 try {
-                    readRedisPool.close();
+                    readRedisClient.close();
                 } catch (RuntimeException e) {
                     logger.error("redis connection pool couldn't return  connection !", e);
                 }
@@ -691,7 +691,7 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("key={}  list not existing !", key);
                 }
                 try {
-                    readRedisPool.close();
+                    readRedisClient.close();
                 } catch (RuntimeException e) {
                     logger.error("redis connection pool couldn't return  connection !", e);
                 }
@@ -739,7 +739,7 @@ public class RedisClientImpl implements IRedisClient {
                 }
 
                 try {
-                    readRedisPool.close();
+                    readRedisClient.close();
                 } catch (RuntimeException e) {
                     logger.error(
                             "redis connection pool couldn't return  connection !",
@@ -789,7 +789,7 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("key={}  map not existing !", key);
                 }
                 try {
-                    readRedisPool.close();
+                    readRedisClient.close();
                 } catch (RuntimeException e) {
                     logger.error(
                             "redis connection pool couldn't return  connection !",
@@ -838,7 +838,7 @@ public class RedisClientImpl implements IRedisClient {
         }
 
         try {
-            readRedisPool.close();
+            readRedisClient.close();
         } catch (RuntimeException e) {
             logger.error("redis connection pool couldn't return  connection !", e);
         }
@@ -873,7 +873,7 @@ public class RedisClientImpl implements IRedisClient {
         }
 
         try {
-            readRedisPool.close();
+            readRedisClient.close();
         } catch (RuntimeException e) {
             logger.error("redis connection pool couldn't return  connection !", e);
         }
@@ -912,7 +912,7 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("key={}  set not existing !", key);
                 }
                 try {
-                    readRedisPool.close();
+                    readRedisClient.close();
                 } catch (RuntimeException e) {
                     logger.error("redis connection pool couldn't return  connection !", e);
                 }
@@ -1007,7 +1007,7 @@ public class RedisClientImpl implements IRedisClient {
                 logger.error("keys begin error !", re);
             }
             try {
-                readRedisPool.close();
+                readRedisClient.close();
             } catch (RuntimeException e) {
                 logger.error("redis connection pool couldn't return  connection !", e);
             }
@@ -1074,7 +1074,7 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("error  info {} !", e);
                 }
                 try {
-                    readRedisPool.close();
+                    readRedisClient.close();
                 } catch (RuntimeException e) {
                     logger.error("redis connection pool couldn't return  connection !", e);
                 }
@@ -1151,7 +1151,7 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("key={} list not existing !", key);
                 }
                 try {
-                    readRedisPool.close();
+                    readRedisClient.close();
                 } catch (RuntimeException e) {
                     logger.error("redis connection pool couldn't return  connection !", e);
                 }
@@ -1334,7 +1334,7 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("exists key error !", re);
                 }
                 try {
-                    readRedisPool.close();
+                    readRedisClient.close();
                 } catch (RuntimeException e) {
                     logger.error("redis connection pool couldn't return  connection !", e);
                 }
@@ -1366,7 +1366,7 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("exists key error !", re);
                 }
                 try {
-                    readRedisPool.close();
+                    readRedisClient.close();
                 } catch (RuntimeException e) {
                     logger.error("redis connection pool couldn't return  connection !", e);
                 }
@@ -1400,7 +1400,7 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("set key error !", re);
                 }
                 try {
-                    writeRedisPool.close();
+                    writeRedisClient.close();
                 } catch (RuntimeException e) {
                     logger.error("redis connection pool couldn't return  connection !", e);
                 }
@@ -1435,7 +1435,7 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("get key error !", re);
                 }
                 try {
-                    readRedisPool.close();
+                    readRedisClient.close();
                 } catch (RuntimeException e) {
                     logger.error("redis connection pool couldn't return  connection !", e);
                 }
@@ -1470,7 +1470,7 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("get key error !", re);
                 }
                 try {
-                    readRedisPool.close();
+                    readRedisClient.close();
                 } catch (RuntimeException e) {
                     logger.error("redis connection pool couldn't return  connection !", e);
                 }
