@@ -1,6 +1,7 @@
 package com.toolkit.assetscan.controller;
 
 import com.toolkit.assetscan.bean.po.PolicyPo;
+import com.toolkit.assetscan.service.PolicyGroupService;
 import com.toolkit.assetscan.service.PolicyManageService;
 import io.swagger.annotations.Api;
 import org.slf4j.Logger;
@@ -15,9 +16,11 @@ import org.springframework.web.bind.annotation.*;
 public class PolicyManageApi {
     private Logger logger = LoggerFactory.getLogger(PolicyManageApi.class);
     private final PolicyManageService policyManageService;
+    private final PolicyGroupService policyGroupService;
 
-    public PolicyManageApi(PolicyManageService policyManageService) {
+    public PolicyManageApi(PolicyManageService policyManageService, PolicyGroupService policyGroupService) {
         this.policyManageService = policyManageService;
+        this.policyGroupService = policyGroupService;
     }
 
     /**
@@ -76,13 +79,14 @@ public class PolicyManageApi {
     }
 
     /**
-     * 4.6 根据group uuid获取所在组所有的策略
-     * @param policyGroupUuid
+     * 4.6 根据groupIdd获取所在组所有的策略
+     * @param policyGroupId
      * @return
      */
     @RequestMapping(value = "/get-policies-by-group", method = RequestMethod.GET)
     public @ResponseBody
-    Object getPoliciesByGroup(@RequestParam("group_uuid") String policyGroupUuid) {
+    Object getPoliciesByGroup(@RequestParam("groupId") String policyGroupId) {
+        String policyGroupUuid = policyGroupService.getUuidByGroupId(Integer.parseInt(policyGroupId));
         return policyManageService.getPoliciesByGroup(policyGroupUuid);
     }
 }

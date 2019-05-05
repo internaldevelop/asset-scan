@@ -58,4 +58,18 @@ public class PolicyGroupService {
 
         return responseHelper.success(group);
     }
+
+    /**
+     * 根据id获取策略uuid
+     * @param groupId
+     * @return
+     */
+    public String getUuidByGroupId(int groupId) {
+        PolicyGroupPo group = policyGroupsMapper.getGroupById(groupId);
+        if (group == null) {
+            return null;
+        }
+
+        return group.getUuid();
+    }
 }

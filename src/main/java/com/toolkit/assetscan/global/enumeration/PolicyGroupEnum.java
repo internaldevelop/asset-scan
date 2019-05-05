@@ -12,6 +12,8 @@ public enum PolicyGroupEnum {
     GROUP_NETWORK_COMMUNICATION_CONFIGURATION(9), //网络通信配置策略
     GROUP_LOG_AUDIT_CONFIGURATION(10), //日志审计配置策略
     GROUP_SECURITY_AUDIT_CONFIGURATION(11), //安全审计策略
+    GROUP_SYSTEM_FIREWALL_SECURITY(12), //系统防火墙安全策略
+    GROUP_SELF_DEFINED_CONFIGURATION(13), //自定义安全配置策略
     ;
 
     private int groupId;
