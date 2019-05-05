@@ -1,5 +1,8 @@
 package com.toolkit.assetscan.controller;
 
+import com.toolkit.assetscan.bean.dto.ExcelDataDto;
+import com.toolkit.assetscan.bean.dto.TaskResultsDto;
+import com.toolkit.assetscan.global.common.ExcelUtil;
 import com.toolkit.assetscan.global.common.VerifyUtil;
 import com.toolkit.assetscan.global.redis.IRedisClient;
 import com.toolkit.assetscan.global.response.ResponseHelper;
@@ -12,6 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "*",maxAge = 3600)
@@ -77,6 +83,50 @@ public class TaskExecuteResultsManageApi {
     public @ResponseBody
     Object getAllIieVulInfo() {
         return taskExecuteResultsManageService.getAllIieVulInfo();
+    }
+
+    /**
+     * 5.10 任务检测结果 - 导入EXCEL
+     * @param response
+     */
+    @ApiImplicitParam(name = "taskNameIpType", value = "任务名称、目标IP、问题类型", required = true, dataType = "String",paramType="query")
+    @RequestMapping(value = "/export-excel", method = RequestMethod.GET)
+    public void exportExcel(HttpServletResponse response, String taskNameIpType){
+        List<TaskResultsDto> list =  taskExecuteResultsManageService.getTasksResultsList(taskNameIpType);
+        ExcelDataDto data = new ExcelDataDto();
+        data.setName("任务检测结果");
+        List<String> titles = new ArrayList();
+        titles.add("任务号");
+        titles.add("任务名称");
+        titles.add("检测目标");
+        titles.add("目标IP");
+        titles.add("问题类型");
+        titles.add("危害等级");
+        titles.add("问题描述");
+        titles.add("建议方案");
+        data.setTitles(titles);
+
+        List<List<Object>> rows = new ArrayList();
+        for (TaskResultsDto trDto : list) {
+            List<Object> row = new ArrayList();
+            row.add(trDto.getTask_id());  // 任务号
+            row.add(trDto.getTask_name());  // 任务名称
+            row.add(trDto.getAssets_name());  // 检测目标
+            row.add(trDto.getAssets_ip());  // 目标IP
+            row.add(trDto.getPolicie_name());  // 问题类型
+            row.add(trDto.getRisk_level());  // 危害等级
+            row.add(trDto.getDescription());  // 问题描述
+            row.add(trDto.getSolutions());  // 建议方案
+            rows.add(row);
+        }
+        data.setRows(rows);
+
+        try{
+            ExcelUtil.exportExcel(response,"任务检测结果",data);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
     }
 
 

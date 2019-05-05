@@ -95,4 +95,9 @@ public class TaskExecuteResultsManageService {
         return responseHelper.success(retMap);
     }
 
+    public List<TaskResultsDto> getTasksResultsList(String taskNameIpType) {
+        List<TaskResultsDto> tasksList = taskExecuteResultsMapper.allTaskResults(taskNameIpType);
+        return tasksList;
+    }
+
 }

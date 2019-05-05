@@ -91,16 +91,7 @@ public interface IRedisClient {
      * @param values
      * @return
      */
-    public Boolean setListItems(String key, Integer[] indexes,
-                                Serializable[] values);
-
-    /**
-     * @param key
-     * @param indexes
-     * @return
-     */
-    @Deprecated
-    public Boolean delListItems(String key, Integer[] indexes);
+    public Boolean setListItems(String key, int[] indexes, Serializable[] values);
 
     /**
      * @param key

@@ -67,8 +67,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 writeRedisClient = (Jedis) writeRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (writeRedisClient != null) {
                 Pipeline pl = writeRedisClient.pipelined();
@@ -81,7 +80,7 @@ public class RedisClientImpl implements IRedisClient {
                         try {
                             pl.rpush(key.getBytes(), getBytesFromObject(s));
                         } catch (RuntimeException re) {
-                            logger.error("rpush begin error ! key {}", key);
+                            logger.error("rpush begin error ! key {}" , key);
                             logger.error("rpush begin error !", re);
                         }
                     }
@@ -92,11 +91,9 @@ public class RedisClientImpl implements IRedisClient {
                 }
                 try {
                     pl = null;
-                    writeRedisPool.returnResource(writeRedisClient);
+                    writeRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return contention !",
-                            e);
+                    logger.error("redis connection pool couldn't return contention !", e);
                 }
             } else {
                 logger.error("redis connection pool havn't idle contention !");
@@ -121,8 +118,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 writeRedisClient = (Jedis) writeRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (writeRedisClient != null) {
                 Pipeline pl = writeRedisClient.pipelined();
@@ -135,8 +131,8 @@ public class RedisClientImpl implements IRedisClient {
                         try {
                             pl.rpush(key.getBytes(), getBytesFromObject(s));
                         } catch (RuntimeException re) {
-                            logger.error("rpush begin error ! key {}", key);
-                            logger.error("rpush begin error !", re);
+                            logger.error("rpush begin error ! key {}" + key);
+                            logger.error("rpush begin error !" + re);
                         }
                     }
                     pl.sync();
@@ -146,11 +142,9 @@ public class RedisClientImpl implements IRedisClient {
                 }
                 try {
                     pl = null;
-                    writeRedisPool.returnResource(writeRedisClient);
+                    writeRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return contention !",
-                            e);
+                    logger.error("redis connection pool couldn't return contention !", e);
                 }
             } else {
                 logger.error("redis connection pool havn't idle contention !");
@@ -175,8 +169,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 writeRedisClient = (Jedis) writeRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (writeRedisClient != null) {
                 Set<String> mapkey = map.keySet();
@@ -194,17 +187,14 @@ public class RedisClientImpl implements IRedisClient {
                         writeRedisClient.hmset(key.getBytes(), hash);
                         tag = true;
                     } catch (RuntimeException re) {
-                        logger.error("hset begin error ! key {},map{}", key,
-                                hash);
+                        logger.error("hset begin error ! key {},map{}", key, hash);
                         logger.error("hset begin error !", re);
                     }
                 }
                 try {
-                    writeRedisPool.returnResource(writeRedisClient);
+                    writeRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return contention !",
-                            e);
+                    logger.error("redis connection pool couldn't return contention !", e);
                 }
             } else {
                 logger.error("redis connection pool havn't idle contention !");
@@ -212,8 +202,7 @@ public class RedisClientImpl implements IRedisClient {
             logger.debug("key:{} addMap   end!", key);
             return tag;
         } else {
-            throw new IllegalArgumentException(
-                    "param key is null or  list is empty");
+            throw new IllegalArgumentException("param key is null or  list is empty");
         }
     }
 
@@ -229,25 +218,20 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 writeRedisClient = (Jedis) writeRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (writeRedisClient != null) {
                 try {
-                    writeRedisClient.hset(key.getBytes(), mapkey.getBytes(),
-                            getBytesFromObject(value));
+                    writeRedisClient.hset(key.getBytes(), mapkey.getBytes(), getBytesFromObject(value));
                     tag = true;
                 } catch (RuntimeException re) {
-                    logger.error("hset begin error ! key {},mapkey{}", key,
-                            mapkey);
+                    logger.error("hset begin error ! key {},mapkey{}", key, mapkey);
                     logger.error("hset begin error !", re);
                 }
                 try {
-                    writeRedisPool.returnResource(writeRedisClient);
+                    writeRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return contention !",
-                            e);
+                    logger.error("redis connection pool couldn't return contention !", e);
                 }
             } else {
                 logger.error("redis connection pool havn't idle contention !");
@@ -272,8 +256,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 writeRedisClient = (Jedis) writeRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (writeRedisClient != null) {
                 Pipeline pl = writeRedisClient.pipelined();
@@ -297,11 +280,9 @@ public class RedisClientImpl implements IRedisClient {
                 }
                 try {
                     pl = null;
-                    writeRedisPool.returnResource(writeRedisClient);
+                    writeRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool havn't idle contention !");
@@ -309,8 +290,7 @@ public class RedisClientImpl implements IRedisClient {
             logger.debug("key:{} addSet   end!", key);
             return tag;
         } else {
-            throw new IllegalArgumentException(
-                    "param key is null or  list is empty");
+            throw new IllegalArgumentException("param key is null or  list is empty");
         }
     }
 
@@ -326,8 +306,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 writeRedisClient = (Jedis) writeRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (writeRedisClient != null) {
                 Pipeline pl = writeRedisClient.pipelined();
@@ -351,11 +330,9 @@ public class RedisClientImpl implements IRedisClient {
                 }
                 try {
                     pl = null;
-                    writeRedisPool.returnResource(writeRedisClient);
+                    writeRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
                 logger.debug("key:{} addSetItems   end!", key);
             } else {
@@ -375,14 +352,13 @@ public class RedisClientImpl implements IRedisClient {
     @Override
     public Boolean delList(String... key) {
         if (key != null && key.length > 0) {
-            logger.debug("key:{} delList  begin !", key);
+            logger.debug("key:{} delList  begin !" + key);
             Jedis writeRedisClient = null;
             boolean tag = false;
             try {
                 writeRedisClient = (Jedis) writeRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (writeRedisClient != null) {
                 try {
@@ -398,81 +374,21 @@ public class RedisClientImpl implements IRedisClient {
 
                     tag = true;
                 } catch (RuntimeException re) {
-                    logger.error("del begin error ! key {}", key);
-                    logger.error("del begin error !", re);
+                    logger.error("del begin error ! key {}" + key);
+                    logger.error("del begin error !" + re);
                 }
                 try {
-                    writeRedisPool.returnResource(writeRedisClient);
+                    writeRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool havn't idle contention !");
             }
-            logger.debug("key:{} delList   end!", key);
+            logger.debug("key:{} delList   end!" + key);
             return tag;
         } else {
             throw new IllegalArgumentException("param key is null or empty !");
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     */
-    @Override
-    public Boolean delListItems(String key, Integer[] indexes) {
-        if (key != null && indexes != null && indexes.length > 0) {
-            logger.debug("key:{} delListItems indexes  begin !", key);
-            Jedis writeRedisClient = null;
-            boolean tag = false;
-            try {
-                writeRedisClient = (Jedis) writeRedisPool.getResource();
-            } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
-            }
-            if (writeRedisClient != null) {
-                try {
-                    List<byte[]> valueList = new ArrayList<byte[]>();
-                    for (Integer index : indexes) {
-                        try {
-                            valueList.add(writeRedisClient.lindex(
-                                    key.getBytes(), index));
-                        } catch (RuntimeException re) {
-                            logger.error("lrem begin error ! key {}", key);
-                            logger.error("lrem begin error !", re);
-                        }
-                    }
-                    for (byte[] value : valueList) {
-                        try {
-                            writeRedisClient.lrem(key.getBytes(), 1, value);
-                        } catch (RuntimeException re) {
-                            logger.error("lrem begin error ! key {}", key);
-                            logger.error("lrem begin error !", re);
-                        }
-                    }
-                    tag = true;
-                } catch (RuntimeException re) {
-                    logger.error("del begin error ! key {}", key);
-                    logger.error("del begin error !", re);
-                }
-                try {
-                    writeRedisPool.returnResource(writeRedisClient);
-                } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
-                }
-            } else {
-                logger.error("redis connection pool havn't idle contention !");
-            }
-            logger.debug("key:{} delListItems indexes   end!", key);
-            return tag;
-        } else {
-            throw new IllegalArgumentException(
-                    "param key is null or  list is empty");
         }
     }
 
@@ -488,16 +404,14 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 writeRedisClient = (Jedis) writeRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (writeRedisClient != null) {
                 try {
                     for (Serializable v : values) {
                         if (v != null) {
                             try {
-                                writeRedisClient.lrem(key.getBytes(), 1,
-                                        getBytesFromObject(v));
+                                writeRedisClient.lrem(key.getBytes(), 1, getBytesFromObject(v));
                             } catch (RuntimeException re) {
                                 logger.error("lrem begin error ! key {}", key);
                                 logger.error("lrem begin error !", re);
@@ -513,11 +427,9 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("del begin error !", re);
                 }
                 try {
-                    writeRedisPool.returnResource(writeRedisClient);
+                    writeRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool havn't idle contention !");
@@ -536,14 +448,13 @@ public class RedisClientImpl implements IRedisClient {
     @Override
     public Boolean delMap(String... key) {
         if (key != null) {
-            logger.debug("key:{} delMap  begin !", key);
+            logger.debug("key:{} delMap  begin !" + key);
             Jedis writeRedisClient = null;
             boolean tag = false;
             try {
                 writeRedisClient = (Jedis) writeRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (writeRedisClient != null) {
                 try {
@@ -558,20 +469,18 @@ public class RedisClientImpl implements IRedisClient {
                     writeRedisClient.del(bytes);
                     tag = true;
                 } catch (RuntimeException re) {
-                    logger.error("delMap begin error ! key {}", key);
-                    logger.error("delMap begin error !", re);
+                    logger.error("delMap begin error ! key {}" + key);
+                    logger.error("delMap begin error !" + re);
                 }
                 try {
-                    writeRedisPool.returnResource(writeRedisClient);
+                    writeRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool havn't idle contention !");
             }
-            logger.debug("key:{} delMap   end!", key);
+            logger.debug("key:{} delMap   end!" + key);
             return tag;
         } else {
             throw new IllegalArgumentException("param key is null ");
@@ -590,8 +499,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 writeRedisClient = (Jedis) writeRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (writeRedisClient != null) {
                 try {
@@ -603,11 +511,9 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("del begin error !", re);
                 }
                 try {
-                    writeRedisPool.returnResource(writeRedisClient);
+                    writeRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool havn't idle contention !");
@@ -625,14 +531,13 @@ public class RedisClientImpl implements IRedisClient {
     @Override
     public Boolean delSet(String... key) {
         if (key != null) {
-            logger.debug("key:{} delSet  begin !", key);
+            logger.debug("key:{} delSet  begin !" + key);
             Jedis writeRedisClient = null;
             boolean tag = false;
             try {
                 writeRedisClient = (Jedis) writeRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (writeRedisClient != null) {
                 try {
@@ -648,20 +553,18 @@ public class RedisClientImpl implements IRedisClient {
                     writeRedisClient.del(bytes);
                     tag = true;
                 } catch (RuntimeException re) {
-                    logger.error("del begin error ! key {}", key);
+                    logger.error("del begin error ! key {}" + key);
                     logger.error("del begin error !", re);
                 }
                 try {
-                    writeRedisPool.returnResource(writeRedisClient);
+                    writeRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool havn't idle contention !");
             }
-            logger.debug("key:{} delSet   end!", key);
+            logger.debug("key:{} delSet   end!" + key);
             return tag;
         } else {
             throw new IllegalArgumentException("param key is null ");
@@ -680,8 +583,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 writeRedisClient = (Jedis) writeRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (writeRedisClient != null) {
                 Pipeline pl = writeRedisClient.pipelined();
@@ -705,11 +607,9 @@ public class RedisClientImpl implements IRedisClient {
                 }
                 try {
                     pl = null;
-                    writeRedisPool.returnResource(writeRedisClient);
+                    writeRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
                 return tag;
             } else {
@@ -734,8 +634,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 readRedisClient = (Jedis) readRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (readRedisClient != null) {
                 size = readRedisClient.llen(key.getBytes());
@@ -744,11 +643,9 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("key={}  list not existing !", key);
                 }
                 try {
-                    readRedisPool.returnResource(readRedisClient);
+                    readRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool couldn't return  connection !");
@@ -772,8 +669,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 readRedisClient = (Jedis) readRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (readRedisClient != null) {
                 Long size = readRedisClient.llen(key.getBytes());
@@ -795,11 +691,9 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("key={}  list not existing !", key);
                 }
                 try {
-                    readRedisPool.returnResource(readRedisClient);
+                    readRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool couldn't return  connection !");
@@ -817,8 +711,7 @@ public class RedisClientImpl implements IRedisClient {
     @Override
     public List<Serializable> getList(String key, int start, int end) {
         if (key != null) {
-            logger.debug("key:{}, start:{}, end:{} getList  begin !",
-                    new Object[] { key, start, end });
+            logger.debug("key:{}, start:{}, end:{} getList  begin !", new Object[] { key, start, end });
             Jedis readRedisClient = null;
             List<Serializable> result = null;
             try {
@@ -846,7 +739,7 @@ public class RedisClientImpl implements IRedisClient {
                 }
 
                 try {
-                    readRedisPool.returnResource(readRedisClient);
+                    readRedisPool.close();
                 } catch (RuntimeException e) {
                     logger.error(
                             "redis connection pool couldn't return  connection !",
@@ -896,7 +789,7 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("key={}  map not existing !", key);
                 }
                 try {
-                    readRedisPool.returnResource(readRedisClient);
+                    readRedisPool.close();
                 } catch (RuntimeException e) {
                     logger.error(
                             "redis connection pool couldn't return  connection !",
@@ -945,10 +838,9 @@ public class RedisClientImpl implements IRedisClient {
         }
 
         try {
-            readRedisPool.returnResource(readRedisClient);
+            readRedisPool.close();
         } catch (RuntimeException e) {
-            logger.error("redis connection pool couldn't return  connection !",
-                    e);
+            logger.error("redis connection pool couldn't return  connection !", e);
         }
 
         return result;
@@ -974,18 +866,16 @@ public class RedisClientImpl implements IRedisClient {
         Serializable result = null;
 
         if (readRedisClient != null) {
-            byte[] value = readRedisClient.hget(key.getBytes(),
-                    field.getBytes());
+            byte[] value = readRedisClient.hget(key.getBytes(), field.getBytes());
             if (value != null && value.length != 0) {
                 result = getObjectFromBytes(value);
             }
         }
 
         try {
-            readRedisPool.returnResource(readRedisClient);
+            readRedisPool.close();
         } catch (RuntimeException e) {
-            logger.error("redis connection pool couldn't return  connection !",
-                    e);
+            logger.error("redis connection pool couldn't return  connection !", e);
         }
 
         return result;
@@ -1003,8 +893,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 readRedisClient = (Jedis) readRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (readRedisClient != null) {
                 Set<byte[]> resultSet = readRedisClient
@@ -1023,11 +912,9 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("key={}  set not existing !", key);
                 }
                 try {
-                    readRedisPool.returnResource(readRedisClient);
+                    readRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool couldn't return  connection !");
@@ -1043,8 +930,7 @@ public class RedisClientImpl implements IRedisClient {
      * (non-Javadoc)
      */
     @Override
-    public Boolean setListItems(String key, Integer[] indexes,
-                                Serializable[] values) {
+    public Boolean setListItems(String key, int[] indexes, Serializable[] values) {
         if (key != null && values != null && values.length > 0
                 && indexes != null && indexes.length > 0
                 && indexes.length == values.length) {
@@ -1054,8 +940,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 writeRedisClient = (Jedis) writeRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (writeRedisClient != null) {
                 Pipeline pl = writeRedisClient.pipelined();
@@ -1065,10 +950,9 @@ public class RedisClientImpl implements IRedisClient {
                         Serializable value = values[i];
                         if (index != null && value != null) {
                             try {
-                                pl.lset(key.getBytes(), index,
-                                        getBytesFromObject(value));
+                                pl.lset(key.getBytes(), index, getBytesFromObject(value));
                             } catch (RuntimeException re) {
-                                logger.error("lpush begin error ! key {}", key);
+                                logger.error("lpush begin error ! key {}" + key);
                                 logger.error("lpush begin error !", re);
                             }
                         }
@@ -1076,11 +960,9 @@ public class RedisClientImpl implements IRedisClient {
                     pl.sync();
                     try {
                         pl = null;
-                        writeRedisPool.returnResource(writeRedisClient);
+                        writeRedisPool.close();
                     } catch (RuntimeException e) {
-                        logger.error(
-                                "redis connection pool couldn't return  connection !",
-                                e);
+                        logger.error("redis connection pool couldn't return  connection !", e);
                     }
                 } else {
                     logger.error("pl  couldn't be  null !");
@@ -1099,8 +981,7 @@ public class RedisClientImpl implements IRedisClient {
     @Override
     public Set<String> getKeysSet(String pattern) {
         if (pattern == null || pattern.length() < 1) {
-            throw new IllegalArgumentException(
-                    "param pattern is null or pattern is empty");
+            throw new IllegalArgumentException("param pattern is null or pattern is empty");
         }
         logger.debug("fetch keys by pattern {} !", pattern);
         Jedis readRedisClient = null;
@@ -1126,11 +1007,9 @@ public class RedisClientImpl implements IRedisClient {
                 logger.error("keys begin error !", re);
             }
             try {
-                readRedisPool.returnResource(readRedisClient);
+                readRedisPool.close();
             } catch (RuntimeException e) {
-                logger.error(
-                        "redis connection pool couldn't return  connection !",
-                        e);
+                logger.error("redis connection pool couldn't return  connection !", e);
             }
         } else {
             logger.error("redis connection pool couldn't return  connection !");
@@ -1143,11 +1022,9 @@ public class RedisClientImpl implements IRedisClient {
     @Override
     public Long expire(String key, int seconds) {
         if (key == null || key.length() < 1) {
-            throw new IllegalArgumentException(
-                    "param key is null or key is empty");
+            throw new IllegalArgumentException("param key is null or key is empty");
         }
-        logger.debug("set key: {} timeout: {}s  begin !", new Object[] { key,
-                seconds });
+        logger.debug("set key: {} timeout: {}s  begin !", new Object[] { key, seconds });
         Jedis writeRedisClient = null;
         Long result = 0L;
         try {
@@ -1163,11 +1040,9 @@ public class RedisClientImpl implements IRedisClient {
                 logger.error("set key: {} timeout error !", key);
             }
             try {
-                writeRedisPool.returnResource(writeRedisClient);
+                writeRedisPool.close();
             } catch (RuntimeException e) {
-                logger.error(
-                        "redis connection pool couldn't return  connection !",
-                        e);
+                logger.error("redis connection pool couldn't return  connection !", e);
             }
         } else {
             logger.error("redis connection pool couldn't return  connection !");
@@ -1184,8 +1059,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 readRedisClient = (Jedis) readRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (readRedisClient != null) {
                 try {
@@ -1200,11 +1074,9 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("error  info {} !", e);
                 }
                 try {
-                    readRedisPool.returnResource(readRedisClient);
+                    readRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool couldn't return  connection !");
@@ -1231,8 +1103,7 @@ public class RedisClientImpl implements IRedisClient {
             if (writeRedisClient != null) {
                 try {
 
-                    String r = writeRedisClient.set(key.getBytes(),
-                            getBytesFromObject(number));
+                    String r = writeRedisClient.set(key.getBytes(), getBytesFromObject(number));
                     String resultStr = number.toString();
                     if (resultStr != null && resultStr.length() > 0) {
                         result = Long.parseLong(resultStr);
@@ -1244,11 +1115,9 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("error  info {} !", e);
                 }
                 try {
-                    writeRedisPool.returnResource(writeRedisClient);
+                    writeRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool couldn't return  connection !");
@@ -1273,8 +1142,7 @@ public class RedisClientImpl implements IRedisClient {
                     readRedisClient.select(dbIndex);
                 }
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (readRedisClient != null) {
                 rankNum = readRedisClient.zrank(key, member);
@@ -1283,11 +1151,9 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("key={} list not existing !", key);
                 }
                 try {
-                    readRedisPool.returnResource(readRedisClient);
+                    readRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool couldn't return  connection !");
@@ -1308,8 +1174,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 writeRedisClient = (Jedis) writeRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (writeRedisClient != null) {
                 try {
@@ -1319,17 +1184,13 @@ public class RedisClientImpl implements IRedisClient {
                         logger.error("key={}  set not existing !", key);
                     }
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "incrBy key:[{}] incrby incr:[{}] begin error !",
-                            key, incr);
+                    logger.error("incrBy key:[{}] incrby incr:[{}] begin error !", key, incr);
                     logger.error("error  info {} !", e);
                 }
                 try {
-                    writeRedisPool.returnResource(writeRedisClient);
+                    writeRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool couldn't return  connection !");
@@ -1350,8 +1211,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 writeRedisClient = (Jedis) writeRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (writeRedisClient != null) {
                 try {
@@ -1361,16 +1221,13 @@ public class RedisClientImpl implements IRedisClient {
                         logger.error("key={}  set not existing !", key);
                     }
                 } catch (RuntimeException e) {
-                    logger.error("decrby key:[{}] decr :[{}] begin error !",
-                            key, decr);
+                    logger.error("decrby key:[{}] decr :[{}] begin error !", key, decr);
                     logger.error("error  info {} !", e);
                 }
                 try {
-                    writeRedisPool.returnResource(writeRedisClient);
+                    writeRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool couldn't return  connection !");
@@ -1391,8 +1248,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 writeRedisClient = (Jedis) writeRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (writeRedisClient != null) {
                 try {
@@ -1407,11 +1263,9 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("error  info {} !", e);
                 }
                 try {
-                    writeRedisPool.returnResource(writeRedisClient);
+                    writeRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool couldn't return  connection !");
@@ -1432,8 +1286,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 writeRedisClient = (Jedis) writeRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (writeRedisClient != null) {
                 try {
@@ -1448,11 +1301,9 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("error  info {} !", e);
                 }
                 try {
-                    writeRedisPool.returnResource(writeRedisClient);
+                    writeRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool couldn't return  connection !");
@@ -1473,8 +1324,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 readRedisClient = (Jedis) readRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (readRedisClient != null) {
                 try {
@@ -1484,11 +1334,9 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("exists key error !", re);
                 }
                 try {
-                    readRedisPool.returnResource(readRedisClient);
+                    readRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool couldn't return  connection !");
@@ -1508,23 +1356,19 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 readRedisClient = (Jedis) readRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (readRedisClient != null) {
                 try {
-                    flag = readRedisClient.hexists(key.getBytes(),
-                            field.getBytes());
+                    flag = readRedisClient.hexists(key.getBytes(), field.getBytes());
                 } catch (RuntimeException re) {
                     logger.error("exists key {}, filed {}", key, field);
                     logger.error("exists key error !", re);
                 }
                 try {
-                    readRedisPool.returnResource(readRedisClient);
+                    readRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool couldn't return  connection !");
@@ -1544,8 +1388,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 writeRedisClient = (Jedis) writeRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (writeRedisClient != null) {
                 try {
@@ -1557,11 +1400,9 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("set key error !", re);
                 }
                 try {
-                    writeRedisPool.returnResource(writeRedisClient);
+                    writeRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool couldn't return  connection !");
@@ -1581,8 +1422,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 readRedisClient = (Jedis) readRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (readRedisClient != null) {
                 try {
@@ -1595,11 +1435,9 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("get key error !", re);
                 }
                 try {
-                    readRedisPool.returnResource(readRedisClient);
+                    readRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool couldn't return  connection !");
@@ -1618,8 +1456,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 readRedisClient = (Jedis) readRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (readRedisClient != null) {
                 try {
@@ -1633,11 +1470,9 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("get key error !", re);
                 }
                 try {
-                    readRedisPool.returnResource(readRedisClient);
+                    readRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool couldn't return  connection !");
@@ -1658,8 +1493,7 @@ public class RedisClientImpl implements IRedisClient {
             try {
                 writeRedisClient = (Jedis) writeRedisPool.getResource();
             } catch (JedisConnectionException e) {
-                logger.error("redis connection pool havn't idle contention !",
-                        e);
+                logger.error("redis connection pool havn't idle contention !", e);
             }
             if (writeRedisClient != null) {
                 try {
@@ -1670,11 +1504,9 @@ public class RedisClientImpl implements IRedisClient {
                     logger.error("del begin error !", re);
                 }
                 try {
-                    writeRedisPool.returnResource(writeRedisClient);
+                    writeRedisPool.close();
                 } catch (RuntimeException e) {
-                    logger.error(
-                            "redis connection pool couldn't return  connection !",
-                            e);
+                    logger.error("redis connection pool couldn't return  connection !", e);
                 }
             } else {
                 logger.error("redis connection pool havn't idle contention !");
