@@ -42,7 +42,7 @@ public class AssetManageService {
         // 分配资产UUID
         assetPo.setUuid(MyUtils.generateUuid());
 
-        // 添加新用户的记录
+        // 添加新资产的记录
         if (mAssetsMapper.addAsset(assetPo) <= 0)
             return mResponseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
 

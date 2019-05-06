@@ -74,15 +74,16 @@ public interface TasksMapper {
      */
     @Select("SELECT\n" +
             "	t.*,\n" +
-            "	u.uuid AS user_uuid,\n" +
             "	u.account AS user_account,\n" +
             "	u.name AS user_name,\n" +
             "	a.uuid AS asset_uuid,\n" +
-            "	a.name AS assets_name,\n" +
-            "	a.ip AS assets_ip,\n" +
-            "	a.port AS assets_port,\n" +
-            "	a.os_type,\n" +
-            "	a.os_ver\n" +
+            "	a.name AS asset_name,\n" +
+            "	a.ip AS asset_ip,\n" +
+            "	a.port AS asset_port,\n" +
+            "	a.user AS asset_login_user,\n" +
+            "	a.password AS asset_login_pwd,\n" +
+            "	a.os_type AS asset_os_type,\n" +
+            "	a.os_ver AS asset_os_ver\n" +
             " FROM\n" +
             "	tasks t\n" +
             " INNER JOIN assets a ON t.asset_uuid = a.uuid\n" +

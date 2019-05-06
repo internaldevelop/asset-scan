@@ -1,5 +1,6 @@
 package com.toolkit.assetscan.controller;
 
+import com.toolkit.assetscan.bean.dto.TaskInfosDto;
 import com.toolkit.assetscan.bean.po.TaskPo;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.response.ResponseHelper;
@@ -95,11 +96,35 @@ public class TaskManageApi {
 
     /**
      * 3.7 获取所有任务资产信息
-     * @return
+     * @return payload: 任务详细信息（含任务关联的创建用户、资产等信息）
      */
     @RequestMapping(value = "/all-task-details", method = RequestMethod.GET)
     public @ResponseBody
     Object getAllTaskDetails() {
         return taskManageService.getAllTaskDetails();
+    }
+
+    /**
+     * 3.8 新建任务的详细信息
+     * @param taskInfosDto 任务 DTO 信息，含任务、资产和用户
+     * @param bindingResult 表单信息绑定结果
+     * @return payload: 任务名和任务的 UUID
+     */
+    @RequestMapping(value = "add-task-details", method = RequestMethod.POST)
+    public @ResponseBody
+    Object addTaskDetails(@ModelAttribute TaskInfosDto taskInfosDto, BindingResult bindingResult) {
+        return taskManageService.addTaskDetails(taskInfosDto);
+    }
+
+    /**
+     * 3.9 更新任务的详细信息
+     * @param taskInfosDto 任务 DTO 信息，含任务、资产和用户
+     * @param bindingResult 表单信息绑定结果
+     * @return payload: 任务名和任务的 UUID
+     */
+    @RequestMapping(value = "update-task-details", method = RequestMethod.POST)
+    public @ResponseBody
+    Object updateTaskDetails(@ModelAttribute TaskInfosDto taskInfosDto, BindingResult bindingResult) {
+        return taskManageService.updateTaskDetails(taskInfosDto);
     }
 }
