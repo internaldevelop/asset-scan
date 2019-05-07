@@ -13,7 +13,7 @@ public class TaskPo {
     private String code;
     private String description;
     private String asset_uuid;
-    private String policies_name;
+    private String policy_groups;
     private String create_user_uuid;
     private int status;
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")

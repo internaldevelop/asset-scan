@@ -5,6 +5,7 @@ import com.toolkit.assetscan.bean.po.PolicyGroupPo;
 import com.toolkit.assetscan.dao.mybatis.PolicyGroupsMapper;
 import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
+import com.toolkit.assetscan.global.enumeration.GeneralStatusEnum;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
 import org.springframework.stereotype.Component;
@@ -30,8 +31,15 @@ public class PolicyGroupService {
     }
 
     public ResponseBean addGroup(PolicyGroupPo groupProps) {
-        // 为新策略随机分配一个UUID
+        // 为新分组随机分配一个UUID
         groupProps.setUuid(MyUtils.generateUuid());
+
+        // 创建时间
+        java.sql.Timestamp currentTime = MyUtils.getCurrentSystemTimestamp();
+        groupProps.setCreate_time(currentTime);
+
+        // 新建分组默认状态为有效
+        groupProps.setStatus(GeneralStatusEnum.VALID.getStatus());
 
         // 在字典表中增加一个分组记录，成功后返回分组名称和 UUID
         int rv = policyGroupsMapper.addGroup(groupProps);

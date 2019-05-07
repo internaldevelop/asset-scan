@@ -3,7 +3,7 @@ package com.toolkit.assetscan.dao.helper;
 import com.toolkit.assetscan.bean.po.PolicyPo;
 import com.toolkit.assetscan.dao.mybatis.PoliciesMapper;
 import com.toolkit.assetscan.global.enumeration.DeleteModeEnum;
-import com.toolkit.assetscan.global.enumeration.PolicyStatusEnum;
+import com.toolkit.assetscan.global.enumeration.GeneralStatusEnum;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -31,14 +31,14 @@ public class PoliciesManageHelper {
         if (DELETE_MODE == DeleteModeEnum.PERMANENT) {
             rv = policiesMapper.deletePolicy(policyUuid);
         } else if (DELETE_MODE == DeleteModeEnum.LOGICAL) {
-            rv = policiesMapper.updateStatus(policyUuid, PolicyStatusEnum.LOGICAL_DELETE.getStatus());
+            rv = policiesMapper.updateStatus(policyUuid, GeneralStatusEnum.LOGICAL_DELETE.getStatus());
         }
 
         return (rv > 0);
     }
 
     public boolean updatePolicyStatus(String policyUuid) {
-        int rv = policiesMapper.updateStatus(policyUuid, PolicyStatusEnum.LOGICAL_DELETE.getStatus());
+        int rv = policiesMapper.updateStatus(policyUuid, GeneralStatusEnum.LOGICAL_DELETE.getStatus());
         return (rv > 0);
     }
 }

@@ -23,13 +23,13 @@ public interface TasksMapper {
      */
     @Insert("INSERT INTO tasks( " +
             "uuid, name, code, " +
-            "description, asset_uuid, policies_name, " +
+            "description, asset_uuid, policy_groups, " +
             "create_user_uuid, status, " +
             "update_time, " +
             "create_time) " +
             "VALUES ( " +
             "#{uuid}, #{name}, #{code}, " +
-            "#{description}, #{asset_uuid}, #{policies_name}, " +
+            "#{description}, #{asset_uuid}, #{policy_groups}, " +
             "#{create_user_uuid}, #{status}, " +
             "#{update_time, jdbcType=TIMESTAMP}, " +
             "#{create_time, jdbcType=TIMESTAMP}) "
@@ -43,7 +43,7 @@ public interface TasksMapper {
      */
     @Update("UPDATE tasks t SET " +
             "name=#{name}, code=#{code}, " +
-            "description=#{description}, asset_uuid=#{asset_uuid}, policies_name=#{policies_name}, " +
+            "description=#{description}, asset_uuid=#{asset_uuid}, policy_groups=#{policy_groups}, " +
             "update_time=#{update_time}," +
             "create_user_uuid=#{create_user_uuid} " +
             "WHERE " +

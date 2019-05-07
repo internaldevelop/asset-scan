@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin(origins = "*",maxAge = 3600)
-@RequestMapping(value = "/api/policy_group")
+@RequestMapping(value = "/api/policy-groups")
 @Api(value = "51. 策略分组字典表接口", tags = "51-Policy Group API")
 public class PolicyGroupApi {
     private final PolicyGroupService policyGroupService;

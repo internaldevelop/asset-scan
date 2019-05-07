@@ -15,7 +15,7 @@ public interface PolicyGroupsMapper {
      * 获得所有分组数据
      * @return PolicyGroupProps 的集合
      */
-    @Select("SELECT * FROM groups ")
+    @Select("SELECT * FROM policy_groups ")
     List<PolicyGroupPo> allGroups();
 
     /**
@@ -23,15 +23,17 @@ public interface PolicyGroupsMapper {
      * @param group 分组数据
      * @return >=1：成功；<=0：失败；
      */
-    @Insert("INSERT INTO groups( " +
-            "uuid, " +
-            "name) " +
+    @Insert("INSERT INTO policy_groups( " +
+            "uuid, name, code, " +
+            "type, create_user_uuid, create_time, " +
+            "status, baseline) " +
             "VALUES ( " +
-            "#{uuid}, " +
-            "#{name}) ")
+            "#{uuid}, #{name}, #{code}, " +
+            "#{type}, #{create_user_uuid}, #{create_time, jdbcType=TIMESTAMP}, " +
+            "#{status}, #{baseline}) ")
     int addGroup(PolicyGroupPo group);
 
-    @Select("SELECT * FROM groups g WHERE g.id=#{id} ")
+    @Select("SELECT * FROM policy_groups g WHERE g.id=#{id} ")
     PolicyGroupPo getGroupById(@Param("id") int groupId);
 
 }

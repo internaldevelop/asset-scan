@@ -517,7 +517,7 @@
 									"type": "text"
 								},
 								{
-									"key": "policies_name",
+									"key": "policy_groups",
 									"value": "some policies",
 									"type": "text"
 								},
@@ -698,7 +698,7 @@
 									"type": "text"
 								},
 								{
-									"key": "policies_name",
+									"key": "policy_groups",
 									"value": "some policies",
 									"type": "text"
 								},
@@ -771,6 +771,269 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "3.8 添加新任务的详细信息",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+								"exec": [
+									"var num = Math.ceil(Math.random() * 10000);",
+									"pm.environment.set(\"task_name\", \"task_\" + num);",
+									"pm.environment.set(\"task_code\", \"C_\" + num);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+								"exec": [
+									"pm.test(\"add task\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"    ",
+									"    pm.environment.set(\"task_uuid\", jsonData.payload.uuid);",
+									"    pm.environment.set(\"task_name\", jsonData.payload.name);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "name",
+									"value": "{{task_name}}",
+									"type": "text"
+								},
+								{
+									"key": "code",
+									"value": "{{task_code}}",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "some description",
+									"type": "text"
+								},
+								{
+									"key": "asset_uuid",
+									"value": "{{asset_uuid}}",
+									"description": "asset_uuid为空时，表示采用asset其它信息新建一条asset记录",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "policy_groups",
+									"value": "[]",
+									"type": "text"
+								},
+								{
+									"key": "create_user_uuid",
+									"value": "{{user_uuid}}",
+									"type": "text"
+								},
+								{
+									"key": "asset_name",
+									"value": "{{asset_name}}",
+									"type": "text"
+								},
+								{
+									"key": "asset_ip",
+									"value": "{{asset_ip}}",
+									"type": "text"
+								},
+								{
+									"key": "asset_port",
+									"value": "{{asset_port}}",
+									"type": "text"
+								},
+								{
+									"key": "asset_os_type",
+									"value": "Ubuntu",
+									"type": "text"
+								},
+								{
+									"key": "asset_os_ver",
+									"value": "18.0.4",
+									"type": "text"
+								},
+								{
+									"key": "asset_login_user",
+									"value": "root",
+									"type": "text"
+								},
+								{
+									"key": "asset_login_pwd",
+									"value": "root",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/add-task-details",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"add-task-details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.9 更新新任务的详细信息",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+								"exec": [
+									"var num = Math.ceil(Math.random() * 10000);",
+									"pm.environment.set(\"task_name\", \"task_\" + num);",
+									"pm.environment.set(\"task_code\", \"C_\" + num);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+								"exec": [
+									"pm.test(\"add task\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"    ",
+									"    pm.environment.set(\"task_uuid\", jsonData.payload.uuid);",
+									"    pm.environment.set(\"task_name\", jsonData.payload.name);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "uuid",
+									"value": "{{task_uuid}}",
+									"type": "text"
+								},
+								{
+									"key": "name",
+									"value": "{{task_name}}",
+									"type": "text"
+								},
+								{
+									"key": "code",
+									"value": "{{task_code}}",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "some description",
+									"type": "text"
+								},
+								{
+									"key": "asset_uuid",
+									"value": "{{asset_uuid}}",
+									"description": "asset_uuid为空时，表示采用asset其它信息新建一条asset记录",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "policy_groups",
+									"value": "some policies",
+									"type": "text"
+								},
+								{
+									"key": "create_user_uuid",
+									"value": "{{user_uuid}}",
+									"type": "text"
+								},
+								{
+									"key": "asset_name",
+									"value": "{{asset_name}}",
+									"type": "text"
+								},
+								{
+									"key": "asset_ip",
+									"value": "{{asset_ip}}",
+									"type": "text"
+								},
+								{
+									"key": "asset_port",
+									"value": "{{asset_port}}",
+									"type": "text"
+								},
+								{
+									"key": "asset_os_type",
+									"value": "Ubuntu",
+									"type": "text"
+								},
+								{
+									"key": "asset_os_ver",
+									"value": "18.0.4",
+									"type": "text"
+								},
+								{
+									"key": "asset_login_user",
+									"value": "root",
+									"type": "text"
+								},
+								{
+									"key": "asset_login_pwd",
+									"value": "root",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/update-task-details",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"update-task-details"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -835,7 +1098,7 @@
 								},
 								{
 									"key": "group_uuid",
-									"value": "111",
+									"value": "ec467b52-4140-4bf4-8e26-8c28b249cbdb",
 									"type": "text"
 								},
 								{
@@ -1082,7 +1345,7 @@
 								},
 								{
 									"key": "group_uuid",
-									"value": "111",
+									"value": "ec467b52-4140-4bf4-8e26-8c28b249cbdb",
 									"type": "text"
 								},
 								{
@@ -1524,12 +1787,12 @@
 									"raw": ""
 								},
 								"url": {
-									"raw": "{{base_url}}/policy_group/all",
+									"raw": "{{base_url}}/policy-groups/all",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
-										"policy_group",
+										"policy-groups",
 										"all"
 									]
 								}
@@ -1585,16 +1848,36 @@
 											"key": "name",
 											"value": "{{group_name}}",
 											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "C111",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "99",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
 										}
 									]
 								},
 								"url": {
-									"raw": "{{base_url}}/policy_group/add",
+									"raw": "{{base_url}}/policy-groups/add",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
-										"policy_group",
+										"policy-groups",
 										"add"
 									]
 								}
