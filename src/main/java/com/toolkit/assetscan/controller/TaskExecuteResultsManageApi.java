@@ -4,6 +4,8 @@ import com.toolkit.assetscan.bean.dto.ExcelDataDto;
 import com.toolkit.assetscan.bean.dto.TaskResultsDto;
 import com.toolkit.assetscan.global.common.ExcelUtil;
 import com.toolkit.assetscan.global.common.VerifyUtil;
+import com.toolkit.assetscan.global.rabbitmq.MsgConsumer;
+import com.toolkit.assetscan.global.rabbitmq.MsgProducer;
 import com.toolkit.assetscan.global.redis.IRedisClient;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.service.TaskExecuteResultsManageService;
@@ -18,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @RestController
 @CrossOrigin(origins = "*",maxAge = 3600)
@@ -129,6 +132,22 @@ public class TaskExecuteResultsManageApi {
 
     }
 
+//    @Autowired
+//    private MsgProducer msgProducer;
+//
+//    /**
+//     * 发送消息 - Test
+//     * @return
+//     */
+//    @RequestMapping(value = "/send-msg", method = RequestMethod.GET)
+//    public @ResponseBody
+//    Object SendMsg() {
+//
+//        for (int i=0; i< 10; i++) {
+//            msgProducer.sendMsg("发送消息"+ Math.random());
+//        }
+//        return null;
+//    }
 
 
 }
