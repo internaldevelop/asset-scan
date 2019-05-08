@@ -13,17 +13,19 @@ public interface PoliciesMapper {
      * @param policy 策略的所有参数
      * @return >=1：成功；<=0：失败；
      */
-    @Insert("INSERT INTO policies( " +
-            "uuid, name, code, " +
-            "group_uuid, type, " +
-            "risk_level, solutions, " +
-            "create_user_uuid, status, " +
-            "create_time) " +
-            "VALUES ( " +
-            "#{uuid}, #{name}, #{code}, " +
-            "#{group_uuid}, #{type}, " +
-            "#{risk_level}, #{solutions}, " +
-            "#{create_user_uuid}, #{status}, " +
+    @Insert("INSERT INTO policies( \n" +
+            "uuid, name, code, \n" +
+            "group_uuid, type, risk_level, \n" +
+            "solutions, create_user_uuid, status, \n" +
+            "os_type, baseline, run_mode, \n" +
+            "run_contents, consume_time, asset_uuid, \n" +
+            "create_time) \n" +
+            "VALUES ( \n" +
+            "#{uuid}, #{name}, #{code}, \n" +
+            "#{group_uuid}, #{type}, #{risk_level}, \n" +
+            "#{solutions}, #{create_user_uuid}, #{status}, \n" +
+            "#{os_type}, #{baseline}, #{run_mode}, \n" +
+            "#{run_contents}, #{consume_time}, #{asset_uuid}, \n" +
             "#{create_time, jdbcType=TIMESTAMP}) ")
     int addPolicy(PolicyPo policy);
 
@@ -56,11 +58,13 @@ public interface PoliciesMapper {
      * @return >=1：成功；<=0：失败；
      */
     @Update("UPDATE policies p SET " +
-            "name=#{name}, code=#{code}, " +
-            "group_uuid=#{group_uuid}, type=#{type}, " +
-            "risk_level=#{risk_level}, solutions=#{solutions}, " +
-            "create_user_uuid=#{create_user_uuid}, status=#{status} " +
-            "WHERE " +
+            "name=#{name}, code=#{code}, group_uuid=#{group_uuid}, \n" +
+            "type=#{type}, risk_level=#{risk_level}, solutions=#{solutions}, \n" +
+            "create_user_uuid=#{create_user_uuid}, status=#{status}, os_type=#{os_type}, \n" +
+            "baseline=#{baseline}, run_mode=#{run_mode}, run_contents=#{run_contents}, \n" +
+            "consume_time=#{consume_time}, asset_uuid=#{asset_uuid}, \n" +
+            "create_user_uuid=#{create_user_uuid} \n" +
+            "WHERE \n" +
             "p.uuid=#{uuid} AND p.status>=0  ")
     int updatePolicy(PolicyPo policy);
 

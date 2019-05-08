@@ -23,10 +23,14 @@ public class PolicyPo {
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private java.sql.Timestamp create_time;
     private int status;
-    private String os_type;
-    private String baseline;
+    private int os_type;
+    private int baseline;
     private String lv1_require;
     private String lv2_require;
     private String lv3_require;
     private String lv4_require;
+    private int run_mode;
+    private String run_contents;
+    private int consume_time;
+    private String asset_uuid;
 }

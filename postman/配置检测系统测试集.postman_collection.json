@@ -1125,6 +1125,36 @@
 									"key": "status",
 									"value": "1",
 									"type": "text"
+								},
+								{
+									"key": "os_type",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "baseline",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "run_mode",
+									"value": "4",
+									"type": "text"
+								},
+								{
+									"key": "run_contents",
+									"value": "systeminfo",
+									"type": "text"
+								},
+								{
+									"key": "consume_time",
+									"value": "5000",
+									"type": "text"
+								},
+								{
+									"key": "asset_uuid",
+									"value": "{{asset_uuid}}",
+									"type": "text"
 								}
 							]
 						},
@@ -1371,6 +1401,36 @@
 								{
 									"key": "status",
 									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "os_type",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "baseline",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "run_mode",
+									"value": "4",
+									"type": "text"
+								},
+								{
+									"key": "run_contents",
+									"value": "systeminfo",
+									"type": "text"
+								},
+								{
+									"key": "consume_time",
+									"value": "3000",
+									"type": "text"
+								},
+								{
+									"key": "asset_uuid",
+									"value": "{{asset_uuid}}",
 									"type": "text"
 								}
 							]
