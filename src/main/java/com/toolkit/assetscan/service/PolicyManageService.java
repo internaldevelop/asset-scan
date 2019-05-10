@@ -139,8 +139,9 @@ public class PolicyManageService {
         if (StringUtils.isEmpty(policyGroupUuid)) {
             return null;
         }
-        List<PolicyPo> policiesList = policiesMapper.getPoliciesByGroup(policyGroupUuid);
-        return responseHelper.success(policiesList);
+//        List<PolicyPo> policiesList = policiesMapper.getPoliciesByGroup(policyGroupUuid);
+//        return responseHelper.success(policiesList);
+        return null;
     }
 
 
