@@ -83,11 +83,21 @@ public class PolicyManageApi {
      * @param policyGroupId
      * @return
      */
-    @RequestMapping(value = "/get-policies-by-group", method = RequestMethod.GET)
+    @RequestMapping(value = "/get-policies-by-group-id", method = RequestMethod.GET)
     public @ResponseBody
-    Object getPoliciesByGroup(@RequestParam("groupId") String policyGroupId) {
+    Object getPoliciesByGroupId(@RequestParam("groupId") String policyGroupId) {
         String policyGroupUuid = policyGroupService.getUuidByGroupId(Integer.parseInt(policyGroupId));
-        return policyManageService.getPoliciesByGroup(policyGroupUuid);
+        return policyManageService.getPoliciesByGroupUuid(policyGroupUuid);
+    }
+
+    /**
+     * 4.6 根据groupCoded获取所在组所有的策略
+     * @param policyGroupCode
+     * @return
+     */
+    @RequestMapping(value = "/get-policies-by-group-code", method = RequestMethod.GET)
+    public Object getPoliciesByGroupCode(@RequestParam("groupCode") String policyGroupCode) {
+        return policyManageService.getPoliciesByGroupCode(policyGroupCode);
     }
 
     /**

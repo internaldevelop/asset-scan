@@ -51,7 +51,15 @@ public interface PoliciesMapper {
      * @return
      */
     @Select("SELECT * FROM policies p WHERE p.group_uuid=#{group_uuid} AND p.status>=0 ")
-    List<PolicyPo> getPoliciesByGroup(@Param("group_uuid") String policyGroupUuid);
+    List<PolicyPo> getPoliciesByGroupUuid(@Param("group_uuid") String policyGroupUuid);
+
+    /**
+     *  根据group code获取所在组所有的策略
+     * @param policyGroupCode
+     * @return
+     */
+    @Select("SELECT * FROM policies p WHERE p.code=#{group_code} AND p.status>=0 ")
+    List<PolicyPo> getPoliciesByGroupCode(@Param("group_code") String policyGroupCode);
 
     /**
      * 更新指定的策略记录

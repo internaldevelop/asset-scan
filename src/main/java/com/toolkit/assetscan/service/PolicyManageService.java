@@ -98,8 +98,13 @@ public class PolicyManageService {
         return responseHelper.success(policy);
     }
 
-    public ResponseBean getPoliciesByGroup(String policyGroupUuid) {
-        List<PolicyPo> policiesList = policiesMapper.getPoliciesByGroup(policyGroupUuid);
+    public ResponseBean getPoliciesByGroupUuid(String policyGroupUuid) {
+        List<PolicyPo> policiesList = policiesMapper.getPoliciesByGroupUuid(policyGroupUuid);
+        return responseHelper.success(policiesList);
+    }
+
+    public ResponseBean getPoliciesByGroupCode(String policyGroupCode) {
+        List<PolicyPo> policiesList = policiesMapper.getPoliciesByGroupCode(policyGroupCode);
         return responseHelper.success(policiesList);
     }
 
