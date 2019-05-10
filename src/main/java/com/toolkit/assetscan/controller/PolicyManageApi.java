@@ -89,4 +89,26 @@ public class PolicyManageApi {
         String policyGroupUuid = policyGroupService.getUuidByGroupId(Integer.parseInt(policyGroupId));
         return policyManageService.getPoliciesByGroup(policyGroupUuid);
     }
+
+    /**
+     * 4.7 补丁安装情况
+     * @param code
+     * @return
+     */
+    @RequestMapping(value = "/statistics-report", method = RequestMethod.GET)
+    public @ResponseBody
+    Object statisticsReport(@RequestParam("code") String code) {
+        return policyManageService.statisticsReport(code);
+    }
+
+    /**
+     * 4.8 统计根据groupIdd获取所在组所有的策略
+     * @param policyGroupId
+     * @return
+     */
+    @RequestMapping(value = "/statistics-policies-by-group", method = RequestMethod.GET)
+    public @ResponseBody
+    Object statisticsPoliciesByGroup(@RequestParam("groupId") String policyGroupId) {
+        return policyManageService.statisticsPoliciesByGroup(policyGroupId);
+    }
 }

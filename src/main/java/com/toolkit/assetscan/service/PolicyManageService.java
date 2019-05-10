@@ -1,15 +1,22 @@
 package com.toolkit.assetscan.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.toolkit.assetscan.bean.dto.TaskResultsDto;
+import com.toolkit.assetscan.bean.po.PolicyGroupPo;
 import com.toolkit.assetscan.bean.po.PolicyPo;
 import com.toolkit.assetscan.dao.helper.PoliciesManageHelper;
 import com.toolkit.assetscan.dao.mybatis.PoliciesMapper;
+import com.toolkit.assetscan.dao.mybatis.PolicyGroupsMapper;
 import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
+import com.toolkit.assetscan.global.enumeration.ReportEnum;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -18,11 +25,13 @@ public class PolicyManageService {
     private final ResponseHelper responseHelper;
     private final PoliciesManageHelper policiesManageHelper;
     private final PoliciesMapper policiesMapper;
+    private final PolicyGroupsMapper policyGroupsMapper;
 
-    public PolicyManageService(ResponseHelper responseHelper, PoliciesManageHelper policiesManageHelper, PoliciesMapper policiesMapper) {
+    public PolicyManageService(ResponseHelper responseHelper, PoliciesManageHelper policiesManageHelper, PoliciesMapper policiesMapper, PolicyGroupsMapper policyGroupsMapper) {
         this.responseHelper = responseHelper;
         this.policiesManageHelper = policiesManageHelper;
         this.policiesMapper = policiesMapper;
+        this.policyGroupsMapper = policyGroupsMapper;
     }
     private boolean iCheckParams(PolicyPo policyPo) {
         responseBean = responseHelper.success();
@@ -99,4 +108,35 @@ public class PolicyManageService {
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
         return successReturnInfo( policyPo.getName(), policyPo.getCode(), policyPo.getUuid() );
     }
+
+    public Object statisticsReport(String code) {
+        List patchList = new ArrayList();
+
+        if (ReportEnum.PATCH_NOT_INSTALLED.value().equals(code)) {  // 补丁安装情况
+            patchList = policiesMapper.patchNotInstalledReport();
+        } else if (ReportEnum.SYSTEM_SERVICE.value().equals(code)) {  // 系统服务分析
+
+        }
+
+        if ( patchList.size() == 0 ) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_NOT_DATA);
+        }
+        return responseHelper.success(patchList);
+
+    }
+
+    public ResponseBean statisticsPoliciesByGroup(String policyGroupId) {
+        PolicyGroupPo group = policyGroupsMapper.getGroupById(1);
+        if (group == null) {
+            return null;
+        }
+        String policyGroupUuid = group.getUuid();
+        if (StringUtils.isEmpty(policyGroupUuid)) {
+            return null;
+        }
+        List<PolicyPo> policiesList = policiesMapper.getPoliciesByGroup(policyGroupUuid);
+        return responseHelper.success(policiesList);
+    }
+
+
 }

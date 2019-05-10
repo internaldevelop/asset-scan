@@ -2,6 +2,7 @@ package com.toolkit.assetscan.global.enumeration;
 
 public enum ErrorCodeEnum {
     ERROR_OK(0, "OK"),
+    ERROR_NOT_DATA(200, "成功无数据"),
     ERROR_GENERAL_ERROR(1001, "未知错误"),
     ERROR_INTERNAL_ERROR(1002, "内部错误"),
     ERROR_PARAMETER(1003, "参数错误"),
@@ -54,6 +55,7 @@ public enum ErrorCodeEnum {
     ERROR_TASK_NOT_FOUND(2030, "任务未找到"),
     ERROR_TASK_INFO_NOT_FOUND(2031, "任务信息未找到"),
     ERROR_GROUP_NOT_FOUND(2032, "策略组未找到"),
+
     ;
 
     private Integer code;

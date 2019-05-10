@@ -20,4 +20,6 @@ public class TaskResultsDto extends TaskExecuteResultsPo {
     private String risk_level;  // 危害等级
     private String policie_name;  // 策略名称
 
+    private int patch_num;  // 未安装补丁数量
+
 }

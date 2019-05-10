@@ -1,5 +1,6 @@
 package com.toolkit.assetscan.dao.mybatis;
 
+import com.toolkit.assetscan.bean.dto.TaskResultsDto;
 import com.toolkit.assetscan.bean.po.PolicyPo;
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Component;
@@ -87,4 +88,17 @@ public interface PoliciesMapper {
             "WHERE " +
             "p.uuid=#{uuid} ")
     int  updateStatus(@Param("uuid") String policyUuid, @Param("status")int status);
+
+    @Select("SELECT\n" +
+            "	a.ip AS assets_ip,\n" +
+            "	COUNT(1) AS patch_num,\n" +
+            "	GROUP_CONCAT(p.`name`, ':', ter.results, '\\r' ) AS results,\n" +
+            "   GROUP_CONCAT(DISTINCT p.`name`, ':', p.solutions) AS solutions\n" +
+            " FROM\n" +
+            "	assets a\n" +
+            "	INNER JOIN tasks t ON a.uuid = t.asset_uuid\n" +
+            "	INNER JOIN task_execute_results ter ON t.uuid = ter.task_uuid\n" +
+            "	INNER JOIN policies p ON ter.policy_uuid = p.uuid \n" +
+            " GROUP BY a.ip")
+    List<TaskResultsDto> patchNotInstalledReport();
 }

@@ -34,7 +34,7 @@ public interface TaskExecuteResultsMapper {
             "	task_execute_results ter\n" +
             " INNER JOIN tasks t ON ter.task_uuid = t.uuid\n" +
             " INNER JOIN assets a ON t.asset_uuid = a.uuid\n" +
-            " INNER JOIN policies p ON ter.policie_uuid = p.uuid\n" +
+            " INNER JOIN policies p ON ter.policy_uuid = p.uuid\n" +
             " where t.`name` LIKE '%${taskNameIpType}%' OR a.ip LIKE '%${taskNameIpType}%' OR p.name LIKE '%${taskNameIpType}%'")
     List<TaskResultsDto> allTaskResults(@Param("taskNameIpType") String taskNameIpType);
 
@@ -46,7 +46,7 @@ public interface TaskExecuteResultsMapper {
             "	task_execute_results ter\n" +
             " INNER JOIN tasks t ON ter.task_uuid = t.uuid\n" +
             " INNER JOIN assets a ON t.asset_uuid = a.uuid\n" +
-            " INNER JOIN policies p ON ter.policie_uuid = p.uuid\n" +
+            " INNER JOIN policies p ON ter.policy_uuid = p.uuid\n" +
             " GROUP BY\n" +
             "	p.id,\n" +
             "	a.os_type")
@@ -58,7 +58,7 @@ public interface TaskExecuteResultsMapper {
             " FROM\n" +
             "	task_execute_results ter\n" +
             " INNER JOIN tasks t ON ter.task_uuid = t.uuid\n" +
-            " INNER JOIN policies p ON ter.policie_uuid = p.uuid\n" +
+            " INNER JOIN policies p ON ter.policy_uuid = p.uuid\n" +
             " GROUP BY\n" +
             "	p.id")
     List<TaskResultsStatisticsDto> getResultsPolicieStatistics();
