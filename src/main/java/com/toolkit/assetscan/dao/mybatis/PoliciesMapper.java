@@ -101,7 +101,7 @@ public interface PoliciesMapper {
             "	a.ip AS assets_ip,\n" +
             "	COUNT(1) AS patch_num,\n" +
             "	GROUP_CONCAT(p.`name`, ':', ter.results, '\\r' ) AS results,\n" +
-            "   GROUP_CONCAT(DISTINCT p.`name`, ':', p.solutions) AS solutions\n" +
+            "   GROUP_CONCAT(DISTINCT p.`name`, ':', ter.solutions) AS solutions\n" +
             " FROM\n" +
             "	assets a\n" +
             "	INNER JOIN tasks t ON a.uuid = t.asset_uuid\n" +
@@ -109,4 +109,88 @@ public interface PoliciesMapper {
             "	INNER JOIN policies p ON ter.policy_uuid = p.uuid \n" +
             " GROUP BY a.ip")
     List<TaskResultsDto> patchNotInstalledReport();
+
+    @Select("SELECT\n" +
+            "	a.ip AS assets_ip,\n" +
+            "	COUNT( 1 ) AS patch_num,\n" +
+            "	GROUP_CONCAT( p.`name`, ':', ter.results, '\\\\r' ) AS results,\n" +
+            "	GROUP_CONCAT( DISTINCT p.`name`, ':', ter.solutions ) AS solutions \n" +
+            " FROM\n" +
+            "	assets a\n" +
+            "	INNER JOIN tasks t ON a.uuid = t.asset_uuid\n" +
+            "	INNER JOIN task_execute_results ter ON t.uuid = ter.task_uuid\n" +
+            "	INNER JOIN policies p ON ter.policy_uuid = p.uuid\n" +
+            "	INNER JOIN policy_groups pg ON pg.uuid = p.group_uuid AND (pg.`code` = 'WinServices' OR pg.`code` = 'LinuxServices') \n" +
+            " GROUP BY a.ip")
+    List<TaskResultsDto> systemServiceReport();
+
+    @Select("SELECT\n" +
+            "	a.ip AS assets_ip,\n" +
+            "	COUNT( 1 ) AS patch_num,\n" +
+            "	GROUP_CONCAT( p.`name`, ':', ter.results, '\\\\r' ) AS results,\n" +
+            "	GROUP_CONCAT( DISTINCT p.`name`, ':', ter.solutions ) AS solutions \n" +
+            " FROM\n" +
+            "	assets a\n" +
+            "	INNER JOIN tasks t ON a.uuid = t.asset_uuid\n" +
+            "	INNER JOIN task_execute_results ter ON t.uuid = ter.task_uuid\n" +
+            "	INNER JOIN policies p ON ter.policy_uuid = p.uuid\n" +
+            "	INNER JOIN policy_groups pg ON pg.uuid = p.group_uuid AND (pg.`code` = 'WinSysFileProtect' OR pg.`code` = 'LinuxSysFileProtect') \n" +
+            " GROUP BY a.ip")
+    List<TaskResultsDto> systemFileServiceReport();
+
+    @Select("SELECT\n" +
+            "	a.ip AS assets_ip,\n" +
+            "	COUNT( 1 ) AS patch_num,\n" +
+            "	GROUP_CONCAT( p.`name`, ':', ter.results, '\\\\r' ) AS results,\n" +
+            "	GROUP_CONCAT( DISTINCT p.`name`, ':', ter.solutions ) AS solutions \n" +
+            " FROM\n" +
+            "	assets a\n" +
+            "	INNER JOIN tasks t ON a.uuid = t.asset_uuid\n" +
+            "	INNER JOIN task_execute_results ter ON t.uuid = ter.task_uuid\n" +
+            "	INNER JOIN policies p ON ter.policy_uuid = p.uuid\n" +
+            "	INNER JOIN policy_groups pg ON pg.uuid = p.group_uuid AND pg.`code` = 'UserAccountConfig' \n" +
+            " GROUP BY a.ip")
+    List<TaskResultsDto> userAccountReport();
+
+    @Select("SELECT\n" +
+            "	a.ip AS assets_ip,\n" +
+            "	COUNT( 1 ) AS patch_num,\n" +
+            "	GROUP_CONCAT( p.`name`, ':', ter.results, '\\\\r' ) AS results,\n" +
+            "	GROUP_CONCAT( DISTINCT p.`name`, ':', ter.solutions ) AS solutions \n" +
+            " FROM\n" +
+            "	assets a\n" +
+            "	INNER JOIN tasks t ON a.uuid = t.asset_uuid\n" +
+            "	INNER JOIN task_execute_results ter ON t.uuid = ter.task_uuid\n" +
+            "	INNER JOIN policies p ON ter.policy_uuid = p.uuid\n" +
+            "	INNER JOIN policy_groups pg ON pg.uuid = p.group_uuid AND pg.`code` = 'UserPwdConfig' \n" +
+            " GROUP BY a.ip")
+    List<TaskResultsDto> pwdPolicyReport();
+
+    @Select("SELECT\n" +
+            "	a.ip AS assets_ip,\n" +
+            "	COUNT( 1 ) AS patch_num,\n" +
+            "	GROUP_CONCAT( p.`name`, ':', ter.results, '\\\\r' ) AS results,\n" +
+            "	GROUP_CONCAT( DISTINCT p.`name`, ':', ter.solutions ) AS solutions \n" +
+            " FROM\n" +
+            "	assets a\n" +
+            "	INNER JOIN tasks t ON a.uuid = t.asset_uuid\n" +
+            "	INNER JOIN task_execute_results ter ON t.uuid = ter.task_uuid\n" +
+            "	INNER JOIN policies p ON ter.policy_uuid = p.uuid\n" +
+            "	INNER JOIN policy_groups pg ON pg.uuid = p.group_uuid AND pg.`code` = 'NetworkCommConfig' \n" +
+            " GROUP BY a.ip")
+    List<TaskResultsDto> networkReport();
+
+    @Select("SELECT\n" +
+            "	a.ip AS assets_ip,\n" +
+            "	COUNT( 1 ) AS patch_num,\n" +
+            "	GROUP_CONCAT( p.`name`, ':', ter.results, '\\\\r' ) AS results,\n" +
+            "	GROUP_CONCAT( DISTINCT p.`name`, ':', p.solutions ) AS solutions \n" +
+            " FROM\n" +
+            "	assets a\n" +
+            "	INNER JOIN tasks t ON a.uuid = t.asset_uuid\n" +
+            "	INNER JOIN task_execute_results ter ON t.uuid = ter.task_uuid\n" +
+            "	INNER JOIN policies p ON ter.policy_uuid = p.uuid\n" +
+            "	INNER JOIN policy_groups pg ON pg.uuid = p.group_uuid AND pg.`code` = 'LogAuditConfig' \n" +
+            " GROUP BY a.ip")
+    List<TaskResultsDto> logReport();
 }

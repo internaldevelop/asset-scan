@@ -101,7 +101,7 @@ public class PolicyManageApi {
     }
 
     /**
-     * 4.7 补丁安装情况
+     * 4.7 code:1 补丁安装情况; code:2 系统服务分析; code:3 系统文件安全防护分析; code:4 用户账号配置分析; code:5 口令策略配置分析; code:6 网络通信配置分析; code:7 日志审计分析;
      * @param code
      * @return
      */

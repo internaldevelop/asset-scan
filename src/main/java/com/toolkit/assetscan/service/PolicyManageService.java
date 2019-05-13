@@ -120,7 +120,17 @@ public class PolicyManageService {
         if (ReportEnum.PATCH_NOT_INSTALLED.value().equals(code)) {  // 补丁安装情况
             patchList = policiesMapper.patchNotInstalledReport();
         } else if (ReportEnum.SYSTEM_SERVICE.value().equals(code)) {  // 系统服务分析
-
+            patchList = policiesMapper.systemServiceReport();
+        } else if (ReportEnum.SYSTEM_FILE_SERVICE.value().equals(code)) {  // 系统文件安全防护分析
+            patchList = policiesMapper.systemFileServiceReport();
+        } else if (ReportEnum.USER_ACCOUNT_ANALYSIS.value().equals(code)) {  // 用户账号配置分析
+            patchList = policiesMapper.userAccountReport();
+        } else if (ReportEnum.PWD_POLICY_ANALYSIS.value().equals(code)) {  // 口令策略配置分析
+            patchList = policiesMapper.pwdPolicyReport();
+        } else if (ReportEnum.NETWORK_ANALYSIS.value().equals(code)) {  // 网络通信配置分析
+            patchList = policiesMapper.networkReport();
+        } else if (ReportEnum.LOG_ANALYSIS.value().equals(code)) {  // 日志审计分析
+            patchList = policiesMapper.logReport();
         }
 
         if ( patchList.size() == 0 ) {

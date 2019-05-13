@@ -17,4 +17,5 @@ public class TaskResultsDto extends TaskExecuteResultsPo {
     private String assets_ip;  // 目标IP
     private String description;  // 任务描述
     private String policy_name;  // 策略名称
+    private int patch_num;  // 未安装补丁数量
 }
