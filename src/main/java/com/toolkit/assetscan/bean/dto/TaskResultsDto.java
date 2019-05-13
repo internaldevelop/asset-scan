@@ -16,10 +16,5 @@ public class TaskResultsDto extends TaskExecuteResultsPo {
     private String assets_name;  // 检查目标
     private String assets_ip;  // 目标IP
     private String description;  // 任务描述
-    private String solutions;  // 建议方案
-    private String risk_level;  // 危害等级
-    private String policie_name;  // 策略名称
-
-    private int patch_num;  // 未安装补丁数量
-
+    private String policy_name;  // 策略名称
 }

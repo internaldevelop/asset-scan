@@ -116,7 +116,7 @@ public class TaskExecuteResultsManageApi {
             row.add(trDto.getTask_name());  // 任务名称
             row.add(trDto.getAssets_name());  // 检测目标
             row.add(trDto.getAssets_ip());  // 目标IP
-            row.add(trDto.getPolicie_name());  // 问题类型
+            row.add(trDto.getPolicy_name());  // 问题类型
             row.add(trDto.getRisk_level());  // 危害等级
             row.add(trDto.getDescription());  // 问题描述
             row.add(trDto.getSolutions());  // 建议方案
