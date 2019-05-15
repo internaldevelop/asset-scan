@@ -1,14 +1,15 @@
 package com.toolkit.assetscan.global.enumeration;
 
-public enum TaskStatusEnum {
-    TASK_LOGICAL_DELETE(-99),
-    TASK_INACTIVE(0),   // 任务未激活
-    TASK_ACTIVE(1),     // 任务激活/有效
+public enum TaskRunStatusEnum {
+    IDLE(1),            // 空闲
+    RUNNING(2),         // 任务执行中
+    FINISHED(3),        // 任务完成
+    INTERRUPTED(4),     // 任务中断
     ;
 
     private int status;
 
-    TaskStatusEnum(int status) {
+    TaskRunStatusEnum(int status) {
         this.status = status;
     }
 

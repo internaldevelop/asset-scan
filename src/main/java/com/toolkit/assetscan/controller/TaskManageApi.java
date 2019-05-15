@@ -1,10 +1,12 @@
 package com.toolkit.assetscan.controller;
 
 import com.toolkit.assetscan.bean.dto.TaskInfosDto;
+import com.toolkit.assetscan.bean.dto.TaskRunStatusDto;
 import com.toolkit.assetscan.bean.po.TaskPo;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.service.TaskManageService;
+import com.toolkit.assetscan.service.TaskRunStatusService;
 import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,9 @@ public class TaskManageApi {
 
     private final TaskManageService taskManageService;
     private final ResponseHelper responseHelper;
+
+    @Autowired
+    private TaskRunStatusService taskRunStatusService;
 
     @Autowired
     public TaskManageApi(TaskManageService taskManageService, ResponseHelper responseHelper) {
@@ -91,7 +96,7 @@ public class TaskManageApi {
     @RequestMapping(value = "/execute", method = RequestMethod.POST)
     public @ResponseBody
     Object  executeTask(@RequestParam("uuid") String taskUuid) {
-        return responseHelper.error(ErrorCodeEnum.ERROR_NOT_IMPLEMENTED);
+        return taskManageService.runTask(taskUuid);
     }
 
     /**
@@ -126,5 +131,30 @@ public class TaskManageApi {
     public @ResponseBody
     Object updateTaskDetails(@ModelAttribute TaskInfosDto taskInfosDto, BindingResult bindingResult) {
         return taskManageService.updateTaskDetails(taskInfosDto);
+    }
+
+    /**
+     * 3.10 获取任务的运行状态信息
+     * @param taskUuid
+     * @return
+     */
+    @RequestMapping(value = "run-status", method = RequestMethod.GET)
+    public @ResponseBody
+    Object getTaskRunStatus(@RequestParam("uuid") String taskUuid) {
+//        TaskRunStatusDto runStatusDto = taskRunStatusService.getTaskRunStatus("1111");
+//        runStatusDto = new TaskRunStatusDto();
+//        runStatusDto.setTotal_jobs_count(222);
+//        taskRunStatusService.setTaskRunStatus("1111", runStatusDto);
+//        runStatusDto = taskRunStatusService.getTaskRunStatus("1111");
+//        String value = taskRunStatusService.getString("AAAA");
+//        taskRunStatusService.setString("AAAA", "A2222");
+//        value = taskRunStatusService.getString("AAAA");
+
+        TaskRunStatusDto taskRunStatusDto = taskRunStatusService.getTaskRunStatus(taskUuid);
+        if (taskRunStatusDto == null) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_TASK_RUN_STATUS_NOT_FOUND);
+        }
+
+        return responseHelper.success(taskRunStatusDto);
     }
 }

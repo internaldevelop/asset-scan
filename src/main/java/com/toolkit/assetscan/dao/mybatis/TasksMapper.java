@@ -91,4 +91,29 @@ public interface TasksMapper {
             " WHERE\n" +
             "   t.status>=0")
     List<TaskInfosDto> getAllTaskDto();
+
+    /**
+     * 获取单条任务DTO
+     * @param taskUuid 任务UUID
+     * @return TaskInfosDto
+     */
+    @Select("SELECT\n" +
+            "	t.*,\n" +
+            "	u.account AS user_account,\n" +
+            "	u.name AS user_name,\n" +
+            "	a.uuid AS asset_uuid,\n" +
+            "	a.name AS asset_name,\n" +
+            "	a.ip AS asset_ip,\n" +
+            "	a.port AS asset_port,\n" +
+            "	a.user AS asset_login_user,\n" +
+            "	a.password AS asset_login_pwd,\n" +
+            "	a.os_type AS asset_os_type,\n" +
+            "	a.os_ver AS asset_os_ver\n" +
+            " FROM\n" +
+            "	tasks t\n" +
+            " INNER JOIN assets a ON t.asset_uuid = a.uuid\n" +
+            " INNER JOIN users u ON t.create_user_uuid=u.uuid\n" +
+            " WHERE\n" +
+            "   t.uuid=#{uuid} AND t.status>=0")
+    TaskInfosDto getTaskDtoByUuid(@Param("uuid") String taskUuid);
 }
