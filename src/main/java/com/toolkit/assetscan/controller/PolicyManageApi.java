@@ -121,4 +121,14 @@ public class PolicyManageApi {
     Object statisticsPoliciesByGroup(@RequestParam("groupId") String policyGroupId) {
         return policyManageService.statisticsPoliciesByGroup(policyGroupId);
     }
+
+    /**
+     * 4.9 联合资产和策略组表查询策略详细信息
+     * @return
+     */
+    @RequestMapping(value = "/all-detail-info", method = RequestMethod.GET)
+    public @ResponseBody
+    Object getAllPolicyDetailInfos() {
+        return policyManageService.getAllPolicyDetailInfos();
+    }
 }

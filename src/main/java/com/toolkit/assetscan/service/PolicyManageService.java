@@ -1,6 +1,7 @@
 package com.toolkit.assetscan.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.toolkit.assetscan.bean.dto.PolicyDetailInfoDto;
 import com.toolkit.assetscan.bean.dto.TaskResultsDto;
 import com.toolkit.assetscan.bean.po.PolicyGroupPo;
 import com.toolkit.assetscan.bean.po.PolicyPo;
@@ -105,6 +106,11 @@ public class PolicyManageService {
 
     public ResponseBean getPoliciesByGroupCode(String policyGroupCode) {
         List<PolicyPo> policiesList = policiesMapper.getPoliciesByGroupCode(policyGroupCode);
+        return responseHelper.success(policiesList);
+    }
+
+    public ResponseBean getAllPolicyDetailInfos() {
+        List<PolicyDetailInfoDto> policiesList = policiesMapper.getAllPolicyDetailInfos();
         return responseHelper.success(policiesList);
     }
 
