@@ -201,10 +201,10 @@ public interface PoliciesMapper {
     @Select("SELECT policies.*,\n" +
             "	assets.`name` AS asset_name,\n" +
             "	assets.`ip` AS assets_ip,\n" +
-            "	groups.`name` AS group_name\n" +
+            "	policy_groups.`name` AS group_name\n" +
             " FROM\n" +
             "	policies \n" +
             "	LEFT JOIN assets ON policies.asset_uuid = assets.uuid\n" +
-            "	LEFT JOIN groups ON policies.group_uuid = groups.uuid\n")
+            "	LEFT JOIN policy_groups ON policies.group_uuid = policy_groups.uuid\n")
     List<PolicyDetailInfoDto> getAllPolicyDetailInfos();
 }
