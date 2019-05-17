@@ -2,6 +2,7 @@ package com.toolkit.assetscan.controller;
 
 import com.toolkit.assetscan.bean.dto.TaskInfosDto;
 import com.toolkit.assetscan.bean.dto.TaskRunStatusDto;
+import com.toolkit.assetscan.bean.dto.TaskUuidDto;
 import com.toolkit.assetscan.bean.po.TaskPo;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.response.ResponseHelper;
@@ -13,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "*",maxAge = 3600)
@@ -90,7 +93,7 @@ public class TaskManageApi {
 
     /**
      * 3.6 执行一条任务，将执行结果保存到数据库中，并通过消息队列通知前端应用
-     * @param taskUuid 任务的 UUID
+     * @param taskUuid 任务对象
      * @return payload: 执行结果的 UUID
      */
     @RequestMapping(value = "/execute", method = RequestMethod.POST)
@@ -134,27 +137,34 @@ public class TaskManageApi {
     }
 
     /**
-     * 3.10 获取任务的运行状态信息
-     * @param taskUuid
+     * 3.10 获取任务的运行状态信息（两个参数二选一，不能都为空）
+     * @param taskUuid 单个任务的 UUID
+     * @param tasksUuidList 多个任务 UUID 的集合，用逗号 ',' 分隔的 UUID 字符串
      * @return
      */
     @RequestMapping(value = "run-status", method = RequestMethod.GET)
     public @ResponseBody
-    Object getTaskRunStatus(@RequestParam("uuid") String taskUuid) {
-//        TaskRunStatusDto runStatusDto = taskRunStatusService.getTaskRunStatus("1111");
-//        runStatusDto = new TaskRunStatusDto();
-//        runStatusDto.setTotal_jobs_count(222);
-//        taskRunStatusService.setTaskRunStatus("1111", runStatusDto);
-//        runStatusDto = taskRunStatusService.getTaskRunStatus("1111");
-//        String value = taskRunStatusService.getString("AAAA");
-//        taskRunStatusService.setString("AAAA", "A2222");
-//        value = taskRunStatusService.getString("AAAA");
+    Object getTaskRunStatus(@RequestParam(value = "uuid", required = false) String taskUuid,
+                            @RequestParam(value = "uuid_list", required = false) String tasksUuidList) {
+        if (taskUuid != null && !taskUuid.isEmpty()) {
+            // 获取单个任务的运行状态信息
+            TaskRunStatusDto taskRunStatusDto = taskRunStatusService.getTaskRunStatus(taskUuid);
+            if (taskRunStatusDto == null) {
+                return responseHelper.error(ErrorCodeEnum.ERROR_TASK_RUN_STATUS_NOT_FOUND);
+            }
 
-        TaskRunStatusDto taskRunStatusDto = taskRunStatusService.getTaskRunStatus(taskUuid);
-        if (taskRunStatusDto == null) {
-            return responseHelper.error(ErrorCodeEnum.ERROR_TASK_RUN_STATUS_NOT_FOUND);
+            return responseHelper.success(taskRunStatusDto);
+
+        } else if (tasksUuidList != null && !tasksUuidList.isEmpty()) {
+            // 获取多个任务的运行状态信息
+            List <TaskRunStatusDto> taskRunStatusDtoList = taskRunStatusService.getTasksListRunStatus(tasksUuidList);
+            if (taskRunStatusDtoList == null || taskRunStatusDtoList.size() == 0)
+                return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND.ERROR_TASK_RUN_STATUS_NOT_FOUND);
+
+            return responseHelper.success(taskRunStatusDtoList);
+
+        } else {
+            return responseHelper.error(ErrorCodeEnum.ERROR_NEED_PARAMETER);
         }
-
-        return responseHelper.success(taskRunStatusDto);
     }
 }

@@ -723,28 +723,35 @@
 					"response": []
 				},
 				{
-					"name": "3.6 执行任务（未实现）",
+					"name": "3.6 执行任务",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
 						"body": {
-							"mode": "raw",
-							"raw": ""
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "uuid",
+									"value": "{{task_uuid}}",
+									"type": "text"
+								}
+							]
 						},
 						"url": {
-							"raw": "{{base_url}}/tasks/execute?uuid={{task_uuid}}",
+							"raw": "{{base_url}}/tasks/execute",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"tasks",
 								"execute"
-							],
-							"query": [
-								{
-									"key": "uuid",
-									"value": "{{task_uuid}}"
-								}
 							]
 						}
 					},
@@ -1030,6 +1037,62 @@
 							"path": [
 								"tasks",
 								"update-task-details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.10 获取任务的运行状态信息",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "6f4f3c18-0e68-4f88-8a63-26fdcfd0df43",
+								"exec": [
+									"var uuidList=[];",
+									"var uuid = pm.environment.get(\"task_uuid\");",
+									"uuidList.push(uuid);",
+									"// uuidList.push(uuid);",
+									"// uuidList.push(uuid);",
+									"// uuidList.push(uuid);",
+									"var uuids;",
+									"uuids = uuid + \",\";",
+									"uuids += uuid + \",\";",
+									"uuids += uuid + \",\";",
+									"uuids += uuid;",
+									"pm.environment.set(\"uuid_list\", uuids);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/run-status?uuid_list={{uuid_list}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"run-status"
+							],
+							"query": [
+								{
+									"key": "uuid",
+									"value": "{{task_uuid}}",
+									"disabled": true
+								},
+								{
+									"key": "uuid_list",
+									"value": "{{uuid_list}}"
+								}
 							]
 						}
 					},

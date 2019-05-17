@@ -1,10 +1,14 @@
 package com.toolkit.assetscan.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.toolkit.assetscan.bean.dto.TaskRunStatusDto;
 import com.toolkit.assetscan.global.redis.IRedisClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class TaskRunStatusService {
@@ -22,6 +26,25 @@ public class TaskRunStatusService {
         TaskRunStatusDto taskRunStatusDto = jsonObject.getObject("status", TaskRunStatusDto.class);
         return taskRunStatusDto;
     }
+
+    public List<TaskRunStatusDto> getTasksListRunStatus(String tasksUuidList) {
+        String[] uuidArray = tasksUuidList.split(",");
+//        List<String> uuidLists = JSONObject.parseArray(tasksUuidList, String.class);
+        List<TaskRunStatusDto> runStatusDtoList = new ArrayList<>();
+        for(String taskUuid: uuidArray) {
+            // 跳过空串
+            if (taskUuid.isEmpty())
+                continue;
+
+            // 调用单个任务的状态
+            TaskRunStatusDto runStatusDto = getTaskRunStatus(taskUuid);
+            if (runStatusDto != null) {
+                runStatusDtoList.add(runStatusDto);
+            }
+        }
+        return runStatusDtoList;
+    }
+
     public boolean setTaskRunStatus(String taskUuid, TaskRunStatusDto taskRunStatusDto) {
         String key = _getTaskRedisKey(taskUuid);
         JSONObject jsonObject = new JSONObject();
