@@ -137,7 +137,8 @@ public class TaskManageApi {
     }
 
     /**
-     * 3.10 获取任务的运行状态信息（两个参数二选一，不能都为空）
+     * 3.10 获取任务的运行状态信息
+     * 如果下列两个参数都为空，则返回所有可查询到的任务运行状态信息
      * @param taskUuid 单个任务的 UUID
      * @param tasksUuidList 多个任务 UUID 的集合，用逗号 ',' 分隔的 UUID 字符串
      * @return
@@ -164,7 +165,13 @@ public class TaskManageApi {
             return responseHelper.success(taskRunStatusDtoList);
 
         } else {
-            return responseHelper.error(ErrorCodeEnum.ERROR_NEED_PARAMETER);
+            // 获取所有可查询到任务的运行状态信息
+            List <TaskRunStatusDto> taskRunStatusDtoList = taskRunStatusService.getAllTasksRunStatus();
+            if (taskRunStatusDtoList == null || taskRunStatusDtoList.size() == 0)
+                return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND.ERROR_TASK_RUN_STATUS_NOT_FOUND);
+
+            return responseHelper.success(taskRunStatusDtoList);
+
         }
     }
 }

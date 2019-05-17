@@ -7,8 +7,8 @@ import com.toolkit.assetscan.global.redis.IRedisClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.Serializable;
+import java.util.*;
 
 @Component
 public class TaskRunStatusService {
@@ -17,6 +17,10 @@ public class TaskRunStatusService {
 
     private String _getTaskRedisKey(String taskUuid) {
         return "task_run_" + taskUuid;
+    }
+
+    private String _getTaskIndexRedisKey() {
+        return "task_run_index";
     }
 
     public TaskRunStatusDto getTaskRunStatus(String taskUuid) {
@@ -45,7 +49,41 @@ public class TaskRunStatusService {
         return runStatusDtoList;
     }
 
+    public List<TaskRunStatusDto> getAllTasksRunStatus() {
+        List<TaskRunStatusDto> runStatusDtoList = new ArrayList<>();
+        // 获取运行状态信息的任务UUID索引
+        Map<String, Serializable> map = redisClient.getMap(_getTaskIndexRedisKey());
+        // 没有索引，返回运行信息的空列表
+        if (map == null)
+            return runStatusDtoList;
+
+        //
+        Iterator iter = map.entrySet().iterator();
+        while (iter.hasNext()) {
+            // 枚举 map 中的 key
+            Map.Entry entry = (Map.Entry) iter.next();
+            String key = (String)entry.getKey();
+            String value = (String)entry.getValue();
+            if ( (key == null) || (key.isEmpty()) || (value == null) || !(value.equals("1")))
+                continue;
+
+            // 获取索引中有效UUID的任务执行信息
+            TaskRunStatusDto runStatusDto = getTaskRunStatus(key);
+            if (runStatusDto != null) {
+                runStatusDtoList.add(runStatusDto);
+            }
+        }
+        return runStatusDtoList;
+    }
+
     public boolean setTaskRunStatus(String taskUuid, TaskRunStatusDto taskRunStatusDto) {
+        // 记录有运行状态的任务索引（task_uuid）
+        Map<String, Serializable> map = new HashMap<>();
+        map.put(taskUuid, "1");
+        if (!redisClient.addMap(_getTaskIndexRedisKey(), map))
+            return false;
+
+        // 记录该任务的执行状态
         String key = _getTaskRedisKey(taskUuid);
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("status", taskRunStatusDto);
