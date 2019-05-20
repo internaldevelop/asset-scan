@@ -192,7 +192,7 @@ public class RedisClientImpl implements IRedisClient {
                     }
                 }
                 try {
-                    writeRedisPool.close();
+                    writeRedisClient.close();
                 } catch (RuntimeException e) {
                     logger.error("redis connection pool couldn't return contention !", e);
                 }

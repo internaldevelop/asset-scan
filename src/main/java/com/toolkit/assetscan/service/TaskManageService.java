@@ -2,6 +2,7 @@ package com.toolkit.assetscan.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.toolkit.assetscan.bean.dto.TaskInfosDto;
+import com.toolkit.assetscan.bean.dto.TaskRunStatusDto;
 import com.toolkit.assetscan.bean.po.AssetPo;
 import com.toolkit.assetscan.bean.po.TaskPo;
 import com.toolkit.assetscan.dao.helper.TasksManageHelper;
@@ -9,12 +10,16 @@ import com.toolkit.assetscan.dao.mybatis.AssetsMapper;
 import com.toolkit.assetscan.dao.mybatis.TasksMapper;
 import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
+import com.toolkit.assetscan.global.enumeration.TaskRunStatusEnum;
 import com.toolkit.assetscan.global.enumeration.TaskStatusEnum;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.List;
 
 @Component
@@ -24,13 +29,17 @@ public class TaskManageService {
     private final TasksManageHelper tasksManageHelper;
     private final ResponseHelper responseHelper;
     private final AssetsMapper assetsMapper;
+    private final RestTemplate restTemplate;
+    @Autowired
+    private TaskRunStatusService taskRunStatusService;
 
     @Autowired
-    public TaskManageService(TasksMapper tasksMapper, TasksManageHelper tasksManageHelper, ResponseHelper responseHelper, AssetsMapper assetsMapper) {
+    public TaskManageService(TasksMapper tasksMapper, TasksManageHelper tasksManageHelper, ResponseHelper responseHelper, AssetsMapper assetsMapper, RestTemplate restTemplate) {
         this.tasksMapper = tasksMapper;
         this.tasksManageHelper = tasksManageHelper;
         this.responseHelper = responseHelper;
         this.assetsMapper = assetsMapper;
+        this.restTemplate = restTemplate;
     }
 
     private boolean iCheckParams(TaskPo taskPo) {
@@ -198,5 +207,31 @@ public class TaskManageService {
 
         // 更新任务记录
         return updateTask((TaskPo) taskInfosDto);
+    }
+
+    public ResponseBean runTask(String taskUuid) {
+        // 根据任务UUID，获取任务DTO
+        TaskInfosDto taskInfosDto = tasksMapper.getTaskDtoByUuid(taskUuid);
+        if (taskInfosDto == null)
+            return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND);
+
+        // 设置任务为空闲状态
+        TaskRunStatusDto taskRunStatusDto = new TaskRunStatusDto();
+        taskRunStatusDto.setTask_uuid(taskUuid);
+        taskRunStatusDto.setRun_status(TaskRunStatusEnum.IDLE.getStatus());
+        if (!taskRunStatusService.setTaskRunStatus(taskUuid, taskRunStatusDto))
+            return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
+
+        // 构造URL
+        String ip = "http://" + taskInfosDto.getAsset_ip() + ":8191";
+        String url = ip + "/nodes/manage/run-task?uuid={uuid}";
+
+        // 构造参数map
+        HashMap<String, String> map = new HashMap<>();
+        map.put("uuid", taskUuid);
+
+        // 向节点发送请求，并返回节点的响应结果
+        ResponseEntity<ResponseBean> responseEntity = restTemplate.getForEntity(url, ResponseBean.class, map);
+        return responseEntity.getBody();
     }
 }

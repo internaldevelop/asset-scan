@@ -1,5 +1,6 @@
 package com.toolkit.assetscan.dao.mybatis;
 
+import com.toolkit.assetscan.bean.dto.PolicyDetailInfoDto;
 import com.toolkit.assetscan.bean.dto.TaskResultsDto;
 import com.toolkit.assetscan.bean.po.PolicyPo;
 import org.apache.ibatis.annotations.*;
@@ -20,6 +21,7 @@ public interface PoliciesMapper {
             "solutions, create_user_uuid, status, \n" +
             "os_type, baseline, run_mode, \n" +
             "run_contents, consume_time, asset_uuid, \n" +
+            "lv1_require, lv2_require, lv3_require, lv4_require, \n" +
             "create_time) \n" +
             "VALUES ( \n" +
             "#{uuid}, #{name}, #{code}, \n" +
@@ -27,6 +29,7 @@ public interface PoliciesMapper {
             "#{solutions}, #{create_user_uuid}, #{status}, \n" +
             "#{os_type}, #{baseline}, #{run_mode}, \n" +
             "#{run_contents}, #{consume_time}, #{asset_uuid}, \n" +
+            "#{lv1_require}, #{lv2_require}, #{lv3_require}, #{lv4_require}, \n" +
             "#{create_time, jdbcType=TIMESTAMP}) ")
     int addPolicy(PolicyPo policy);
 
@@ -47,16 +50,16 @@ public interface PoliciesMapper {
 
     /**
      *  根据group uuid获取所在组所有的策略
-     * @param policyGroupUuid
-     * @return
+     * @param policyGroupUuid 指定的策略 UUID
+     * @return 根据UUID指定的PolicyProps 策略记录数据
      */
     @Select("SELECT * FROM policies p WHERE p.group_uuid=#{group_uuid} AND p.status>=0 ")
     List<PolicyPo> getPoliciesByGroupUuid(@Param("group_uuid") String policyGroupUuid);
 
     /**
      *  根据group code获取所在组所有的策略
-     * @param policyGroupCode
-     * @return
+     * @param policyGroupCode 指定的策略 code
+     * @return 根据code指定的PolicyProps 策略记录数据
      */
     @Select("SELECT * FROM policies p WHERE p.code=#{group_code} AND p.status>=0 ")
     List<PolicyPo> getPoliciesByGroupCode(@Param("group_code") String policyGroupCode);
@@ -72,6 +75,7 @@ public interface PoliciesMapper {
             "create_user_uuid=#{create_user_uuid}, status=#{status}, os_type=#{os_type}, \n" +
             "baseline=#{baseline}, run_mode=#{run_mode}, run_contents=#{run_contents}, \n" +
             "consume_time=#{consume_time}, asset_uuid=#{asset_uuid}, \n" +
+            "lv1_require=#{lv1_require}, lv2_require=#{lv2_require}, lv3_require=#{lv3_require}, lv4_require=#{lv4_require}, \n" +
             "create_user_uuid=#{create_user_uuid} \n" +
             "WHERE \n" +
             "p.uuid=#{uuid} AND p.status>=0  ")
@@ -193,4 +197,14 @@ public interface PoliciesMapper {
             "	INNER JOIN policy_groups pg ON pg.uuid = p.group_uuid AND pg.`code` = 'LogAuditConfig' \n" +
             " GROUP BY a.ip")
     List<TaskResultsDto> logReport();
+
+    @Select("SELECT policies.*,\n" +
+            "	assets.`name` AS asset_name,\n" +
+            "	assets.`ip` AS assets_ip,\n" +
+            "	policy_groups.`name` AS group_name\n" +
+            " FROM\n" +
+            "	policies \n" +
+            "	LEFT JOIN assets ON policies.asset_uuid = assets.uuid\n" +
+            "	LEFT JOIN policy_groups ON policies.group_uuid = policy_groups.uuid\n")
+    List<PolicyDetailInfoDto> getAllPolicyDetailInfos();
 }

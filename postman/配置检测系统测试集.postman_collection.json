@@ -723,28 +723,35 @@
 					"response": []
 				},
 				{
-					"name": "3.6 执行任务（未实现）",
+					"name": "3.6 执行任务",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
 						"body": {
-							"mode": "raw",
-							"raw": ""
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "uuid",
+									"value": "{{task_uuid}}",
+									"type": "text"
+								}
+							]
 						},
 						"url": {
-							"raw": "{{base_url}}/tasks/execute?uuid={{task_uuid}}",
+							"raw": "{{base_url}}/tasks/execute",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"tasks",
 								"execute"
-							],
-							"query": [
-								{
-									"key": "uuid",
-									"value": "{{task_uuid}}"
-								}
 							]
 						}
 					},
@@ -1030,6 +1037,62 @@
 							"path": [
 								"tasks",
 								"update-task-details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.10 获取任务的运行状态信息",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "6f4f3c18-0e68-4f88-8a63-26fdcfd0df43",
+								"exec": [
+									"var uuidList=[];",
+									"var uuid = pm.environment.get(\"task_uuid\");",
+									"uuidList.push(uuid);",
+									"// uuidList.push(uuid);",
+									"// uuidList.push(uuid);",
+									"// uuidList.push(uuid);",
+									"var uuids;",
+									"uuids = uuid + \",\";",
+									"uuids += uuid + \",\";",
+									"uuids += uuid + \",\";",
+									"uuids += uuid;",
+									"pm.environment.set(\"uuid_list\", uuids);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/run-status?uuid_list={{uuid_list}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"run-status"
+							],
+							"query": [
+								{
+									"key": "uuid",
+									"value": "{{task_uuid}}",
+									"disabled": true
+								},
+								{
+									"key": "uuid_list",
+									"value": "{{uuid_list}}"
+								}
 							]
 						}
 					},
@@ -1949,6 +2012,542 @@
 				}
 			],
 			"description": "包括：分组等字典表"
+		},
+		{
+			"name": "B. 节点配置收集服务",
+			"item": [
+				{
+					"name": "B.1 测试任务运行",
+					"item": [
+						{
+							"name": "B.1.1 运行指定UUID任务",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://localhost:8191/nodes/manage/run-task?uuid=0022f9d3-a2b6-4e73-b128-8b883c76bdf3",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8191",
+									"path": [
+										"nodes",
+										"manage",
+										"run-task"
+									],
+									"query": [
+										{
+											"key": "uuid",
+											"value": "0022f9d3-a2b6-4e73-b128-8b883c76bdf3"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "B.2 添加策略",
+					"item": [
+						{
+							"name": "B.1.1 Win系统补丁检查",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows系统补丁检查",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsSystemPatch",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "ec467b52-4140-4bf4-8e26-8c28b249cbdb",
+											"description": "分组：Windows系统补丁安装",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\nimport os\nimport re\n# import sys\n\n\ndef getValue(t):\n    try:\n        return t[t.index(':') + 1:].strip()\n    except ValueError:\n        return ''\n\n\ndef noPatch(result):\n    result['info'] = '补丁列表：\\n[ 空 ]'\n    result['risk_level'] = 3\n    result['risk_desc'] = '未安装系统补丁，有较严重的安全隐患'\n    result['solution'] = '配置Windows Update，连接互联网，更新系统修补程序。'\n\n\ndef process(result):\n    output = os.system(\"systeminfo >system_info.log\")\n    line_array = open(\"system_info.log\", \"r\").readlines()\n\n    line_index = 33\n\n    # end_index = start_index\n    if line_array[line_index].find('暂缺') >= 0:\n        noPatch(result)\n    else:\n        match_obj = re.findall(r\"\\d+\\.?\\d*\", line_array[line_index])\n        if len(match_obj) == 0:\n            noPatch(result)\n        else:\n            patch_count = int(match_obj[0])\n            result['info'] = '补丁列表(' + str(patch_count) + '个)：\\n'\n            for index in range(line_index + 1, len(line_array)):\n                if line_array[index].find(']: KB') < 0:\n                    break\n                result['info'] += line_array[index]\n            if 0 < patch_count < 10:\n                result['risk_level'] = 1\n                result['risk_desc'] = '系统补丁过少，存在安全风险'\n                result['solution'] = '配置Windows Update，连接互联网，更新系统修补程序。'\n            else:\n                # TODO: 添加检查最新补丁\n                result['risk_level'] = 0\n                result['risk_desc'] = '补丁安装正常'\n                result['solution'] = '无'\n\n    os.remove('system_info.log')\n\n    return\n\n\nif __name__ == '__main__':\n    r = {}\n    process(r)\n    print(r)\n",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "5000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "B.1.2 Win系统配置信息",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows系统配置信息",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsSystemInfo",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "6c69d5e6-9f53-4ed9-b4b8-d76392548ed5",
+											"description": "分组：Windows系统服务",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\nimport os\n# import sys\n\n\ndef getValue(t):\n    try:\n        return t[t.index(':') + 1:].strip()\n    except ValueError:\n        return ''\n\n\ndef getSCValue(line):\n    try:\n        return line[3].split(\":\")[1].strip()\n    except ValueError:\n        return 'Not Installed'\n\n\ndef process(info):\n    output = os.system(\"systeminfo >system_info.log\")\n    line_array = open(\"system_info.log\", \"r\").readlines()\n\n    info[\"OS Host Name\"] = getValue(line_array[1])\n    info[\"OS Name\"] = getValue(line_array[2])\n    info[\"OS Version\"] = getValue(line_array[3])\n    info[\"OS Manufacturer\"] = getValue(line_array[4])\n    info[\"OS Configuration\"] = getValue(line_array[5])\n    info[\"OS Build Type\"] = getValue(line_array[6])\n    info[\"OS Registered Owner\"] = getValue(line_array[7])\n    info[\"OS Registered Organization\"] = getValue(line_array[8])\n    info[\"OS Product ID\"] = getValue(line_array[9])\n    info[\"OS Original Install Date\"] = getValue(line_array[10])\n    info[\"System Boot Time\"] = getValue(line_array[11])\n    info[\"System Manufacturer\"] = getValue(line_array[12])\n    info[\"System Model\"] = getValue(line_array[13])\n    info[\"System Type\"] = getValue(line_array[14])\n\n    line_num = 16\n    for i in range(line_num, len(line_array)):\n        if line_array[i][0] != ' ':\n            line_num = i\n            break\n    info[\"System Processor(s)\"] = [i.strip() for i in line_array[16:line_num]]\n\n    info[\"System BIOS Version\"] = getValue(line_array[line_num])\n    line_num = line_num + 1\n\n    info[\"OS Windows Directory\"] = getValue(line_array[line_num])\n    line_num = line_num + 1\n\n    info[\"System Directory\"] = getValue(line_array[line_num])\n    line_num = line_num + 1\n\n    info[\"System Boot Device\"] = getValue(line_array[line_num])\n    line_num = line_num + 1\n\n    info[\"OS Locale\"] = getValue(line_array[line_num])\n    line_num = line_num + 1\n\n    info[\"OS Input Locale\"] = getValue(line_array[line_num])\n    line_num = line_num + 1\n\n    info[\"OS Time Zone\"] = getValue(line_array[line_num])\n    line_num = line_num + 1\n\n    info[\"System Total Physical Memory\"] = getValue(line_array[line_num])\n    line_num = line_num + 1\n\n    info[\"System Available Physical Memory\"] = getValue(line_array[line_num])\n    line_num = line_num + 1\n\n    info[\"OS Virtual Memory: Max Size\"] = getValue(line_array[line_num])\n    line_num = line_num + 1\n\n    info[\"OS Virtual Memory: Available\"] = getValue(line_array[line_num])\n    line_num = line_num + 1\n\n    info[\"OS Virtual Memory: In Use\"] = getValue(line_array[line_num])\n    line_num = line_num + 1\n\n    info[\"OS Page File Location(s)\"] = getValue(line_array[line_num])\n    line_num = line_num + 1\n\n    info[\"OS Domain\"] = getValue(line_array[line_num])\n    line_num = line_num + 1\n\n    info[\"OS Logon Server\"] = getValue(line_array[line_num])\n\n    line_num = line_num + 2\n\n    end_num = line_num\n    for i in range(line_num, len(line_array)):\n        if line_array[i][0] != ' ':\n            end_num = i\n            break\n    info[\"OS Hotfix(s)\"] = [i.strip() for i in line_array[line_num:end_num]]\n\n    output = os.system(\"sc query wscsvc >system_Alerter.log\")\n    info['System Alerter'] = getSCValue(open(\"system_Alerter.log\", 'r').readlines())\n\n    output = os.system(\"sc query wuauserv >system_autoupdate.log\")\n    info['System Autoupdate'] = getSCValue(open(\"system_autoupdate.log\", 'r').readlines())\n\n    os.remove('system_info.log')\n    os.remove('system_Alerter.log')\n    os.remove('system_autoupdate.log')\n\n    return\n\n\ndef analyze(result):\n    info = result['info']\n    fix_num = len(info['OS Hotfix(s)'])\n    if fix_num == 0:\n        result['risk_level'] = 3\n        result['risk_desc'] = '未安装系统补丁，有较严重的安全隐患'\n        result['solution'] = '配置Windows Update，连接互联网，更新系统修补程序。'\n    elif 0 < fix_num < 10:\n        result['risk_level'] = 1\n        result['risk_desc'] = '系统补丁过少，存在安全风险'\n        result['solution'] = '配置Windows Update，连接互联网，更新系统修补程序。'\n    else:\n        result['risk_level'] = 0\n        result['risk_desc'] = '系统信息正常'\n        result['solution'] = '无'\n    return\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n\n    print(result)\n",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "5000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "B.1.3 Win防火墙状态",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows防火墙状态",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsFirewallStatus",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "ddd101d7-5e2a-4cee-a47b-e59e4a92e94a",
+											"description": "分组：系统防火墙安全策略",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\nimport os\n\n\ndef getValue(t):\n    return t.split(\"=\")[-1].strip()\n\n\ndef process(info):\n    r = os.system(\"netsh firewall show state > firewall.log\")\n    line_array = open(\"firewall.log\", 'r').readlines()\n\n    # 命令执行，部分结果如下：\n\n    # 操作模式 = 启用              (第4行)\n    # 例外模式 = 启用\n    # 多播 / 广播响应模式 = 禁用\n    # 通知模式 = 禁用\n    # 组策略版本 = Windows Defender 防火墙\n    # 远程管理模式 = 禁用\n    #\n    # 所有网络接口上的端口当前均为打开状态:\n    # 端口      协议      版本      程序        （第12行）\n    # -------------------------------------------------------------------\n    # 当前没有在所有网络接口上打开的端口。\n    #\n    # 重要信息: 已成功执行命令。\n    info[\"Firewall Operational mode\"] = getValue(line_array[4])\n    info[\"Firewall Exception mode\"] = getValue(line_array[5])\n    info[\"Firewall Multi/Broadcast mode\"] = getValue(line_array[6])\n    info[\"Firewall Notification mode\"] = getValue(line_array[7])\n\n    os.remove('firewall.log')\n\n    return\n\n\ndef analyze(result):\n    info = result['info']\n    if info['Firewall Operational mode'] != '启用':\n        result['risk_level'] = 3\n        result['risk_desc'] = '防火墙未开启，系统不能有效保障网络安全，也不能对网络存取和访问进行有效的监控审计，系统和用户的信息资料有较大的外泄风险。'\n        result['solution'] = '请使用如下Windows命令开启防火墙：\\n\\tnetsh firewall set opmode mode=enable'\n    elif result['Firewall Notification mode'] != '启用':\n        result['risk_level'] = 1\n        result['risk_desc'] = '防火墙未开启通知模式，在阻止应用访问网络时，可能会给用户带来困扰；同时，开启通知模式也有利于用户了解当前系统可能存在的安全隐患。'\n        result['solution'] = '请使用如下Windows命令开启防火墙：\\n\\tnetsh firewall set notifications enable'\n    else:\n        result['risk_level'] = 0\n        result['risk_desc'] = '防火墙已正确开启'\n        result['solution'] = '无'\n\n    return\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info', info}\n    analyze(result)\n    print(result)\n",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "2000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "B.1.4 Win防火墙端口规则",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows防火墙端口规则",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsFirewallPortsRules",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "ddd101d7-5e2a-4cee-a47b-e59e4a92e94a",
+											"description": "分组：系统防火墙安全策略",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\nimport os\n\n\ndef getValue(t):\n    return t.split(\"=\")[-1].strip()\n\n\ndef process(info):\n    r = os.system(\"netsh firewall show state > firewall.log\")\n    line_array = open(\"firewall.log\", 'r').readlines()\n\n    # 命令执行，部分结果如下：\n\n    # 操作模式 = 启用              (第4行)\n    # 例外模式 = 启用\n    # 多播 / 广播响应模式 = 禁用\n    # 通知模式 = 禁用\n    # 组策略版本 = Windows Defender 防火墙\n    # 远程管理模式 = 禁用\n    #\n    # 所有网络接口上的端口当前均为打开状态:\n    # 端口      协议      版本      程序        （第12行）\n    # -------------------------------------------------------------------\n    # 当前没有在所有网络接口上打开的端口。\n    #\n    # 重要信息: 已成功执行命令。\n    start_index = 14\n    port_state = getValue(line_array[start_index])\n    if port_state.find(\"当前没有在所有网络接口上打开的端口\") >= 0:\n        info[\"Firewall All-Open Ports Exist\"] = False\n    else:\n        info[\"Firewall All-Open Ports Exist\"] = True\n        end_index = start_index\n        for index in range(start_index, len(line_array)):\n            if line_array[index][0] == ' ':\n                end_index = index\n                break\n        info[\"All-Open Ports List\"] = [line.strip() for line in line_array[start_index: end_index]]\n\n    os.remove('firewall.log')\n\n    # 用于测试\n    info[\"Firewall All-Open Ports Exist\"] = True\n    info[\"All-Open Ports List\"] = [\n        \"9019    UDP    任何    (null)\\n\",\n        \"8080    TCP    任何    (null)\\n\",\n        \"245     UDP    任何    (null)\\n\", ]\n\n    return\n\n\ndef analyze(result):\n    info = result['info']\n    if info['Firewall All-Open Ports Exist']:\n        result['risk_level'] = 2\n        result['risk_desc'] = '端口规则存在安全风险\\n'\n        result['risk_desc'] += '端口   协议  版本  程序\\n'\n        port_list = result[\"All-Open Ports List\"]\n        for index in range(0, len(port_list)):\n            result['risk_desc'] += port_list[index]\n        result['solution'] = '请检查防火墙的端口规则，对需要限制的端口运行设置命令：netsh firewall add/set portopening。'\n    else:\n        result['risk_level'] = 0\n        result['risk_desc'] = '未发现无限制打开的端口。'\n        result['solution'] = '无'\n\n    return\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info', info}\n    analyze(result)\n    print(result)\n",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "2000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				}
+			]
 		}
 	]
 }
