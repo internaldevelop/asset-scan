@@ -3,24 +3,22 @@ package com.toolkit.assetscan.controller;
 import com.toolkit.assetscan.bean.dto.ExcelDataDto;
 import com.toolkit.assetscan.bean.dto.TaskResultsDto;
 import com.toolkit.assetscan.global.common.ExcelUtil;
-import com.toolkit.assetscan.global.common.VerifyUtil;
-import com.toolkit.assetscan.global.rabbitmq.MsgConsumer;
-import com.toolkit.assetscan.global.rabbitmq.MsgProducer;
-import com.toolkit.assetscan.global.redis.IRedisClient;
+import com.toolkit.assetscan.global.common.HtmlUtil;
+import com.toolkit.assetscan.global.common.PdfUtil;
+import com.toolkit.assetscan.global.common.WordUtil;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.service.TaskExecuteResultsManageService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 @RestController
 @CrossOrigin(origins = "*",maxAge = 3600)
@@ -89,12 +87,15 @@ public class TaskExecuteResultsManageApi {
     }
 
     /**
-     * 5.10 任务检测结果 - 导入EXCEL
+     * 5.10 任务检测结果 - 导出Excel/Word/Pdf/Html
      * @param response
      */
-    @ApiImplicitParam(name = "taskNameIpType", value = "任务名称、目标IP、问题类型", required = true, dataType = "String",paramType="query")
-    @RequestMapping(value = "/export-excel", method = RequestMethod.GET)
-    public void exportExcel(HttpServletResponse response, String taskNameIpType){
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "taskNameIpType", value = "任务名称、目标IP、问题类型", required = true, dataType = "String",paramType="query"),
+        @ApiImplicitParam(name = "type", value = "导出格式", required = true, dataType = "String",paramType="query")
+    })
+    @RequestMapping(value = "/export", method = RequestMethod.GET)
+    public void exportExcel(HttpServletResponse response, String taskNameIpType, String type){
         List<TaskResultsDto> list =  taskExecuteResultsManageService.getTasksResultsList(taskNameIpType);
         ExcelDataDto data = new ExcelDataDto();
         data.setName("任务检测结果");
@@ -125,7 +126,15 @@ public class TaskExecuteResultsManageApi {
         data.setRows(rows);
 
         try{
-            ExcelUtil.exportExcel(response,"任务检测结果",data);
+            if ("Word".equals(type)) {
+                WordUtil.exportWord(response,"任务检测结果", data);
+            } else if ("Pdf".equals(type)) {
+                PdfUtil.exportPdf(response,"任务检测结果",data);
+            } else if ("Html".equals(type)) {
+                HtmlUtil.exportHtml(response,"任务检测结果",data);
+            } else {
+                ExcelUtil.exportExcel(response,"任务检测结果",data);
+            }
         }catch (Exception e){
             e.printStackTrace();
         }

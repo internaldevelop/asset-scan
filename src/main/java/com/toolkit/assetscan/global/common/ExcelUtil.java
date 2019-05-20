@@ -104,22 +104,22 @@ public class ExcelUtil {
         //设置字体
         titleFont.setFontName("simsun");
         //设置粗体
-        titleFont.setBoldweight(Short.MAX_VALUE);
+//        titleFont.setBoldweight(Short.MAX_VALUE);
         //设置字号
         titleFont.setFontHeightInPoints((short) 14);
         //设置颜色
         titleFont.setColor(IndexedColors.BLACK.index);
         XSSFCellStyle titleStyle = wb.createCellStyle();
         //水平居中
-        titleStyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);
+//        titleStyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);
         //垂直居中
-        titleStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);
+//        titleStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);
         //设置图案颜色
-        titleStyle.setFillForegroundColor(new XSSFColor(new Color(182, 184, 192)));
+        titleStyle.setFillForegroundColor(new XSSFColor(new Color(182, 184, 192), null));
         //设置图案样式
-        titleStyle.setFillPattern(XSSFCellStyle.SOLID_FOREGROUND);
+//        titleStyle.setFillPattern(XSSFCellStyle.SOLID_FOREGROUND);
         titleStyle.setFont(titleFont);
-        setBorder(titleStyle, BorderStyle.THIN, new XSSFColor(new Color(0, 0, 0)));
+        setBorder(titleStyle, BorderStyle.THIN, new XSSFColor(new Color(0, 0, 0), null));
         Row titleRow = sheet.createRow(rowIndex);
         titleRow.setHeightInPoints(25);
         colIndex = 0;
@@ -150,10 +150,11 @@ public class ExcelUtil {
         dataFont.setColor(IndexedColors.BLACK.index);
 
         XSSFCellStyle dataStyle = wb.createCellStyle();
-        dataStyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);
-        dataStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);
+
+//        dataStyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);
+//        dataStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);
         dataStyle.setFont(dataFont);
-        setBorder(dataStyle, BorderStyle.THIN, new XSSFColor(new Color(0, 0, 0)));
+        setBorder(dataStyle, BorderStyle.THIN, new XSSFColor(new Color(0, 0, 0), null));
         for (List<Object> rowData : rows) {
             Row dataRow = sheet.createRow(rowIndex);
             dataRow.setHeightInPoints(25);
