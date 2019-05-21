@@ -3,6 +3,7 @@ package com.toolkit.assetscan.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
+import com.toolkit.assetscan.service.mq.TopicSender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,4 +35,20 @@ public class UtilsManageApi {
     public Object xml2JSON(@RequestParam("input") String input) {
         return org.json.XML.toJSONObject(input);
     }
+
+    @Autowired
+    private TopicSender msgProducer;
+
+    /**
+     * 发送RabbitMQ消息 - 生产者
+     * @return
+     */
+    @RequestMapping(value = "/send-msg", method = RequestMethod.GET)
+    public @ResponseBody
+    Object sendMsg(@RequestParam("topic") String topic, @RequestParam("message") String message) {
+
+        msgProducer.send(topic, message);
+        return "MQ message sended";
+    }
+
 }

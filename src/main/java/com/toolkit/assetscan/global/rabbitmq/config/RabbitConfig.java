@@ -2,10 +2,7 @@ package com.toolkit.assetscan.global.rabbitmq.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -33,18 +30,13 @@ public class RabbitConfig {
     private String password;
 
 
-    public static final String EXCHANGE_A = "my-mq-exchange_A";
-    public static final String EXCHANGE_B = "my-mq-exchange_B";
-    public static final String EXCHANGE_C = "my-mq-exchange_C";
+    public static final String MAIN_EXCHANGE = "main-mq-exchange";
 
+    public static final String DEFAULT_TOPIC = "topic.main";
+    public static final String TASK_RUN_STATUS_TOPIC = "topic.run-status";
 
-    public static final String QUEUE_A = "QUEUE_A";
-    public static final String QUEUE_B = "QUEUE_B";
-    public static final String QUEUE_C = "QUEUE_C";
-
-    public static final String ROUTINGKEY_A = "spring-boot-routingKey_A";
-    public static final String ROUTINGKEY_B = "spring-boot-routingKey_B";
-    public static final String ROUTINGKEY_C = "spring-boot-routingKey_C";
+    public static final String MAIN_ROUTINGKEY = "topic.main";
+    public static final String TASK_RUN_STATUS_ROUTINGKEY = "topic.run-status";
 
     @Bean
     public ConnectionFactory connectionFactory() {
@@ -74,21 +66,58 @@ public class RabbitConfig {
      TopicExchange:多关键字匹配
      */
     @Bean
-    public DirectExchange defaultExchange() {
-        return new DirectExchange(EXCHANGE_A);
+    public TopicExchange defaultExchange() {
+        return new TopicExchange(MAIN_EXCHANGE);
     }
 
     /**
-     * 获取队列A
+     * 创建缺省主题 (topic)
+     * 各节点向此主题发送消息，消费者是中心服务器
      * @return
      */
     @Bean
-    public Queue queueA() {
-        return new Queue(QUEUE_A, true); //队列持久
+    public Queue mainQueue() {
+        return new Queue(DEFAULT_TOPIC, true); //队列持久
     }
+
+    /**
+     * 创建任务运行状态主题 (topic)
+     * 各节点向此主题发送包含本节点任务运行状态的消息，消费者是中心服务器
+     * @return
+     */
     @Bean
-    public Binding binding() {
-        return BindingBuilder.bind(queueA()).to(defaultExchange()).with(RabbitConfig.ROUTINGKEY_A);
+    public Queue taskRunStatusQueue() {
+        return new Queue(TASK_RUN_STATUS_TOPIC, true); //队列持久
+    }
+
+    /**
+     * 绑定缺省主题到交换机
+     * @return
+     */
+    @Bean
+    public Binding bindDefaultTopic() {
+        return BindingBuilder.bind(mainQueue()).to(defaultExchange()).with(RabbitConfig.MAIN_ROUTINGKEY);
+    }
+
+    /**
+     * 绑定任务运行状态主题到交换机
+     * @return
+     */
+    @Bean
+    public Binding bindTaskRunStatusTopic() {
+        return BindingBuilder.bind(taskRunStatusQueue()).to(defaultExchange()).with(RabbitConfig.TASK_RUN_STATUS_ROUTINGKEY);
+    }
+
+    /**
+     * 绑定节点的队列主题到交换机
+     * @param topicName
+     * @param routingKey
+     * @return
+     */
+    public static Binding bindTopic(String topicName, String routingKey) {
+        return BindingBuilder.bind(new Queue(topicName, true))
+                .to(new TopicExchange(MAIN_EXCHANGE))
+                .with(routingKey);
     }
 
 }
