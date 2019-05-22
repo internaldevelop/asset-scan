@@ -31,6 +31,5 @@ public class TaskRunStatusTopicReceiver {
         // 为简化操作，获取所有任务的运行状态，发送给所有客户端
         List<TaskRunStatusDto> runStatusDtoList = taskRunStatusService.getAllTasksRunStatus();
         WebSocketServer.sendInfo(SockMsgTypeEnum.MULTIPLE_TASK_RUN_INFO, runStatusDtoList, null);
-
     }
 }

@@ -2,7 +2,7 @@ package com.toolkit.assetscan.controller;
 
 import com.toolkit.assetscan.bean.dto.TaskInfosDto;
 import com.toolkit.assetscan.bean.dto.TaskRunStatusDto;
-import com.toolkit.assetscan.bean.dto.TaskUuidDto;
+import com.toolkit.assetscan.bean.po.ProjectPo;
 import com.toolkit.assetscan.bean.po.TaskPo;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.response.ResponseHelper;
@@ -173,5 +173,16 @@ public class TaskManageApi {
             return responseHelper.success(taskRunStatusDtoList);
 
         }
+    }
+
+    /**
+     * 3.11 执行项目任务，将执行结果保存到数据库中，并通过消息队列通知前端应用
+     * @param projectPo 项目参数
+     * @return payload: 执行结果的 UUID
+     */
+    @RequestMapping(value = "/execute-project-task", method = RequestMethod.POST)
+    public @ResponseBody
+    Object  executeTask(@ModelAttribute ProjectPo projectPo) {
+        return taskManageService.runProjectTask(projectPo);
     }
 }

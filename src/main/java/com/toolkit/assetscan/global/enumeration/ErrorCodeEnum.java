@@ -57,6 +57,7 @@ public enum ErrorCodeEnum {
     ERROR_GROUP_NOT_FOUND(2032, "策略组未找到"),
     ERROR_INCORRECT_TASK_RUN_STATUS(2034, "任务运行状态错误"),
     ERROR_TASK_RUN_STATUS_NOT_FOUND(2035, "无法获取任务的运行状态"),
+    ERROR_PROJECT_NOT_FOUND(2036, "项目未找到"),
     ;
 
     private Integer code;
