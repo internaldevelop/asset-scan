@@ -20,11 +20,11 @@ public interface TaskExecuteResultsMapper {
      */
     @Insert("INSERT INTO task_execute_results( \n" +
             "uuid, task_uuid, start_time, \n" +
-            "process_flag, policy_uuid, \n" +
+            "process_flag, policy_uuid, exec_action_uuid, \n" +
             "create_time) \n" +
             "VALUES ( \n" +
             "#{uuid}, #{task_uuid}, #{start_time, jdbcType=TIMESTAMP}, \n" +
-            "#{process_flag}, #{policy_uuid}, \n" +
+            "#{process_flag}, #{policy_uuid}, #{exec_action_uuid}, \n" +
             "#{create_time, jdbcType=TIMESTAMP}) ")
     int addExecuteRecord(TaskExecuteResultsPo resultPo);
 

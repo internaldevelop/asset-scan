@@ -28,4 +28,5 @@ public class TaskExecuteResultsPo {
     private String policy_uuid; // 执行的策略uuid
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private java.sql.Timestamp create_time;
+    private String exec_action_uuid;    // 任务执行记录的 UUID
 }

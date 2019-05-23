@@ -99,7 +99,7 @@ public class TaskManageApi {
     @RequestMapping(value = "/execute", method = RequestMethod.POST)
     public @ResponseBody
     Object  executeTask(@RequestParam("uuid") String taskUuid) {
-        return taskManageService.runTask(taskUuid);
+        return taskManageService.executeSingleTask(taskManageService.DEFAULT_PROJ_UUID, taskUuid);
     }
 
     /**

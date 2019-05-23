@@ -29,6 +29,8 @@ import java.util.TimerTask;
 
 @Component
 public class TaskManageService {
+
+    public final String DEFAULT_PROJ_UUID = "db3f58ff-9c3d-4a85-b9d7-8fe6d7a1ec0e";
     private ResponseBean responseBean;
     private final TasksMapper tasksMapper;
     private final TasksManageHelper tasksManageHelper;
@@ -214,31 +216,31 @@ public class TaskManageService {
         return updateTask((TaskPo) taskInfosDto);
     }
 
-    public ResponseBean runTask(String taskUuid) {
-        // 根据任务UUID，获取任务DTO
-        TaskInfosDto taskInfosDto = tasksMapper.getTaskDtoByUuid(taskUuid);
-        if (taskInfosDto == null)
-            return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND);
-
-        // 设置任务为空闲状态
-        TaskRunStatusDto taskRunStatusDto = new TaskRunStatusDto();
-        taskRunStatusDto.setTask_uuid(taskUuid);
-        taskRunStatusDto.setRun_status(TaskRunStatusEnum.IDLE.getStatus());
-        if (!taskRunStatusService.setTaskRunStatus(taskUuid, taskRunStatusDto))
-            return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
-
-        // 构造URL
-        String ip = "http://" + taskInfosDto.getAsset_ip() + ":8191";
-        String url = ip + "/nodes/manage/run-task?uuid={uuid}";
-
-        // 构造参数map
-        HashMap<String, String> map = new HashMap<>();
-        map.put("uuid", taskUuid);
-
-        // 向节点发送请求，并返回节点的响应结果
-        ResponseEntity<ResponseBean> responseEntity = restTemplate.getForEntity(url, ResponseBean.class, map);
-        return responseEntity.getBody();
-    }
+//    public ResponseBean runTask(String taskUuid) {
+//        // 根据任务UUID，获取任务DTO
+//        TaskInfosDto taskInfosDto = tasksMapper.getTaskDtoByUuid(taskUuid);
+//        if (taskInfosDto == null)
+//            return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND);
+//
+//        // 设置任务为空闲状态
+//        TaskRunStatusDto taskRunStatusDto = new TaskRunStatusDto();
+//        taskRunStatusDto.setTask_uuid(taskUuid);
+//        taskRunStatusDto.setRun_status(TaskRunStatusEnum.IDLE.getStatus());
+//        if (!taskRunStatusService.setTaskRunStatus(taskUuid, taskRunStatusDto))
+//            return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
+//
+//        // 构造URL
+//        String ip = "http://" + taskInfosDto.getAsset_ip() + ":8191";
+//        String url = ip + "/nodes/manage/run-task?uuid={uuid}";
+//
+//        // 构造参数map
+//        HashMap<String, String> map = new HashMap<>();
+//        map.put("uuid", taskUuid);
+//
+//        // 向节点发送请求，并返回节点的响应结果
+//        ResponseEntity<ResponseBean> responseEntity = restTemplate.getForEntity(url, ResponseBean.class, map);
+//        return responseEntity.getBody();
+//    }
 
     public ResponseBean runProjectTask(ProjectPo projectPo) {
         ArrayList<ResponseBean> responseBeanList = new ArrayList();
@@ -252,7 +254,7 @@ public class TaskManageService {
                 JSONObject object = jsonArray.getJSONObject(i);
                 String taskUuid = object.getString("uuid");
                 if (ProjectRunTimeModeEnum.MODE_NOW.getRunTimeMode() == timeMode) {
-                    responseBean = sendExecuteTaskRequst(taskUuid, projectPo.getUuid());
+                    responseBean = executeSingleTask(projectPo.getUuid(), taskUuid);
                 } else {
                     int delayTime = 0;
                     if (ProjectRunTimeModeEnum.MODE_30MINS_LATER.getRunTimeMode() == timeMode) {
@@ -265,7 +267,7 @@ public class TaskManageService {
                     java.util.Timer timer = new java.util.Timer(true);
                     TimerTask task = new TimerTask() {
                         public void run() {
-                            final ResponseBean result = sendExecuteTaskRequst(taskUuid, projectPo.getUuid());
+                            final ResponseBean result = executeSingleTask(taskUuid, projectPo.getUuid());
                         }
                     };
                     timer.schedule(task, delayTime);
@@ -277,7 +279,7 @@ public class TaskManageService {
         return null;
     }
 
-    private ResponseBean  sendExecuteTaskRequst(String taskUuid, String projectUuid) {
+    public ResponseBean executeSingleTask(String projectUuid, String taskUuid) {
         // 根据任务UUID，获取任务DTO
         TaskInfosDto taskInfosDto = tasksMapper.getTaskDtoByUuid(taskUuid);
         if (taskInfosDto == null)
@@ -285,6 +287,7 @@ public class TaskManageService {
 
         // 设置任务为空闲状态
         TaskRunStatusDto taskRunStatusDto = new TaskRunStatusDto();
+        taskRunStatusDto.setProject_uuid(projectUuid);
         taskRunStatusDto.setTask_uuid(taskUuid);
         taskRunStatusDto.setRun_status(TaskRunStatusEnum.IDLE.getStatus());
         if (!taskRunStatusService.setTaskRunStatus(taskUuid, taskRunStatusDto))
@@ -292,7 +295,7 @@ public class TaskManageService {
 
         // 构造URL
         String ip = "http://" + taskInfosDto.getAsset_ip() + ":8191";
-        String url = ip + "/nodes/manage/run-project-task?project_uuid={project_uuid}&task_uuid={taskUuid}";
+        String url = ip + "/nodes/manage/run-project-task?project_uuid={project_uuid}&task_uuid={task_uuid}";
 
         // 构造参数map
         HashMap<String, String> map = new HashMap<>();

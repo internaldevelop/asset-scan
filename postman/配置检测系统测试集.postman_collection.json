@@ -1965,7 +1965,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8191/nodes/manage/run-task?uuid=0022f9d3-a2b6-4e73-b128-8b883c76bdf3",
+									"raw": "http://localhost:8191/nodes/manage/run-project-task?project_uuid=db3f58ff-9c3d-4a85-b9d7-8fe6d7a1ec0e&task_uuid=32f4c7db-5ff1-4b16-b640-c57845c81fb2",
 									"protocol": "http",
 									"host": [
 										"localhost"
@@ -1974,12 +1974,17 @@
 									"path": [
 										"nodes",
 										"manage",
-										"run-task"
+										"run-project-task"
 									],
 									"query": [
 										{
-											"key": "uuid",
-											"value": "0022f9d3-a2b6-4e73-b128-8b883c76bdf3"
+											"key": "project_uuid",
+											"value": "db3f58ff-9c3d-4a85-b9d7-8fe6d7a1ec0e",
+											"description": "默认项目UUID：db3f58ff-9c3d-4a85-b9d7-8fe6d7a1ec0e"
+										},
+										{
+											"key": "task_uuid",
+											"value": "32f4c7db-5ff1-4b16-b640-c57845c81fb2"
 										}
 									]
 								}
@@ -1988,135 +1993,17 @@
 						}
 					],
 					"_postman_isSubFolder": true
-				},
+				}
+			]
+		},
+		{
+			"name": "C. 添加策略数据",
+			"item": [
 				{
-					"name": "B.2 添加策略",
+					"name": "C.1 Win系统服务策略",
 					"item": [
 						{
-							"name": "B.1.1 Win系统补丁检查",
-							"event": [
-								{
-									"listen": "prerequest",
-									"script": {
-										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
-										"exec": [
-											"// var num = Math.ceil(Math.random() * 10000);",
-											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
-											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
-											""
-										],
-										"type": "text/javascript"
-									}
-								},
-								{
-									"listen": "test",
-									"script": {
-										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
-										"exec": [
-											"pm.test(\"add policy\", function () {",
-											"    var jsonData = pm.response.json();",
-											"    pm.expect(jsonData.code).to.eql(0);",
-											"    ",
-											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
-											"});",
-											""
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"name": "Content-Type",
-										"type": "text",
-										"value": "application/x-www-form-urlencoded"
-									}
-								],
-								"body": {
-									"mode": "urlencoded",
-									"urlencoded": [
-										{
-											"key": "name",
-											"value": "Windows系统补丁检查",
-											"type": "text"
-										},
-										{
-											"key": "code",
-											"value": "WindowsSystemPatch",
-											"type": "text"
-										},
-										{
-											"key": "group_uuid",
-											"value": "ec467b52-4140-4bf4-8e26-8c28b249cbdb",
-											"description": "分组：Windows系统补丁安装",
-											"type": "text"
-										},
-										{
-											"key": "type",
-											"value": "1",
-											"type": "text"
-										},
-										{
-											"key": "create_user_uuid",
-											"value": "{{user_uuid}}",
-											"type": "text"
-										},
-										{
-											"key": "status",
-											"value": "1",
-											"type": "text"
-										},
-										{
-											"key": "os_type",
-											"value": "1",
-											"type": "text"
-										},
-										{
-											"key": "baseline",
-											"value": "1",
-											"type": "text"
-										},
-										{
-											"key": "run_mode",
-											"value": "1",
-											"type": "text"
-										},
-										{
-											"key": "run_contents",
-											"value": "#!/usr/bin/python3.7\n# coding=utf-8\nimport os\nimport re\n# import sys\n\n\ndef getValue(t):\n    try:\n        return t[t.index(':') + 1:].strip()\n    except ValueError:\n        return ''\n\n\ndef noPatch(result):\n    result['info'] = '补丁列表：\\n[ 空 ]'\n    result['risk_level'] = 3\n    result['risk_desc'] = '未安装系统补丁，有较严重的安全隐患'\n    result['solution'] = '配置Windows Update，连接互联网，更新系统修补程序。'\n\n\ndef process(result):\n    output = os.system(\"systeminfo >system_info.log\")\n    line_array = open(\"system_info.log\", \"r\").readlines()\n\n    line_index = 33\n\n    # end_index = start_index\n    if line_array[line_index].find('暂缺') >= 0:\n        noPatch(result)\n    else:\n        match_obj = re.findall(r\"\\d+\\.?\\d*\", line_array[line_index])\n        if len(match_obj) == 0:\n            noPatch(result)\n        else:\n            patch_count = int(match_obj[0])\n            result['info'] = '补丁列表(' + str(patch_count) + '个)：\\n'\n            for index in range(line_index + 1, len(line_array)):\n                if line_array[index].find(']: KB') < 0:\n                    break\n                result['info'] += line_array[index]\n            if 0 < patch_count < 10:\n                result['risk_level'] = 1\n                result['risk_desc'] = '系统补丁过少，存在安全风险'\n                result['solution'] = '配置Windows Update，连接互联网，更新系统修补程序。'\n            else:\n                # TODO: 添加检查最新补丁\n                result['risk_level'] = 0\n                result['risk_desc'] = '补丁安装正常'\n                result['solution'] = '无'\n\n    os.remove('system_info.log')\n\n    return\n\n\nif __name__ == '__main__':\n    r = {}\n    process(r)\n    print(r)\n",
-											"description": "windows/patch_info.py",
-											"type": "text"
-										},
-										{
-											"key": "consume_time",
-											"value": "5000",
-											"type": "text"
-										},
-										{
-											"key": "asset_uuid",
-											"value": "{{asset_uuid}}",
-											"type": "text"
-										}
-									]
-								},
-								"url": {
-									"raw": "{{base_url}}/policies/add",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"policies",
-										"add"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "B.1.2 Win系统配置信息",
+							"name": "C.1.1 Win系统配置信息",
 							"event": [
 								{
 									"listen": "prerequest",
@@ -2237,9 +2124,144 @@
 								}
 							},
 							"response": []
-						},
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "C.2 Win系统补丁",
+					"item": [
 						{
-							"name": "B.1.3 Win防火墙状态",
+							"name": "C.2.1 Win系统补丁检查",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows系统补丁检查",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsSystemPatch",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "ec467b52-4140-4bf4-8e26-8c28b249cbdb",
+											"description": "分组：Windows系统补丁安装",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\nimport os\nimport re\n# import sys\n\n\ndef getValue(t):\n    try:\n        return t[t.index(':') + 1:].strip()\n    except ValueError:\n        return ''\n\n\ndef noPatch(result):\n    result['info'] = '补丁列表：\\n[ 空 ]'\n    result['risk_level'] = 3\n    result['risk_desc'] = '未安装系统补丁，有较严重的安全隐患'\n    result['solution'] = '配置Windows Update，连接互联网，更新系统修补程序。'\n\n\ndef process(result):\n    output = os.system(\"systeminfo >system_info.log\")\n    line_array = open(\"system_info.log\", \"r\").readlines()\n\n    line_index = 33\n\n    # end_index = start_index\n    if line_array[line_index].find('暂缺') >= 0:\n        noPatch(result)\n    else:\n        match_obj = re.findall(r\"\\d+\\.?\\d*\", line_array[line_index])\n        if len(match_obj) == 0:\n            noPatch(result)\n        else:\n            patch_count = int(match_obj[0])\n            result['info'] = '补丁列表(' + str(patch_count) + '个)：\\n'\n            for index in range(line_index + 1, len(line_array)):\n                if line_array[index].find(']: KB') < 0:\n                    break\n                result['info'] += line_array[index]\n            if 0 < patch_count < 10:\n                result['risk_level'] = 1\n                result['risk_desc'] = '系统补丁过少，存在安全风险'\n                result['solution'] = '配置Windows Update，连接互联网，更新系统修补程序。'\n            else:\n                # TODO: 添加检查最新补丁\n                result['risk_level'] = 0\n                result['risk_desc'] = '补丁安装正常'\n                result['solution'] = '无'\n\n    os.remove('system_info.log')\n\n    return\n\n\nif __name__ == '__main__':\n    r = {}\n    process(r)\n    print(r)\n",
+											"description": "windows/patch_info.py",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "5000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "C.3 Win防火墙安全",
+					"item": [
+						{
+							"name": "C.3.1 Win防火墙状态",
 							"event": [
 								{
 									"listen": "prerequest",
@@ -2362,7 +2384,7 @@
 							"response": []
 						},
 						{
-							"name": "B.1.4 Win防火墙端口规则",
+							"name": "C.3.2 Win防火墙端口规则",
 							"event": [
 								{
 									"listen": "prerequest",
@@ -2455,8 +2477,1004 @@
 										},
 										{
 											"key": "run_contents",
-											"value": "#!/usr/bin/python3.7\n# coding=utf-8\nimport os\nimport json\n\n\ndef getValue(t):\n    return t.split(\"=\")[-1].strip()\n\n\ndef process(info):\n    r = os.system(\"netsh firewall show state > firewall.log\")\n    line_array = open(\"firewall.log\", 'r').readlines()\n\n    # 命令执行，部分结果如下：\n\n    # 操作模式 = 启用              (第4行)\n    # 例外模式 = 启用\n    # 多播 / 广播响应模式 = 禁用\n    # 通知模式 = 禁用\n    # 组策略版本 = Windows Defender 防火墙\n    # 远程管理模式 = 禁用\n    #\n    # 所有网络接口上的端口当前均为打开状态:\n    # 端口      协议      版本      程序        （第12行）\n    # -------------------------------------------------------------------\n    # 当前没有在所有网络接口上打开的端口。\n    #\n    # 重要信息: 已成功执行命令。\n    start_index = 14\n    port_state = getValue(line_array[start_index])\n    if port_state.find(\"当前没有在所有网络接口上打开的端口\") >= 0:\n        info[\"Firewall All-Open Ports Exist\"] = 'false'\n        info[\"All-Open Ports List\"] = []\n    else:\n        info[\"Firewall All-Open Ports Exist\"] = 'true'\n        end_index = start_index\n        for index in range(start_index, len(line_array)):\n            if line_array[index][0] == ' ':\n                end_index = index\n                break\n        info[\"All-Open Ports List\"] = [line.strip() for line in line_array[start_index: end_index]]\n\n    os.remove('firewall.log')\n\n    # 用于测试\n    info[\"Firewall All-Open Ports Exist\"] = 'true'\n    info[\"All-Open Ports List\"] = [\n        \"9019    UDP    任何    (null)\\n\",\n        \"8080    TCP    任何    (null)\\n\",\n        \"245     UDP    任何    (null)\\n\", ]\n\n    return\n\n\ndef analyze(result):\n    info = result['info']\n    if info['Firewall All-Open Ports Exist'] == 'true':\n        result['risk_level'] = 2\n        result['risk_desc'] = '端口规则存在安全风险\\n'\n        result['risk_desc'] += '端口   协议  版本  程序\\n'\n        port_list = info[\"All-Open Ports List\"]\n        for index in range(0, len(port_list)):\n            result['risk_desc'] += port_list[index]\n        result['solution'] = '请检查防火墙的端口规则，对需要限制的端口运行设置命令：netsh firewall add/set portopening。'\n    else:\n        result['risk_level'] = 0\n        result['risk_desc'] = '未发现无限制打开的端口。'\n        result['solution'] = '无'\n\n    return\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n    print(result)\n",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\nimport os\nimport json\n\n\ndef getValue(t):\n    return t.split(\"=\")[-1].strip()\n\n\ndef process(info):\n    r = os.system(\"netsh firewall show state > firewall.log\")\n    line_array = open(\"firewall.log\", 'r').readlines()\n\n    # 命令执行，部分结果如下：\n\n    # 操作模式 = 启用              (第4行)\n    # 例外模式 = 启用\n    # 多播 / 广播响应模式 = 禁用\n    # 通知模式 = 禁用\n    # 组策略版本 = Windows Defender 防火墙\n    # 远程管理模式 = 禁用\n    #\n    # 所有网络接口上的端口当前均为打开状态:\n    # 端口      协议      版本      程序        （第12行）\n    # -------------------------------------------------------------------\n    # 当前没有在所有网络接口上打开的端口。\n    #\n    # 重要信息: 已成功执行命令。\n    start_index = 14\n    port_state = getValue(line_array[start_index])\n    if port_state.find(\"当前没有在所有网络接口上打开的端口\") >= 0:\n        info[\"Firewall All-Open Ports Exist\"] = 'false'\n        info[\"All-Open Ports List\"] = []\n    else:\n        info[\"Firewall All-Open Ports Exist\"] = 'true'\n        end_index = start_index\n        for index in range(start_index, len(line_array)):\n            if line_array[index][0] == ' ':\n                end_index = index\n                break\n        info[\"All-Open Ports List\"] = [line.strip() for line in line_array[start_index: end_index]]\n\n    os.remove('firewall.log')\n\n    # 用于测试\n    # info[\"Firewall All-Open Ports Exist\"] = 'true'\n    # info[\"All-Open Ports List\"] = [\n    #     \"9019    UDP    任何    (null)\\n\",\n    #     \"8080    TCP    任何    (null)\\n\",\n    #     \"245     UDP    任何    (null)\\n\", ]\n\n    return\n\n\ndef analyze(result):\n    info = result['info']\n    if info['Firewall All-Open Ports Exist'] == 'true':\n        result['risk_level'] = 2\n        result['risk_desc'] = '端口规则存在安全风险\\n'\n        result['risk_desc'] += '端口   协议  版本  程序\\n'\n        port_list = info[\"All-Open Ports List\"]\n        for index in range(0, len(port_list)):\n            result['risk_desc'] += port_list[index]\n        result['solution'] = '请检查防火墙的端口规则，对需要限制的端口运行设置命令：netsh firewall add/set portopening。'\n    else:\n        result['risk_level'] = 0\n        result['risk_desc'] = '未发现无限制打开的端口。'\n        result['solution'] = '无'\n\n    return\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n    print(result)\n",
 											"description": "windows/firewall_open_ports.py",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "2000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "C.4 Win口令配置",
+					"item": [
+						{
+							"name": "C.4.1 Win口令长度",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows口令长度要求",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsPwdMinLength",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "97309d94-0b9f-4d7e-8343-f14259c9b05c",
+											"description": "分组：Windows口令配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\n\nimport configparser\nimport codecs\nimport os\n\n# 本脚本用于多条密码安全策略\nSCRIPT_USAGE = 1    # 密码长度不能小于 MIN_PWD_LEN （8）\n# SCRIPT_USAGE = 2    # 密码复杂度（0 -- 65536）\n# SCRIPT_USAGE = 3    # 强制密码历史：新密码设定时的历史唯一性检查，检查几个历史密码 （0 -- 65536）\n# SCRIPT_USAGE = 4  # 密码寿命：最小密码寿命设置为1天，最大密码寿命设置为30--90天\n\n# refer to the page:\n# https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-gpsb/2cd39c97-97cd-4859-a7b4-1229dad5f53d\n# https://blog.csdn.net/yongping8204/article/details/7471627\nINVALID = '-1'\nMIN_PWD_LEN = 8\nMIN_PWD_HIS_SIZE = 5\n\n\nclass Config:\n    def __init__(self, path):\n        self.path = path\n        self.cf = configparser.ConfigParser()\n        self.cf.read_file(codecs.open(self.path, \"r\", \"utf_16\"))\n        s = self.cf.sections()\n\n    def get(self, field, key):\n        try:\n            result = str(self.cf.get(field, key))\n        except:\n            return INVALID\n        return result\n\n    def set(self, field, key, value):\n        self.cf.set(field, key, value)\n        self.cf.write(open(self.path, 'w'))\n        return True\n\n\ndef process(info):\n    output = os.system(\"secedit /export /cfg Password.ini\")\n\n    cf = Config(\"Password.ini\")\n\n    info[\"PWD MinimumPasswordAge\"] = cf.get(\"System Access\", \"MinimumPasswordAge\")\n    info[\"PWD MaximumPasswordAge\"] = cf.get(\"System Access\", \"MaximumPasswordAge\")\n    info[\"PWD MinimumPasswordLength\"] = cf.get(\"System Access\", \"MinimumPasswordLength\")\n    info[\"PWD PasswordComplexity\"] = cf.get(\"System Access\", \"PasswordComplexity\")\n    info[\"PWD PasswordHistorySize\"] = cf.get(\"System Access\", \"PasswordHistorySize\")\n\n    info[\"Account LockoutBadCount\"] = cf.get(\"System Access\", \"LockoutBadCount\")\n    info[\"Account LockoutDuration\"] = cf.get(\"System Access\", \"LockoutDuration\")\n    info[\"Account ResetLockoutCount\"] = cf.get(\"System Access\", \"ResetLockoutCount\")\n    info[\"Account NewAdministratorName\"] = cf.get(\"System Access\", \"NewAdministratorName\")\n    info[\"Account Guest Active\"] = cf.get(\"System Access\", \"EnableGuestAccount\")\n\n    info[\"Audit AuditLogonEvents\"] = cf.get(\"Event Audit\", \"AuditLogonEvents\")\n    info[\"Audit AuditSystemEvents\"] = cf.get(\"Event Audit\", \"AuditSystemEvents\")\n    info[\"Audit AuditObjectAccess\"] = cf.get(\"Event Audit\", \"AuditObjectAccess\")\n    info[\"Audit AuditPrivilegeUse\"] = cf.get(\"Event Audit\", \"AuditPrivilegeUse\")\n    info[\"Audit AuditPolicyChange\"] = cf.get(\"Event Audit\", \"AuditPolicyChange\")\n    info[\"Audit AuditAccountManage\"] = cf.get(\"Event Audit\", \"AuditAccountManage\")\n    info[\"Audit AuditProcessTracking\"] = cf.get(\"Event Audit\", \"AuditProcessTracking\")\n    info[\"Audit AuditDSAccess\"] = cf.get(\"Event Audit\", \"AuditDSAccess\")\n    info[\"Audit AuditAccountLogon\"] = cf.get(\"Event Audit\", \"AuditAccountLogon\")\n\n    info[\"Log AuditLogonEvents\"] = cf.get(\"Event Audit\", \"AuditLogonEvents\")\n\n    os.remove('Password.ini')\n\n\ndef analyze(result):\n    info = result['info']\n    result['risk_desc'] = ''\n    result['solution'] = ''\n\n    # 密码长度不能小于 MIN_PWD_LEN （8）\n    if SCRIPT_USAGE == 1:\n        if int(info[\"PWD MinimumPasswordLength\"]) < MIN_PWD_LEN:\n            result['risk_level'] = 3\n            result['risk_desc'] = '允许设置的密码长度太短'\n            result['solution'] = '设置密码长度最少为' + str(MIN_PWD_LEN) + '位。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '密码长度符合要求'\n            result['solution'] = '无'\n\n    # 密码复杂度（0 -- 65536）\n    if SCRIPT_USAGE == 2:\n        if int(info[\"PWD PasswordComplexity\"]) < 1:\n            result['risk_level'] = 3\n            result['risk_desc'] = '没有限制密码的复杂度'\n            result['solution'] = '密码不能含用户名，需包含大写字母、小写字母、数字及特殊字符。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '密码复杂度符合要求'\n            result['solution'] = '无'\n\n    # 强制密码历史：新密码设定时的历史唯一性检查，检查几个历史密码 （0 -- 65536）\n    if SCRIPT_USAGE == 3:\n        if int(info[\"PWD PasswordHistorySize\"]) < MIN_PWD_HIS_SIZE:\n            result['risk_level'] = 3\n            result['risk_desc'] = '强制密码历史不符合要求，当前系统设置为' + info[\"PWD PasswordHistorySize\"] + '个记住密码'\n            result['solution'] = '设置强制密码历史数最少为' + str(MIN_PWD_HIS_SIZE) + '个记住密码。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '强制密码历史符合要求'\n            result['solution'] = '无'\n\n    # 密码寿命：最小密码寿命设置为1天，最大密码寿命设置为30--90天\n    if SCRIPT_USAGE == 4:\n        if 30 <= int(info[\"PWD MaximumPasswordAge\"]) <= 90:\n            if int(info[\"PWD MinimumPasswordAge\"]) == 1:\n                result['risk_level'] = 0\n                result['risk_desc'] = '口令寿命符合要求'\n                result['solution'] = '无'\n            else:\n                result['risk_level'] = 1\n                result['risk_desc'] = '最小密码寿命设置不合理，当前设置为' + info[\"PWD MinimumPasswordAge\"] + '天'\n                result['solution'] = '设置最小密码寿命为1天。'\n        else:\n            result['risk_level'] = 2\n            result['risk_desc'] = '最大密码寿命不符合要求，当前设置为' + info[\"PWD MaximumPasswordAge\"] + '天'\n            result['solution'] = '设置最大密码寿命为30到90天。'\n\n    # 口令策略配置问题的解决方案增加系统策略设置路径\n    if result['risk_level'] != 0:\n        result['solution'] += '\\n策略设置路径为：Computer Configuration\\\\Windows Settings\\\\Security Settings\\\\Account ' \\\n                              'Policies\\\\Password Policy '\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n\n    print(result)\n",
+											"description": "windows/pwd_policy.py, 设置SCRIPT_USAGE = 1",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.4.2 Win口令复杂度",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows口令复杂度要求",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsPwdComplexity",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "97309d94-0b9f-4d7e-8343-f14259c9b05c",
+											"description": "分组：Windows口令配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\n\nimport configparser\nimport codecs\nimport os\n\n# 本脚本用于多条密码安全策略\n# SCRIPT_USAGE = 1    # 密码长度不能小于 MIN_PWD_LEN （8）\nSCRIPT_USAGE = 2    # 密码复杂度（0 -- 65536）\n# SCRIPT_USAGE = 3    # 强制密码历史：新密码设定时的历史唯一性检查，检查几个历史密码 （0 -- 65536）\n# SCRIPT_USAGE = 4  # 密码寿命：最小密码寿命设置为1天，最大密码寿命设置为30--90天\n\n# refer to the page:\n# https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-gpsb/2cd39c97-97cd-4859-a7b4-1229dad5f53d\n# https://blog.csdn.net/yongping8204/article/details/7471627\nINVALID = '-1'\nMIN_PWD_LEN = 8\nMIN_PWD_HIS_SIZE = 5\n\n\nclass Config:\n    def __init__(self, path):\n        self.path = path\n        self.cf = configparser.ConfigParser()\n        self.cf.read_file(codecs.open(self.path, \"r\", \"utf_16\"))\n        s = self.cf.sections()\n\n    def get(self, field, key):\n        try:\n            result = str(self.cf.get(field, key))\n        except:\n            return INVALID\n        return result\n\n    def set(self, field, key, value):\n        self.cf.set(field, key, value)\n        self.cf.write(open(self.path, 'w'))\n        return True\n\n\ndef process(info):\n    output = os.system(\"secedit /export /cfg Password.ini\")\n\n    cf = Config(\"Password.ini\")\n\n    info[\"PWD MinimumPasswordAge\"] = cf.get(\"System Access\", \"MinimumPasswordAge\")\n    info[\"PWD MaximumPasswordAge\"] = cf.get(\"System Access\", \"MaximumPasswordAge\")\n    info[\"PWD MinimumPasswordLength\"] = cf.get(\"System Access\", \"MinimumPasswordLength\")\n    info[\"PWD PasswordComplexity\"] = cf.get(\"System Access\", \"PasswordComplexity\")\n    info[\"PWD PasswordHistorySize\"] = cf.get(\"System Access\", \"PasswordHistorySize\")\n\n    info[\"Account LockoutBadCount\"] = cf.get(\"System Access\", \"LockoutBadCount\")\n    info[\"Account LockoutDuration\"] = cf.get(\"System Access\", \"LockoutDuration\")\n    info[\"Account ResetLockoutCount\"] = cf.get(\"System Access\", \"ResetLockoutCount\")\n    info[\"Account NewAdministratorName\"] = cf.get(\"System Access\", \"NewAdministratorName\")\n    info[\"Account Guest Active\"] = cf.get(\"System Access\", \"EnableGuestAccount\")\n\n    info[\"Audit AuditLogonEvents\"] = cf.get(\"Event Audit\", \"AuditLogonEvents\")\n    info[\"Audit AuditSystemEvents\"] = cf.get(\"Event Audit\", \"AuditSystemEvents\")\n    info[\"Audit AuditObjectAccess\"] = cf.get(\"Event Audit\", \"AuditObjectAccess\")\n    info[\"Audit AuditPrivilegeUse\"] = cf.get(\"Event Audit\", \"AuditPrivilegeUse\")\n    info[\"Audit AuditPolicyChange\"] = cf.get(\"Event Audit\", \"AuditPolicyChange\")\n    info[\"Audit AuditAccountManage\"] = cf.get(\"Event Audit\", \"AuditAccountManage\")\n    info[\"Audit AuditProcessTracking\"] = cf.get(\"Event Audit\", \"AuditProcessTracking\")\n    info[\"Audit AuditDSAccess\"] = cf.get(\"Event Audit\", \"AuditDSAccess\")\n    info[\"Audit AuditAccountLogon\"] = cf.get(\"Event Audit\", \"AuditAccountLogon\")\n\n    info[\"Log AuditLogonEvents\"] = cf.get(\"Event Audit\", \"AuditLogonEvents\")\n\n    os.remove('Password.ini')\n\n\ndef analyze(result):\n    info = result['info']\n    result['risk_desc'] = ''\n    result['solution'] = ''\n\n    # 密码长度不能小于 MIN_PWD_LEN （8）\n    if SCRIPT_USAGE == 1:\n        if int(info[\"PWD MinimumPasswordLength\"]) < MIN_PWD_LEN:\n            result['risk_level'] = 3\n            result['risk_desc'] = '允许设置的密码长度太短'\n            result['solution'] = '设置密码长度最少为' + str(MIN_PWD_LEN) + '位。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '密码长度符合要求'\n            result['solution'] = '无'\n\n    # 密码复杂度（0 -- 65536）\n    if SCRIPT_USAGE == 2:\n        if int(info[\"PWD PasswordComplexity\"]) < 1:\n            result['risk_level'] = 3\n            result['risk_desc'] = '没有限制密码的复杂度'\n            result['solution'] = '密码不能含用户名，需包含大写字母、小写字母、数字及特殊字符。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '密码复杂度符合要求'\n            result['solution'] = '无'\n\n    # 强制密码历史：新密码设定时的历史唯一性检查，检查几个历史密码 （0 -- 65536）\n    if SCRIPT_USAGE == 3:\n        if int(info[\"PWD PasswordHistorySize\"]) < MIN_PWD_HIS_SIZE:\n            result['risk_level'] = 3\n            result['risk_desc'] = '强制密码历史不符合要求，当前系统设置为' + info[\"PWD PasswordHistorySize\"] + '个记住密码'\n            result['solution'] = '设置强制密码历史数最少为' + str(MIN_PWD_HIS_SIZE) + '个记住密码。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '强制密码历史符合要求'\n            result['solution'] = '无'\n\n    # 密码寿命：最小密码寿命设置为1天，最大密码寿命设置为30--90天\n    if SCRIPT_USAGE == 4:\n        if 30 <= int(info[\"PWD MaximumPasswordAge\"]) <= 90:\n            if int(info[\"PWD MinimumPasswordAge\"]) == 1:\n                result['risk_level'] = 0\n                result['risk_desc'] = '口令寿命符合要求'\n                result['solution'] = '无'\n            else:\n                result['risk_level'] = 1\n                result['risk_desc'] = '最小密码寿命设置不合理，当前设置为' + info[\"PWD MinimumPasswordAge\"] + '天'\n                result['solution'] = '设置最小密码寿命为1天。'\n        else:\n            result['risk_level'] = 2\n            result['risk_desc'] = '最大密码寿命不符合要求，当前设置为' + info[\"PWD MaximumPasswordAge\"] + '天'\n            result['solution'] = '设置最大密码寿命为30到90天。'\n\n    # 口令策略配置问题的解决方案增加系统策略设置路径\n    if result['risk_level'] != 0:\n        result['solution'] += '\\n策略设置路径为：Computer Configuration\\\\Windows Settings\\\\Security Settings\\\\Account ' \\\n                              'Policies\\\\Password Policy '\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n\n    print(result)\n",
+											"description": "windows/pwd_policy.py, 设置SCRIPT_USAGE = 2",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.4.3 Win口令强制密码历史",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows口令强制密码历史",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsPwdHistorySize",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "97309d94-0b9f-4d7e-8343-f14259c9b05c",
+											"description": "分组：Windows口令配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\n\nimport configparser\nimport codecs\nimport os\n\n# 本脚本用于多条密码安全策略\n# SCRIPT_USAGE = 1    # 密码长度不能小于 MIN_PWD_LEN （8）\n# SCRIPT_USAGE = 2    # 密码复杂度（0 -- 65536）\nSCRIPT_USAGE = 3    # 强制密码历史：新密码设定时的历史唯一性检查，检查几个历史密码 （0 -- 65536）\n# SCRIPT_USAGE = 4  # 密码寿命：最小密码寿命设置为1天，最大密码寿命设置为30--90天\n\n# refer to the page:\n# https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-gpsb/2cd39c97-97cd-4859-a7b4-1229dad5f53d\n# https://blog.csdn.net/yongping8204/article/details/7471627\nINVALID = '-1'\nMIN_PWD_LEN = 8\nMIN_PWD_HIS_SIZE = 5\n\n\nclass Config:\n    def __init__(self, path):\n        self.path = path\n        self.cf = configparser.ConfigParser()\n        self.cf.read_file(codecs.open(self.path, \"r\", \"utf_16\"))\n        s = self.cf.sections()\n\n    def get(self, field, key):\n        try:\n            result = str(self.cf.get(field, key))\n        except:\n            return INVALID\n        return result\n\n    def set(self, field, key, value):\n        self.cf.set(field, key, value)\n        self.cf.write(open(self.path, 'w'))\n        return True\n\n\ndef process(info):\n    output = os.system(\"secedit /export /cfg Password.ini\")\n\n    cf = Config(\"Password.ini\")\n\n    info[\"PWD MinimumPasswordAge\"] = cf.get(\"System Access\", \"MinimumPasswordAge\")\n    info[\"PWD MaximumPasswordAge\"] = cf.get(\"System Access\", \"MaximumPasswordAge\")\n    info[\"PWD MinimumPasswordLength\"] = cf.get(\"System Access\", \"MinimumPasswordLength\")\n    info[\"PWD PasswordComplexity\"] = cf.get(\"System Access\", \"PasswordComplexity\")\n    info[\"PWD PasswordHistorySize\"] = cf.get(\"System Access\", \"PasswordHistorySize\")\n\n    info[\"Account LockoutBadCount\"] = cf.get(\"System Access\", \"LockoutBadCount\")\n    info[\"Account LockoutDuration\"] = cf.get(\"System Access\", \"LockoutDuration\")\n    info[\"Account ResetLockoutCount\"] = cf.get(\"System Access\", \"ResetLockoutCount\")\n    info[\"Account NewAdministratorName\"] = cf.get(\"System Access\", \"NewAdministratorName\")\n    info[\"Account Guest Active\"] = cf.get(\"System Access\", \"EnableGuestAccount\")\n\n    info[\"Audit AuditLogonEvents\"] = cf.get(\"Event Audit\", \"AuditLogonEvents\")\n    info[\"Audit AuditSystemEvents\"] = cf.get(\"Event Audit\", \"AuditSystemEvents\")\n    info[\"Audit AuditObjectAccess\"] = cf.get(\"Event Audit\", \"AuditObjectAccess\")\n    info[\"Audit AuditPrivilegeUse\"] = cf.get(\"Event Audit\", \"AuditPrivilegeUse\")\n    info[\"Audit AuditPolicyChange\"] = cf.get(\"Event Audit\", \"AuditPolicyChange\")\n    info[\"Audit AuditAccountManage\"] = cf.get(\"Event Audit\", \"AuditAccountManage\")\n    info[\"Audit AuditProcessTracking\"] = cf.get(\"Event Audit\", \"AuditProcessTracking\")\n    info[\"Audit AuditDSAccess\"] = cf.get(\"Event Audit\", \"AuditDSAccess\")\n    info[\"Audit AuditAccountLogon\"] = cf.get(\"Event Audit\", \"AuditAccountLogon\")\n\n    info[\"Log AuditLogonEvents\"] = cf.get(\"Event Audit\", \"AuditLogonEvents\")\n\n    os.remove('Password.ini')\n\n\ndef analyze(result):\n    info = result['info']\n    result['risk_desc'] = ''\n    result['solution'] = ''\n\n    # 密码长度不能小于 MIN_PWD_LEN （8）\n    if SCRIPT_USAGE == 1:\n        if int(info[\"PWD MinimumPasswordLength\"]) < MIN_PWD_LEN:\n            result['risk_level'] = 3\n            result['risk_desc'] = '允许设置的密码长度太短'\n            result['solution'] = '设置密码长度最少为' + str(MIN_PWD_LEN) + '位。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '密码长度符合要求'\n            result['solution'] = '无'\n\n    # 密码复杂度（0 -- 65536）\n    if SCRIPT_USAGE == 2:\n        if int(info[\"PWD PasswordComplexity\"]) < 1:\n            result['risk_level'] = 3\n            result['risk_desc'] = '没有限制密码的复杂度'\n            result['solution'] = '密码不能含用户名，需包含大写字母、小写字母、数字及特殊字符。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '密码复杂度符合要求'\n            result['solution'] = '无'\n\n    # 强制密码历史：新密码设定时的历史唯一性检查，检查几个历史密码 （0 -- 65536）\n    if SCRIPT_USAGE == 3:\n        if int(info[\"PWD PasswordHistorySize\"]) < MIN_PWD_HIS_SIZE:\n            result['risk_level'] = 3\n            result['risk_desc'] = '强制密码历史不符合要求，当前系统设置为' + info[\"PWD PasswordHistorySize\"] + '个记住密码'\n            result['solution'] = '设置强制密码历史数最少为' + str(MIN_PWD_HIS_SIZE) + '个记住密码。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '强制密码历史符合要求'\n            result['solution'] = '无'\n\n    # 密码寿命：最小密码寿命设置为1天，最大密码寿命设置为30--90天\n    if SCRIPT_USAGE == 4:\n        if 30 <= int(info[\"PWD MaximumPasswordAge\"]) <= 90:\n            if int(info[\"PWD MinimumPasswordAge\"]) == 1:\n                result['risk_level'] = 0\n                result['risk_desc'] = '口令寿命符合要求'\n                result['solution'] = '无'\n            else:\n                result['risk_level'] = 1\n                result['risk_desc'] = '最小密码寿命设置不合理，当前设置为' + info[\"PWD MinimumPasswordAge\"] + '天'\n                result['solution'] = '设置最小密码寿命为1天。'\n        else:\n            result['risk_level'] = 2\n            result['risk_desc'] = '最大密码寿命不符合要求，当前设置为' + info[\"PWD MaximumPasswordAge\"] + '天'\n            result['solution'] = '设置最大密码寿命为30到90天。'\n\n    # 口令策略配置问题的解决方案增加系统策略设置路径\n    if result['risk_level'] != 0:\n        result['solution'] += '\\n策略设置路径为：Computer Configuration\\\\Windows Settings\\\\Security Settings\\\\Account ' \\\n                              'Policies\\\\Password Policy '\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n\n    print(result)\n",
+											"description": "windows/pwd_policy.py, 设置SCRIPT_USAGE = 3",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.4.4 Win口令寿命",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows口令寿命",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsPwdAge",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "97309d94-0b9f-4d7e-8343-f14259c9b05c",
+											"description": "分组：Windows口令配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\n\nimport configparser\nimport codecs\nimport os\n\n# 本脚本用于多条密码安全策略\n# SCRIPT_USAGE = 1    # 密码长度不能小于 MIN_PWD_LEN （8）\n# SCRIPT_USAGE = 2    # 密码复杂度（0 -- 65536）\n# SCRIPT_USAGE = 3    # 强制密码历史：新密码设定时的历史唯一性检查，检查几个历史密码 （0 -- 65536）\nSCRIPT_USAGE = 4  # 密码寿命：最小密码寿命设置为1天，最大密码寿命设置为30--90天\n\n# refer to the page:\n# https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-gpsb/2cd39c97-97cd-4859-a7b4-1229dad5f53d\n# https://blog.csdn.net/yongping8204/article/details/7471627\nINVALID = '-1'\nMIN_PWD_LEN = 8\nMIN_PWD_HIS_SIZE = 5\n\n\nclass Config:\n    def __init__(self, path):\n        self.path = path\n        self.cf = configparser.ConfigParser()\n        self.cf.read_file(codecs.open(self.path, \"r\", \"utf_16\"))\n        s = self.cf.sections()\n\n    def get(self, field, key):\n        try:\n            result = str(self.cf.get(field, key))\n        except:\n            return INVALID\n        return result\n\n    def set(self, field, key, value):\n        self.cf.set(field, key, value)\n        self.cf.write(open(self.path, 'w'))\n        return True\n\n\ndef process(info):\n    output = os.system(\"secedit /export /cfg Password.ini\")\n\n    cf = Config(\"Password.ini\")\n\n    info[\"PWD MinimumPasswordAge\"] = cf.get(\"System Access\", \"MinimumPasswordAge\")\n    info[\"PWD MaximumPasswordAge\"] = cf.get(\"System Access\", \"MaximumPasswordAge\")\n    info[\"PWD MinimumPasswordLength\"] = cf.get(\"System Access\", \"MinimumPasswordLength\")\n    info[\"PWD PasswordComplexity\"] = cf.get(\"System Access\", \"PasswordComplexity\")\n    info[\"PWD PasswordHistorySize\"] = cf.get(\"System Access\", \"PasswordHistorySize\")\n\n    info[\"Account LockoutBadCount\"] = cf.get(\"System Access\", \"LockoutBadCount\")\n    info[\"Account LockoutDuration\"] = cf.get(\"System Access\", \"LockoutDuration\")\n    info[\"Account ResetLockoutCount\"] = cf.get(\"System Access\", \"ResetLockoutCount\")\n    info[\"Account NewAdministratorName\"] = cf.get(\"System Access\", \"NewAdministratorName\")\n    info[\"Account Guest Active\"] = cf.get(\"System Access\", \"EnableGuestAccount\")\n\n    info[\"Audit AuditLogonEvents\"] = cf.get(\"Event Audit\", \"AuditLogonEvents\")\n    info[\"Audit AuditSystemEvents\"] = cf.get(\"Event Audit\", \"AuditSystemEvents\")\n    info[\"Audit AuditObjectAccess\"] = cf.get(\"Event Audit\", \"AuditObjectAccess\")\n    info[\"Audit AuditPrivilegeUse\"] = cf.get(\"Event Audit\", \"AuditPrivilegeUse\")\n    info[\"Audit AuditPolicyChange\"] = cf.get(\"Event Audit\", \"AuditPolicyChange\")\n    info[\"Audit AuditAccountManage\"] = cf.get(\"Event Audit\", \"AuditAccountManage\")\n    info[\"Audit AuditProcessTracking\"] = cf.get(\"Event Audit\", \"AuditProcessTracking\")\n    info[\"Audit AuditDSAccess\"] = cf.get(\"Event Audit\", \"AuditDSAccess\")\n    info[\"Audit AuditAccountLogon\"] = cf.get(\"Event Audit\", \"AuditAccountLogon\")\n\n    info[\"Log AuditLogonEvents\"] = cf.get(\"Event Audit\", \"AuditLogonEvents\")\n\n    os.remove('Password.ini')\n\n\ndef analyze(result):\n    info = result['info']\n    result['risk_desc'] = ''\n    result['solution'] = ''\n\n    # 密码长度不能小于 MIN_PWD_LEN （8）\n    if SCRIPT_USAGE == 1:\n        if int(info[\"PWD MinimumPasswordLength\"]) < MIN_PWD_LEN:\n            result['risk_level'] = 3\n            result['risk_desc'] = '允许设置的密码长度太短'\n            result['solution'] = '设置密码长度最少为' + str(MIN_PWD_LEN) + '位。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '密码长度符合要求'\n            result['solution'] = '无'\n\n    # 密码复杂度（0 -- 65536）\n    if SCRIPT_USAGE == 2:\n        if int(info[\"PWD PasswordComplexity\"]) < 1:\n            result['risk_level'] = 3\n            result['risk_desc'] = '没有限制密码的复杂度'\n            result['solution'] = '密码不能含用户名，需包含大写字母、小写字母、数字及特殊字符。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '密码复杂度符合要求'\n            result['solution'] = '无'\n\n    # 强制密码历史：新密码设定时的历史唯一性检查，检查几个历史密码 （0 -- 65536）\n    if SCRIPT_USAGE == 3:\n        if int(info[\"PWD PasswordHistorySize\"]) < MIN_PWD_HIS_SIZE:\n            result['risk_level'] = 3\n            result['risk_desc'] = '强制密码历史不符合要求，当前系统设置为' + info[\"PWD PasswordHistorySize\"] + '个记住密码'\n            result['solution'] = '设置强制密码历史数最少为' + str(MIN_PWD_HIS_SIZE) + '个记住密码。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '强制密码历史符合要求'\n            result['solution'] = '无'\n\n    # 密码寿命：最小密码寿命设置为1天，最大密码寿命设置为30--90天\n    if SCRIPT_USAGE == 4:\n        if 30 <= int(info[\"PWD MaximumPasswordAge\"]) <= 90:\n            if int(info[\"PWD MinimumPasswordAge\"]) == 1:\n                result['risk_level'] = 0\n                result['risk_desc'] = '口令寿命符合要求'\n                result['solution'] = '无'\n            else:\n                result['risk_level'] = 1\n                result['risk_desc'] = '最小密码寿命设置不合理，当前设置为' + info[\"PWD MinimumPasswordAge\"] + '天'\n                result['solution'] = '设置最小密码寿命为1天。'\n        else:\n            result['risk_level'] = 2\n            result['risk_desc'] = '最大密码寿命不符合要求，当前设置为' + info[\"PWD MaximumPasswordAge\"] + '天'\n            result['solution'] = '设置最大密码寿命为30到90天。'\n\n    # 口令策略配置问题的解决方案增加系统策略设置路径\n    if result['risk_level'] != 0:\n        result['solution'] += '\\n策略设置路径为：Computer Configuration\\\\Windows Settings\\\\Security Settings\\\\Account ' \\\n                              'Policies\\\\Password Policy '\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n\n    print(result)\n",
+											"description": "windows/pwd_policy.py, 设置SCRIPT_USAGE = 4",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "C.5 Win账号配置",
+					"item": [
+						{
+							"name": "C.5.1 Win账户锁定阈值",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows账户锁定阈值",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsAccLockBadCount",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "5aa4e0dc-2019-49c1-885b-925bac3238d0",
+											"description": "分组：Windows用户账号配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\n\nimport configparser\nimport codecs\nimport os\n\n# 本脚本用于多条密码安全策略\nSCRIPT_USAGE = 1  # 账户锁定阈值（0 -- 65536），建议10次口令失败\n# SCRIPT_USAGE = 2    # 账户锁定时间（0 -- 99,999分钟），建议锁定15分钟\n# SCRIPT_USAGE = 3    # 强制过期时间（0 -- 99,999小时），建议24小时\n\n# refer to the page:\n# https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-gpsb/2cd39c97-97cd-4859-a7b4-1229dad5f53d\n# https://blog.csdn.net/yongping8204/article/details/7471627\nINVALID = '-1'\nMAX_LOCKOUT_THRESHOLD = 10\nMIN_LOCKOUT_DURATION = 15\n\n\nclass Config:\n    def __init__(self, path):\n        self.path = path\n        self.cf = configparser.ConfigParser()\n        self.cf.read_file(codecs.open(self.path, \"r\", \"utf_16\"))\n        s = self.cf.sections()\n\n    def get(self, field, key):\n        try:\n            result = str(self.cf.get(field, key))\n        except:\n            return INVALID\n        return result\n\n    def set(self, field, key, value):\n        self.cf.set(field, key, value)\n        self.cf.write(open(self.path, 'w'))\n        return True\n\n\ndef process(info):\n    output = os.system(\"secedit /export /cfg Password.ini\")\n\n    cf = Config(\"Password.ini\")\n\n    info[\"Account LockoutBadCount\"] = cf.get(\"System Access\", \"LockoutBadCount\")\n    info[\"Account LockoutDuration\"] = cf.get(\"System Access\", \"LockoutDuration\")\n    info[\"Account ResetLockoutCount\"] = cf.get(\"System Access\", \"ResetLockoutCount\")\n    info[\"Account ForceLogoffWhenHourExpire\"] = cf.get(\"System Access\", \"ForceLogoffWhenHourExpire\")\n    info[\"Account NewAdministratorName\"] = cf.get(\"System Access\", \"NewAdministratorName\")\n    info[\"Account Guest Active\"] = cf.get(\"System Access\", \"EnableGuestAccount\")\n\n    os.remove('Password.ini')\n\n\ndef analyze(result):\n    info = result['info']\n    result['risk_desc'] = ''\n    result['solution'] = ''\n\n    # 账户锁定阈值（0 -- 65536），建议10次口令失败\n    if SCRIPT_USAGE == 1:\n        if int(info[\"Account LockoutBadCount\"]) > MAX_LOCKOUT_THRESHOLD:\n            result['risk_level'] = 2\n            result['risk_desc'] = '账户锁定阈值太大，当前设置是' + info[\"Account LockoutBadCount\"]\n            result['solution'] = '设置账户锁定阈值为3到10之间。'\n        elif int(info[\"Account LockoutBadCount\"]) <= 0:\n            result['risk_level'] = 3\n            result['risk_desc'] = '未设定账户锁定阈值，大大提高了账户被破解的风险'\n            result['solution'] = '设置账户锁定阈值为3到10之间。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '当前账户锁定阈值是' + info[\"Account LockoutBadCount\"] + '，符合账户安全要求'\n            result['solution'] = '无'\n\n    # 账户锁定时间（0 -- 99,999分钟），建议锁定15分钟\n    if SCRIPT_USAGE == 2:\n        if int(info[\"Account LockoutDuration\"]) <= 0:\n            result['risk_level'] = 3\n            result['risk_desc'] = '未设置口令试错的账户锁定时间'\n            result['solution'] = '设置账户锁定时间为' + str(MIN_LOCKOUT_DURATION) + '分钟以上。'\n        elif int(info[\"Account LockoutDuration\"]) < MIN_LOCKOUT_DURATION:\n            result['risk_level'] = 1\n            result['risk_desc'] = '账户锁定时间过短，当前设置是' + info[\"Account LockoutDuration\"] + '分钟。'\n            result['solution'] = '设置账户锁定时间为' + str(MIN_LOCKOUT_DURATION) + '分钟以上。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '当前账户锁定时间是' + info[\"Account LockoutDuration\"] + '分钟，符合账户安全要求'\n            result['solution'] = '无'\n\n    # 强制过期时间（0 -- 99,999小时），建议24小时\n    if SCRIPT_USAGE == 3:\n        if int(info[\"Account ForceLogoffWhenHourExpire\"]) == 0:\n            result['risk_level'] = 2\n            result['risk_desc'] = '未设置账户的强制过期时间'\n            result['solution'] = '设置账户的强制过期时间为24小时。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '当前账户的强制过期时间是' + info[\"Account ForceLogoffWhenHourExpire\"] + '小时，符合账户安全要求'\n            result['solution'] = '无'\n\n    # 口令策略配置问题的解决方案增加系统策略设置路径\n    if result['risk_level'] != 0:\n        result['solution'] += '\\n策略设置路径为：Computer Configuration\\\\Windows Settings\\\\Security Settings\\\\Account ' \\\n                              'Policies\\\\Password Policy '\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n\n    print(result)\n",
+											"description": "windows/account_policy.py, 设置SCRIPT_USAGE = 1",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.5.2 Win账户锁定时间",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows账户锁定时间",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsAccLockDuration",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "5aa4e0dc-2019-49c1-885b-925bac3238d0",
+											"description": "分组：Windows用户账号配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\n\nimport configparser\nimport codecs\nimport os\n\n# 本脚本用于多条密码安全策略\n# SCRIPT_USAGE = 1  # 账户锁定阈值（0 -- 65536），建议10次口令失败\nSCRIPT_USAGE = 2    # 账户锁定时间（0 -- 99,999分钟），建议锁定15分钟\n# SCRIPT_USAGE = 3    # 强制过期时间（0 -- 99,999小时），建议24小时\n\n# refer to the page:\n# https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-gpsb/2cd39c97-97cd-4859-a7b4-1229dad5f53d\n# https://blog.csdn.net/yongping8204/article/details/7471627\nINVALID = '-1'\nMAX_LOCKOUT_THRESHOLD = 10\nMIN_LOCKOUT_DURATION = 15\n\n\nclass Config:\n    def __init__(self, path):\n        self.path = path\n        self.cf = configparser.ConfigParser()\n        self.cf.read_file(codecs.open(self.path, \"r\", \"utf_16\"))\n        s = self.cf.sections()\n\n    def get(self, field, key):\n        try:\n            result = str(self.cf.get(field, key))\n        except:\n            return INVALID\n        return result\n\n    def set(self, field, key, value):\n        self.cf.set(field, key, value)\n        self.cf.write(open(self.path, 'w'))\n        return True\n\n\ndef process(info):\n    output = os.system(\"secedit /export /cfg Password.ini\")\n\n    cf = Config(\"Password.ini\")\n\n    info[\"Account LockoutBadCount\"] = cf.get(\"System Access\", \"LockoutBadCount\")\n    info[\"Account LockoutDuration\"] = cf.get(\"System Access\", \"LockoutDuration\")\n    info[\"Account ResetLockoutCount\"] = cf.get(\"System Access\", \"ResetLockoutCount\")\n    info[\"Account ForceLogoffWhenHourExpire\"] = cf.get(\"System Access\", \"ForceLogoffWhenHourExpire\")\n    info[\"Account NewAdministratorName\"] = cf.get(\"System Access\", \"NewAdministratorName\")\n    info[\"Account Guest Active\"] = cf.get(\"System Access\", \"EnableGuestAccount\")\n\n    os.remove('Password.ini')\n\n\ndef analyze(result):\n    info = result['info']\n    result['risk_desc'] = ''\n    result['solution'] = ''\n\n    # 账户锁定阈值（0 -- 65536），建议10次口令失败\n    if SCRIPT_USAGE == 1:\n        if int(info[\"Account LockoutBadCount\"]) > MAX_LOCKOUT_THRESHOLD:\n            result['risk_level'] = 2\n            result['risk_desc'] = '账户锁定阈值太大，当前设置是' + info[\"Account LockoutBadCount\"]\n            result['solution'] = '设置账户锁定阈值为3到10之间。'\n        elif int(info[\"Account LockoutBadCount\"]) <= 0:\n            result['risk_level'] = 3\n            result['risk_desc'] = '未设定账户锁定阈值，大大提高了账户被破解的风险'\n            result['solution'] = '设置账户锁定阈值为3到10之间。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '当前账户锁定阈值是' + info[\"Account LockoutBadCount\"] + '，符合账户安全要求'\n            result['solution'] = '无'\n\n    # 账户锁定时间（0 -- 99,999分钟），建议锁定15分钟\n    if SCRIPT_USAGE == 2:\n        if int(info[\"Account LockoutDuration\"]) <= 0:\n            result['risk_level'] = 3\n            result['risk_desc'] = '未设置口令试错的账户锁定时间'\n            result['solution'] = '设置账户锁定时间为' + str(MIN_LOCKOUT_DURATION) + '分钟以上。'\n        elif int(info[\"Account LockoutDuration\"]) < MIN_LOCKOUT_DURATION:\n            result['risk_level'] = 1\n            result['risk_desc'] = '账户锁定时间过短，当前设置是' + info[\"Account LockoutDuration\"] + '分钟。'\n            result['solution'] = '设置账户锁定时间为' + str(MIN_LOCKOUT_DURATION) + '分钟以上。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '当前账户锁定时间是' + info[\"Account LockoutDuration\"] + '分钟，符合账户安全要求'\n            result['solution'] = '无'\n\n    # 强制过期时间（0 -- 99,999小时），建议24小时\n    if SCRIPT_USAGE == 3:\n        if int(info[\"Account ForceLogoffWhenHourExpire\"]) == 0:\n            result['risk_level'] = 2\n            result['risk_desc'] = '未设置账户的强制过期时间'\n            result['solution'] = '设置账户的强制过期时间为24小时。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '当前账户的强制过期时间是' + info[\"Account ForceLogoffWhenHourExpire\"] + '小时，符合账户安全要求'\n            result['solution'] = '无'\n\n    # 口令策略配置问题的解决方案增加系统策略设置路径\n    if result['risk_level'] != 0:\n        result['solution'] += '\\n策略设置路径为：Computer Configuration\\\\Windows Settings\\\\Security Settings\\\\Account ' \\\n                              'Policies\\\\Password Policy '\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n\n    print(result)\n",
+											"description": "windows/account_policy.py, 设置SCRIPT_USAGE = 2",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.5.3 Win账户强制过期时间",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows账户锁定时间",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsAccLockDuration",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "5aa4e0dc-2019-49c1-885b-925bac3238d0",
+											"description": "分组：Windows用户账号配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\n\nimport configparser\nimport codecs\nimport os\n\n# 本脚本用于多条密码安全策略\n# SCRIPT_USAGE = 1  # 账户锁定阈值（0 -- 65536），建议10次口令失败\n# SCRIPT_USAGE = 2    # 账户锁定时间（0 -- 99,999分钟），建议锁定15分钟\nSCRIPT_USAGE = 3    # 强制过期时间（0 -- 99,999小时），建议24小时\n\n# refer to the page:\n# https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-gpsb/2cd39c97-97cd-4859-a7b4-1229dad5f53d\n# https://blog.csdn.net/yongping8204/article/details/7471627\nINVALID = '-1'\nMAX_LOCKOUT_THRESHOLD = 10\nMIN_LOCKOUT_DURATION = 15\n\n\nclass Config:\n    def __init__(self, path):\n        self.path = path\n        self.cf = configparser.ConfigParser()\n        self.cf.read_file(codecs.open(self.path, \"r\", \"utf_16\"))\n        s = self.cf.sections()\n\n    def get(self, field, key):\n        try:\n            result = str(self.cf.get(field, key))\n        except:\n            return INVALID\n        return result\n\n    def set(self, field, key, value):\n        self.cf.set(field, key, value)\n        self.cf.write(open(self.path, 'w'))\n        return True\n\n\ndef process(info):\n    output = os.system(\"secedit /export /cfg Password.ini\")\n\n    cf = Config(\"Password.ini\")\n\n    info[\"Account LockoutBadCount\"] = cf.get(\"System Access\", \"LockoutBadCount\")\n    info[\"Account LockoutDuration\"] = cf.get(\"System Access\", \"LockoutDuration\")\n    info[\"Account ResetLockoutCount\"] = cf.get(\"System Access\", \"ResetLockoutCount\")\n    info[\"Account ForceLogoffWhenHourExpire\"] = cf.get(\"System Access\", \"ForceLogoffWhenHourExpire\")\n    info[\"Account NewAdministratorName\"] = cf.get(\"System Access\", \"NewAdministratorName\")\n    info[\"Account Guest Active\"] = cf.get(\"System Access\", \"EnableGuestAccount\")\n\n    os.remove('Password.ini')\n\n\ndef analyze(result):\n    info = result['info']\n    result['risk_desc'] = ''\n    result['solution'] = ''\n\n    # 账户锁定阈值（0 -- 65536），建议10次口令失败\n    if SCRIPT_USAGE == 1:\n        if int(info[\"Account LockoutBadCount\"]) > MAX_LOCKOUT_THRESHOLD:\n            result['risk_level'] = 2\n            result['risk_desc'] = '账户锁定阈值太大，当前设置是' + info[\"Account LockoutBadCount\"]\n            result['solution'] = '设置账户锁定阈值为3到10之间。'\n        elif int(info[\"Account LockoutBadCount\"]) <= 0:\n            result['risk_level'] = 3\n            result['risk_desc'] = '未设定账户锁定阈值，大大提高了账户被破解的风险'\n            result['solution'] = '设置账户锁定阈值为3到10之间。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '当前账户锁定阈值是' + info[\"Account LockoutBadCount\"] + '，符合账户安全要求'\n            result['solution'] = '无'\n\n    # 账户锁定时间（0 -- 99,999分钟），建议锁定15分钟\n    if SCRIPT_USAGE == 2:\n        if int(info[\"Account LockoutDuration\"]) <= 0:\n            result['risk_level'] = 3\n            result['risk_desc'] = '未设置口令试错的账户锁定时间'\n            result['solution'] = '设置账户锁定时间为' + str(MIN_LOCKOUT_DURATION) + '分钟以上。'\n        elif int(info[\"Account LockoutDuration\"]) < MIN_LOCKOUT_DURATION:\n            result['risk_level'] = 1\n            result['risk_desc'] = '账户锁定时间过短，当前设置是' + info[\"Account LockoutDuration\"] + '分钟。'\n            result['solution'] = '设置账户锁定时间为' + str(MIN_LOCKOUT_DURATION) + '分钟以上。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '当前账户锁定时间是' + info[\"Account LockoutDuration\"] + '分钟，符合账户安全要求'\n            result['solution'] = '无'\n\n    # 强制过期时间（0 -- 99,999小时），建议24小时\n    if SCRIPT_USAGE == 3:\n        if int(info[\"Account ForceLogoffWhenHourExpire\"]) == 0:\n            result['risk_level'] = 2\n            result['risk_desc'] = '未设置账户的强制过期时间'\n            result['solution'] = '设置账户的强制过期时间为24小时。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '当前账户的强制过期时间是' + info[\"Account ForceLogoffWhenHourExpire\"] + '小时，符合账户安全要求'\n            result['solution'] = '无'\n\n    # 口令策略配置问题的解决方案增加系统策略设置路径\n    if result['risk_level'] != 0:\n        result['solution'] += '\\n策略设置路径为：Computer Configuration\\\\Windows Settings\\\\Security Settings\\\\Account ' \\\n                              'Policies\\\\Password Policy '\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n\n    print(result)\n",
+											"description": "windows/account_policy.py, 设置SCRIPT_USAGE = 3",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.5.4 Win账户激活状态",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows账户激活状态",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsAccActive",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "5aa4e0dc-2019-49c1-885b-925bac3238d0",
+											"description": "分组：Windows用户账号配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\n\nimport configparser\nimport codecs\nimport os\n\n# 本脚本用于多条密码安全策略\n# SCRIPT_USAGE = 1  # 账户锁定阈值（0 -- 65536），建议10次口令失败\n# SCRIPT_USAGE = 2    # 账户锁定时间（0 -- 99,999分钟），建议锁定15分钟\nSCRIPT_USAGE = 3    # 强制过期时间（0 -- 99,999小时），建议24小时\n\n# refer to the page:\n# https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-gpsb/2cd39c97-97cd-4859-a7b4-1229dad5f53d\n# https://blog.csdn.net/yongping8204/article/details/7471627\nINVALID = '-1'\nMAX_LOCKOUT_THRESHOLD = 10\nMIN_LOCKOUT_DURATION = 15\n\n\nclass Config:\n    def __init__(self, path):\n        self.path = path\n        self.cf = configparser.ConfigParser()\n        self.cf.read_file(codecs.open(self.path, \"r\", \"utf_16\"))\n        s = self.cf.sections()\n\n    def get(self, field, key):\n        try:\n            result = str(self.cf.get(field, key))\n        except:\n            return INVALID\n        return result\n\n    def set(self, field, key, value):\n        self.cf.set(field, key, value)\n        self.cf.write(open(self.path, 'w'))\n        return True\n\n\ndef process(info):\n    output = os.system(\"secedit /export /cfg Password.ini\")\n\n    cf = Config(\"Password.ini\")\n\n    info[\"Account LockoutBadCount\"] = cf.get(\"System Access\", \"LockoutBadCount\")\n    info[\"Account LockoutDuration\"] = cf.get(\"System Access\", \"LockoutDuration\")\n    info[\"Account ResetLockoutCount\"] = cf.get(\"System Access\", \"ResetLockoutCount\")\n    info[\"Account ForceLogoffWhenHourExpire\"] = cf.get(\"System Access\", \"ForceLogoffWhenHourExpire\")\n    info[\"Account NewAdministratorName\"] = cf.get(\"System Access\", \"NewAdministratorName\")\n    info[\"Account Guest Active\"] = cf.get(\"System Access\", \"EnableGuestAccount\")\n\n    os.remove('Password.ini')\n\n    return\n\n\ndef analyze(result):\n    info = result['info']\n    result['risk_desc'] = ''\n    result['solution'] = ''\n\n    # 账户锁定阈值（0 -- 65536），建议10次口令失败\n    if SCRIPT_USAGE == 1:\n        if int(info[\"Account LockoutBadCount\"]) > MAX_LOCKOUT_THRESHOLD:\n            result['risk_level'] = 2\n            result['risk_desc'] = '账户锁定阈值太大，当前设置是' + info[\"Account LockoutBadCount\"]\n            result['solution'] = '设置账户锁定阈值为3到10之间。'\n        elif int(info[\"Account LockoutBadCount\"]) <= 0:\n            result['risk_level'] = 3\n            result['risk_desc'] = '未设定账户锁定阈值，大大提高了账户被破解的风险'\n            result['solution'] = '设置账户锁定阈值为3到10之间。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '当前账户锁定阈值是' + info[\"Account LockoutBadCount\"] + '，符合账户安全要求'\n            result['solution'] = '无'\n\n    # 账户锁定时间（0 -- 99,999分钟），建议锁定15分钟\n    if SCRIPT_USAGE == 2:\n        if int(info[\"Account LockoutDuration\"]) <= 0:\n            result['risk_level'] = 3\n            result['risk_desc'] = '未设置口令试错的账户锁定时间'\n            result['solution'] = '设置账户锁定时间为' + str(MIN_LOCKOUT_DURATION) + '分钟以上。'\n        elif int(info[\"Account LockoutDuration\"]) < MIN_LOCKOUT_DURATION:\n            result['risk_level'] = 1\n            result['risk_desc'] = '账户锁定时间过短，当前设置是' + info[\"Account LockoutDuration\"] + '分钟。'\n            result['solution'] = '设置账户锁定时间为' + str(MIN_LOCKOUT_DURATION) + '分钟以上。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '当前账户锁定时间是' + info[\"Account LockoutDuration\"] + '分钟，符合账户安全要求'\n            result['solution'] = '无'\n\n    # 强制过期时间（0 -- 99,999小时），建议24小时\n    if SCRIPT_USAGE == 3:\n        if int(info[\"Account ForceLogoffWhenHourExpire\"]) == 0:\n            result['risk_level'] = 2\n            result['risk_desc'] = '未设置账户的强制过期时间'\n            result['solution'] = '设置账户的强制过期时间为24小时。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '当前账户的强制过期时间是' + info[\"Account ForceLogoffWhenHourExpire\"] + '小时，符合账户安全要求'\n            result['solution'] = '无'\n\n    # 口令策略配置问题的解决方案增加系统策略设置路径\n    if result['risk_level'] != 0:\n        result['solution'] += '\\n策略设置路径为：Computer Configuration\\\\Windows Settings\\\\Security Settings\\\\Account ' \\\n                              'Policies\\\\Password Policy '\n\n    return\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n\n    print(result)\n",
+											"description": "windows/account_security.py",
 											"type": "text"
 										},
 										{
