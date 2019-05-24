@@ -51,7 +51,7 @@ public interface ProjectsMapper {
     )
     int updateProject(ProjectPo projectPo);
 
-    /**
+    /**websocket
      * 根据指定的UUID删除一条项目记录
      * @param projectUuid 项目UUID
      * @return 影响的记录数， >0 表示成功
