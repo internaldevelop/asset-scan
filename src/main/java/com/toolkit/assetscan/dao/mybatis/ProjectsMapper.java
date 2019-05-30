@@ -23,15 +23,13 @@ public interface ProjectsMapper {
      */
     @Insert("INSERT INTO projects( " +
             "uuid, name, code, " +
-            "task_uuid, run_time_mode, output_mode, output_path, " +
-            "create_user_uuid, status, " +
-            "update_time, " +
+            "tasks, run_time_mode, output_mode, task_number, " +
+            "create_user_uuid, status, process_flag, " +
             "create_time) " +
             "VALUES ( " +
             "#{uuid}, #{name}, #{code}, " +
-            "#{task_uuid}, #{run_time_mode}, #{output_mode}, #{output_path}," +
-            "#{create_user_uuid}, #{status}, " +
-            "#{update_time, jdbcType=TIMESTAMP}, " +
+            "#{tasks}, #{run_time_mode}, #{output_mode}, #{task_number}," +
+            "#{create_user_uuid}, #{status}, #{process_flag}," +
             "#{create_time, jdbcType=TIMESTAMP}) "
     )
     int addProject(ProjectPo projectPo);
@@ -43,9 +41,9 @@ public interface ProjectsMapper {
      */
     @Update("UPDATE projects p SET " +
             "name=#{name}, code=#{code}, " +
-            "task_uuid=#{task_uuid}, run_time_mode=#{run_time_mode}, output_mode=#{output_mode}, " +
-            "update_time=#{update_time}," +
-            "output_path=#{output_path} " +
+            "tasks=#{tasks}, run_time_mode=#{run_time_mode}, output_mode=#{output_mode}, " +
+            "process_flag=#{process_flag}," +
+            "task_number=#{task_number} " +
             "WHERE " +
             "uuid=#{uuid} AND p.status>=0  "
     )
@@ -66,11 +64,4 @@ public interface ProjectsMapper {
      */
     @Select("SELECT * FROM projects p WHERE p.uuid=#{uuid} AND p.status>=0 ")
     ProjectPo getProjectByUuid(@Param("uuid") String projectUuid);
-
-    @Select("SELECT p.*,\n" +
-            "   t.name AS task_name,\n" +
-            "   FROM\n" +
-            "	projects p\n" +
-            "	INNER JOIN tasks t ON t.uuid = p.task_uuid\n")
-    List<ProjectDetailInfoDto> getAllProjectDetailInfo();
 }

@@ -12,13 +12,12 @@ public class ProjectPo {
     private String name;
     private String code;
     private String tasks;
+    private int status;
     private int run_time_mode;
     private int output_mode;
-    private String output_path;
+    private String create_user_uuid;
     private int task_number;
     private int process_flag;  // 项目执行过程的标识
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
-    private java.sql.Timestamp update_time;
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private java.sql.Timestamp create_time;
 }

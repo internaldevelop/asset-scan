@@ -7,6 +7,7 @@ import com.toolkit.assetscan.dao.helper.ProjectsManageHelper;
 import com.toolkit.assetscan.dao.mybatis.ProjectsMapper;
 import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
+import com.toolkit.assetscan.global.enumeration.TaskStatusEnum;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
 import org.springframework.stereotype.Component;
@@ -46,6 +47,9 @@ public class ProjectManageService {
         // 为新任务随机分配一个UUID
         projectPo.setUuid(MyUtils.generateUuid());
 
+        // 新项目状态设置为已激活
+        projectPo.setStatus(TaskStatusEnum.TASK_ACTIVE.getStatus());
+
         // 记录新项目的创建时间
         java.sql.Timestamp currentTime = MyUtils.getCurrentSystemTimestamp();
         projectPo.setCreate_time(currentTime);
@@ -75,9 +79,6 @@ public class ProjectManageService {
 
     public ResponseBean getAllProjects() {
         List<ProjectPo> projectsList = projectsMapper.allProjects();
-        if ( (projectsList == null) || (projectsList.size() == 0) )
-            return responseHelper.error(ErrorCodeEnum.ERROR_PROJECT_NOT_FOUND);
-
         return responseHelper.success(projectsList);
     }
 
@@ -88,11 +89,6 @@ public class ProjectManageService {
         }
 
         return responseHelper.success(project);
-    }
-
-    public ResponseBean getAllProjectDetailInfo() {
-        List<ProjectDetailInfoDto> projectDetailInfoList = projectsMapper.getAllProjectDetailInfo();
-        return responseHelper.success(projectDetailInfoList);
     }
 
     public ResponseBean updateProject(ProjectPo projectPo) {

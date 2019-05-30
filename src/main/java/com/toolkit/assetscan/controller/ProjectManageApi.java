@@ -34,7 +34,7 @@ public class ProjectManageApi {
      */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public @ResponseBody
-    Object addTask(@ModelAttribute ProjectPo projectPo, BindingResult bindingResult) {
+    Object addProject(@ModelAttribute ProjectPo projectPo, BindingResult bindingResult) {
         return projectManageService.addProject(projectPo);
     }
 
@@ -45,7 +45,7 @@ public class ProjectManageApi {
      */
     @RequestMapping(value = "/remove", method = RequestMethod.POST)
     public @ResponseBody
-    Object removeTask(@RequestParam("uuid") String projectUuid) {
+    Object removeProject(@RequestParam("uuid") String projectUuid) {
         return projectManageService.removeProject(projectUuid);
     }
 
@@ -79,15 +79,5 @@ public class ProjectManageApi {
     public @ResponseBody
     Object updateProject(@ModelAttribute ProjectPo projectPo) {
         return projectManageService.updateProject(projectPo);
-    }
-
-    /**
-     * 6.7 获取所有项目资产信息
-     * @return payload: 项目详细信息
-     */
-    @RequestMapping(value = "/all-project-details", method = RequestMethod.GET)
-    public @ResponseBody
-    Object getAllProjectDetailInfo() {
-        return projectManageService.getAllProjectDetailInfo();
     }
 }

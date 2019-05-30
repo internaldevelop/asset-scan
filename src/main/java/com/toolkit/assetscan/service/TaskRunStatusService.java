@@ -27,7 +27,10 @@ public class TaskRunStatusService {
         String key = _getTaskRedisKey(taskUuid);
         String value = (String)redisClient.get(key);
         JSONObject jsonObject = JSONObject.parseObject(value);
-        TaskRunStatusDto taskRunStatusDto = jsonObject.getObject("status", TaskRunStatusDto.class);
+        TaskRunStatusDto taskRunStatusDto = null;
+        if (jsonObject !=null ) {
+            taskRunStatusDto = jsonObject.getObject("status", TaskRunStatusDto.class);
+        }
         return taskRunStatusDto;
     }
 
