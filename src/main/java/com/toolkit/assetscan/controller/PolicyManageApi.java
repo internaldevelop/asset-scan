@@ -131,4 +131,15 @@ public class PolicyManageApi {
     Object getAllPolicyDetailInfos() {
         return policyManageService.getAllPolicyDetailInfos();
     }
+
+    /**
+     * 4.10 根据groupUuid获取所在组所有的策略
+     * @param policyGroupUuid
+     * @return
+     */
+    @RequestMapping(value = "/get-policies-by-group-uuid", method = RequestMethod.GET)
+    public @ResponseBody
+    Object getPoliciesByGroupUuid(@RequestParam("groupUuid") String policyGroupUuid) {
+        return policyManageService.getPoliciesByGroupUuid(policyGroupUuid);
+    }
 }
