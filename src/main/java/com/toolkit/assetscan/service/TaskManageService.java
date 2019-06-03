@@ -247,7 +247,7 @@ public class TaskManageService {
         // 根据tasks字段解析出所有task的taskUuid
         String tasks = projectPo.getTasks();
         int timeMode = projectPo.getRun_time_mode();
-        if (tasks != null && tasks.equals("")) {
+        if (tasks != null && !tasks.equals("")) {
             JSONArray jsonArray = JSONArray.parseArray(tasks);
             ResponseBean responseBean = null;
             for (int i = 0; i < jsonArray.size(); i++) {
