@@ -77,6 +77,33 @@ public class TaskExecuteResultsManageApi {
     }
 
     /**
+     * 5.5 单个指定任务执行信息（执行状态信息和执行统计数据）
+     * @param taskUuid
+     * @return 返回 payload 数据，包含三部分：
+     *          run_status：缓存的任务执行状态信息
+     *          task_info：数据库中读取的任务信息
+     *          exec_brief：执行结果摘要（忽略以下字段：task_uuid / results / create_time / exec_action_uuid ）
+     */
+    @RequestMapping(value = "/brief", method = RequestMethod.GET)
+    public @ResponseBody
+    Object getTaskExecBrief(@RequestParam("task_uuid") String taskUuid) {
+        return taskExecuteResultsManageService.getTaskExecBriefInfo(taskUuid);
+    }
+
+    /**
+     * 5.6 某批次策略运行结果（风险漏洞信息、策略、策略组信息）
+     * @param execUuid 执行批次的 UUID
+     * @param riskLevel 风险级别
+     * @return
+     */
+    @RequestMapping(value = "/risks", method = RequestMethod.GET)
+    public @ResponseBody
+    Object getResultRisksInfo(@RequestParam("exec_action_uuid") String execUuid,
+                              @RequestParam("risk_level") int riskLevel) {
+        return taskExecuteResultsManageService.getResultRisksInfo(execUuid, riskLevel);
+    }
+
+    /**
      * 5.9 获取IEE漏洞数（测试第二数据源）
      * @return
      */

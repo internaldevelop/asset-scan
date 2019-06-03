@@ -1,5 +1,6 @@
 package com.toolkit.assetscan.dao.mybatis;
 
+import com.toolkit.assetscan.bean.dto.ExecRiskInfoDto;
 import com.toolkit.assetscan.bean.dto.TaskResultsDto;
 import com.toolkit.assetscan.bean.dto.TaskResultsStatisticsDto;
 import com.toolkit.assetscan.bean.po.TaskExecuteResultsPo;
@@ -97,4 +98,46 @@ public interface TaskExecuteResultsMapper {
             " GROUP BY\n" +
             "	a.os_type")
     List<TaskResultsStatisticsDto> getResultsSysStatistics();
+
+    @Select("SELECT\n" +
+            "	t.* \n" +
+            " FROM\n" +
+            "	task_execute_results t\n" +
+            " WHERE t.exec_action_uuid=#{exec_action_uuid}")
+    List<TaskExecuteResultsPo> getTaskExecResultsByExecUuid(@Param("exec_action_uuid") String execUuid);
+
+    @Select("SELECT\n" +
+            "	t.id, \n" +
+            "	t.uuid, \n" +
+            "	t.start_time, \n" +
+            "	t.end_time, \n" +
+            "	t.process_flag, \n" +
+            "	t.risk_level, \n" +
+            "	t.risk_desc, \n" +
+            "	t.solutions, \n" +
+            "	t.policy_uuid \n" +
+            " FROM\n" +
+            "	task_execute_results t\n" +
+            " WHERE t.exec_action_uuid=#{exec_action_uuid}")
+    List<TaskExecuteResultsPo> getTaskExecBriefByExecUuid(@Param("exec_action_uuid") String execUuid);
+
+    @Select("SELECT\n" +
+            "	t.uuid AS result_uuid, \n" +
+            "	t.start_time, \n" +
+            "	t.end_time, \n" +
+            "	t.process_flag, \n" +
+            "	t.risk_level, \n" +
+            "	t.risk_desc, \n" +
+            "	t.solutions, \n" +
+            "	t.policy_uuid, \n" +
+            "	p.name AS policy_name, \n" +
+            "	p.group_uuid AS policy_group_uuid, \n" +
+            "	pg.name AS policy_group_name \n" +
+            " FROM\n" +
+            "	task_execute_results t\n" +
+            " INNER JOIN policies p ON t.policy_uuid = p.uuid\n" +
+            " INNER JOIN policy_groups pg ON p.group_uuid = pg.uuid\n" +
+            " WHERE t.exec_action_uuid=#{exec_action_uuid} AND t.risk_level=#{risk_level} \n")
+    List<ExecRiskInfoDto> getRiskInfo(@Param("exec_action_uuid") String execUuid,
+                                      @Param("risk_level") int riskLevel);
 }

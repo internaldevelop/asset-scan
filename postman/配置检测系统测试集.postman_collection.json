@@ -3504,6 +3504,3258 @@
 						}
 					],
 					"_postman_isSubFolder": true
+				},
+				{
+					"name": "C.6 Win网络配置",
+					"item": [
+						{
+							"name": "C.6.1 Win抵御ICMP",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows抵御ICMP攻击",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsICMPProtect",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "38bf2c29-8bd3-4e40-855d-d80687a7040c",
+											"description": "分组：Windows网络通信配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\nimport os\nimport winreg\n\nSCRIPT_USAGE = 1  # 抵御 ICMP 攻击\n# SCRIPT_USAGE = 2  # 抵御 SYN 攻击\n# SCRIPT_USAGE = 3  # 抵御 SNMP 攻击\n# SCRIPT_USAGE = 4  # 其它网络保护\n\n\ndef getRegValue(key, value_name):\n    try:\n        value, type = winreg.QueryValueEx(key, value_name)\n    except WindowsError:\n        value = -1\n\n    return value\n\n\ndef process_and_anylyze(result):\n    info = {}\n    result['info'] = info\n    result['risk_level'] = 0\n    result['risk_desc'] = '未发现网络配置缺陷。'\n    result['solution'] = '无'\n\n    if SCRIPT_USAGE == 1:\n        # ===================================================================\n        # 打开注册表 HKLM\\System\\CurrentControlSet\\Services\\AFD\\Parameters\n        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'System\\CurrentControlSet\\Services\\AFD\\Parameters')\n\n        # EnableICMPRedirect：ICMP 重定向数据包的处理\n        # 有效值：0（禁用），1（启用）。建议值：0\n        value = getRegValue(key, 'EnableICMPRedirect')\n        info['EnableICMPRedirect'] = value\n        if value != 0:\n            result['risk_level'] = 1\n            result['risk_desc'] = '没有禁用 ICMP 重定向数据包，易受到ICMP攻击。'\n            result[\n                'solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\AFD\\Parameters下的键值：EnableICMPRedirect = 0。'\n        return\n\n    # ===================================================================\n    # 打开注册表 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters\n    key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'System\\CurrentControlSet\\Services\\Tcpip\\Parameters')\n\n    if SCRIPT_USAGE == 2:\n        # SynAttackProtect 机制是通过关闭某些socket选项，增加额外的连接指示和减少超时时间，使系统能处理更多的SYN连接，以达到防范SYN攻击的目的\n        # 缺省没有这个键值，系统不受 SynAttackProtect 保护。建议值：2\n        # 有效值：0，系统不受 SynAttackProtect 保护\n        # 有效值：1，系统通过减少重传次数和延迟未连接时路由缓冲项（route cache entry）防范SYN攻击\n        # 有效值：2，系统不仅使用backlog队列，还使用附加的半连接指示，以此来处理更多的SYN连接，使用此键值时，tcp/ip的TCPInitialRTT、window size和可滑动窗囗将被禁止\n        value = getRegValue(key, 'SynAttackProtect')\n        info['SynAttackProtect'] = value\n        if value == 1:\n            result['risk_level'] = 1\n            result['risk_desc'] = '系统通过减少重传次数和延迟未连接时路由缓冲项（route cache entry）防范SYN攻击，为进一步降低SYN攻击风险，可以禁止TCP/IP滑动窗口。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters下的键值：SynAttackProtect ' \\\n                                 '= 2，系统不仅使用backlog队列，还使用附加的半连接指示，以此来处理更多的SYN连接，使用此键值时，tcp/ip的TCPInitialRTT、window ' \\\n                                 'size和可滑动窗囗将被禁止 '\n        elif value <= 0:\n            result['risk_level'] = 2\n            result['risk_desc'] = '系统不受 SynAttackProtect 保护，无法有效防范SYN攻击。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters下的键值：SynAttackProtect ' \\\n                                 '= 2，系统不仅使用backlog队列，还使用附加的半连接指示，以此来处理更多的SYN连接，使用此键值时，tcp/ip的TCPInitialRTT、window ' \\\n                                 'size和可滑动窗囗将被禁止 '\n        return\n\n    if SCRIPT_USAGE == 3:\n        # EnableDeadGWDetect 禁止攻击者强制切换到备用网关\n        # 有效值：0（禁用），1（启用）\n        # 建议的数值数据： 0\n        value = getRegValue(key, 'EnableDeadGWDetect')\n        info['EnableDeadGWDetect'] = value\n        if value != 0:\n            result['risk_level'] = 2\n            result['risk_desc'] = '系统没有禁止攻击者强制切换到备用网关，无法有效抵御 SNMP 攻击。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters' \\\n                                 '下的键值：EnableDeadGWDetect = 0，系统不仅使用backlog队列，还使用附加的半连接指示，以此来处理更多的SYN连接，使用此键值时，tcp/ip' \\\n                                 '的TCPInitialRTT、window size和可滑动窗囗将被禁止 '\n        return\n\n    if SCRIPT_USAGE == 4:\n        # DisableIPSourceRouting\n        # 禁用 IP 源路由，后者允许发送者确认数据报在网络中应采用的路由。\n        # 有效值：0（转发所有数据包），1（不转发源路由数据包），2（丢弃所有传入的源路由数据包）。\n        # 建议的数值数据： 1\n        value = getRegValue(key, 'DisableIPSourceRouting')\n        info['DisableIPSourceRouting'] = value\n        if value >= 2:\n            result['risk_level'] = 1\n            result['risk_desc'] = '系统丢弃所有传入的源路由数据包。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters' \\\n                                 '下的键值：DisableIPSourceRouting = 1，禁用 IP 源路由，不允许发送者确认数据报在网络中应采用的路由。 '\n        elif value <= 0:\n            result['risk_level'] = 2\n            result['risk_desc'] = '系统转发所有数据包，攻击者可能规避 NAT 屏蔽，以便使用 IP 源路由来确定网络拓扑。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters' \\\n                                 '下的键值：DisableIPSourceRouting = 1，禁用 IP 源路由，不允许发送者确认数据报在网络中应采用的路由。 '\n\n    return\n\n\nif __name__ == '__main__':\n    _result = {}\n    process_and_anylyze(_result)\n\n    print(_result)\n",
+											"description": "windows/tcpip_service.py，SCRIPT_USAGE = 1",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.6.2 Win抵御SYN",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows抵御SYN攻击",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsSYNProtect",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "38bf2c29-8bd3-4e40-855d-d80687a7040c",
+											"description": "分组：Windows网络通信配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\nimport os\nimport winreg\n\n# SCRIPT_USAGE = 1  # 抵御 ICMP 攻击\nSCRIPT_USAGE = 2  # 抵御 SYN 攻击\n# SCRIPT_USAGE = 3  # 抵御 SNMP 攻击\n# SCRIPT_USAGE = 4  # 其它网络保护\n\n\ndef getRegValue(key, value_name):\n    try:\n        value, type = winreg.QueryValueEx(key, value_name)\n    except WindowsError:\n        value = -1\n\n    return value\n\n\ndef process_and_anylyze(result):\n    info = {}\n    result['info'] = info\n    result['risk_level'] = 0\n    result['risk_desc'] = '未发现网络配置缺陷。'\n    result['solution'] = '无'\n\n    if SCRIPT_USAGE == 1:\n        # ===================================================================\n        # 打开注册表 HKLM\\System\\CurrentControlSet\\Services\\AFD\\Parameters\n        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'System\\CurrentControlSet\\Services\\AFD\\Parameters')\n\n        # EnableICMPRedirect：ICMP 重定向数据包的处理\n        # 有效值：0（禁用），1（启用）。建议值：0\n        value = getRegValue(key, 'EnableICMPRedirect')\n        info['EnableICMPRedirect'] = value\n        if value != 0:\n            result['risk_level'] = 1\n            result['risk_desc'] = '没有禁用 ICMP 重定向数据包，易受到ICMP攻击。'\n            result[\n                'solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\AFD\\Parameters下的键值：EnableICMPRedirect = 0。'\n        return\n\n    # ===================================================================\n    # 打开注册表 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters\n    key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'System\\CurrentControlSet\\Services\\Tcpip\\Parameters')\n\n    if SCRIPT_USAGE == 2:\n        # SynAttackProtect 机制是通过关闭某些socket选项，增加额外的连接指示和减少超时时间，使系统能处理更多的SYN连接，以达到防范SYN攻击的目的\n        # 缺省没有这个键值，系统不受 SynAttackProtect 保护。建议值：2\n        # 有效值：0，系统不受 SynAttackProtect 保护\n        # 有效值：1，系统通过减少重传次数和延迟未连接时路由缓冲项（route cache entry）防范SYN攻击\n        # 有效值：2，系统不仅使用backlog队列，还使用附加的半连接指示，以此来处理更多的SYN连接，使用此键值时，tcp/ip的TCPInitialRTT、window size和可滑动窗囗将被禁止\n        value = getRegValue(key, 'SynAttackProtect')\n        info['SynAttackProtect'] = value\n        if value == 1:\n            result['risk_level'] = 1\n            result['risk_desc'] = '系统通过减少重传次数和延迟未连接时路由缓冲项（route cache entry）防范SYN攻击，为进一步降低SYN攻击风险，可以禁止TCP/IP滑动窗口。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters下的键值：SynAttackProtect ' \\\n                                 '= 2，系统不仅使用backlog队列，还使用附加的半连接指示，以此来处理更多的SYN连接，使用此键值时，tcp/ip的TCPInitialRTT、window ' \\\n                                 'size和可滑动窗囗将被禁止 '\n        elif value <= 0:\n            result['risk_level'] = 2\n            result['risk_desc'] = '系统不受 SynAttackProtect 保护，无法有效防范SYN攻击。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters下的键值：SynAttackProtect ' \\\n                                 '= 2，系统不仅使用backlog队列，还使用附加的半连接指示，以此来处理更多的SYN连接，使用此键值时，tcp/ip的TCPInitialRTT、window ' \\\n                                 'size和可滑动窗囗将被禁止 '\n        return\n\n    if SCRIPT_USAGE == 3:\n        # EnableDeadGWDetect 禁止攻击者强制切换到备用网关\n        # 有效值：0（禁用），1（启用）\n        # 建议的数值数据： 0\n        value = getRegValue(key, 'EnableDeadGWDetect')\n        info['EnableDeadGWDetect'] = value\n        if value != 0:\n            result['risk_level'] = 2\n            result['risk_desc'] = '系统没有禁止攻击者强制切换到备用网关，无法有效抵御 SNMP 攻击。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters' \\\n                                 '下的键值：EnableDeadGWDetect = 0，系统不仅使用backlog队列，还使用附加的半连接指示，以此来处理更多的SYN连接，使用此键值时，tcp/ip' \\\n                                 '的TCPInitialRTT、window size和可滑动窗囗将被禁止 '\n        return\n\n    if SCRIPT_USAGE == 4:\n        # DisableIPSourceRouting\n        # 禁用 IP 源路由，后者允许发送者确认数据报在网络中应采用的路由。\n        # 有效值：0（转发所有数据包），1（不转发源路由数据包），2（丢弃所有传入的源路由数据包）。\n        # 建议的数值数据： 1\n        value = getRegValue(key, 'DisableIPSourceRouting')\n        info['DisableIPSourceRouting'] = value\n        if value >= 2:\n            result['risk_level'] = 1\n            result['risk_desc'] = '系统丢弃所有传入的源路由数据包。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters' \\\n                                 '下的键值：DisableIPSourceRouting = 1，禁用 IP 源路由，不允许发送者确认数据报在网络中应采用的路由。 '\n        elif value <= 0:\n            result['risk_level'] = 2\n            result['risk_desc'] = '系统转发所有数据包，攻击者可能规避 NAT 屏蔽，以便使用 IP 源路由来确定网络拓扑。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters' \\\n                                 '下的键值：DisableIPSourceRouting = 1，禁用 IP 源路由，不允许发送者确认数据报在网络中应采用的路由。 '\n\n    return\n\n\nif __name__ == '__main__':\n    _result = {}\n    process_and_anylyze(_result)\n\n    print(_result)\n",
+											"description": "windows/tcpip_service.py，SCRIPT_USAGE = 2",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.6.3 Win抵御SNMP",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows抵御SNMP攻击",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsSNMPProtect",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "38bf2c29-8bd3-4e40-855d-d80687a7040c",
+											"description": "分组：Windows网络通信配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\nimport os\nimport winreg\n\n# SCRIPT_USAGE = 1  # 抵御 ICMP 攻击\n# SCRIPT_USAGE = 2  # 抵御 SYN 攻击\nSCRIPT_USAGE = 3  # 抵御 SNMP 攻击\n# SCRIPT_USAGE = 4  # 其它网络保护\n\n\ndef getRegValue(key, value_name):\n    try:\n        value, type = winreg.QueryValueEx(key, value_name)\n    except WindowsError:\n        value = -1\n\n    return value\n\n\ndef process_and_anylyze(result):\n    info = {}\n    result['info'] = info\n    result['risk_level'] = 0\n    result['risk_desc'] = '未发现网络配置缺陷。'\n    result['solution'] = '无'\n\n    if SCRIPT_USAGE == 1:\n        # ===================================================================\n        # 打开注册表 HKLM\\System\\CurrentControlSet\\Services\\AFD\\Parameters\n        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'System\\CurrentControlSet\\Services\\AFD\\Parameters')\n\n        # EnableICMPRedirect：ICMP 重定向数据包的处理\n        # 有效值：0（禁用），1（启用）。建议值：0\n        value = getRegValue(key, 'EnableICMPRedirect')\n        info['EnableICMPRedirect'] = value\n        if value != 0:\n            result['risk_level'] = 1\n            result['risk_desc'] = '没有禁用 ICMP 重定向数据包，易受到ICMP攻击。'\n            result[\n                'solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\AFD\\Parameters下的键值：EnableICMPRedirect = 0。'\n        return\n\n    # ===================================================================\n    # 打开注册表 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters\n    key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'System\\CurrentControlSet\\Services\\Tcpip\\Parameters')\n\n    if SCRIPT_USAGE == 2:\n        # SynAttackProtect 机制是通过关闭某些socket选项，增加额外的连接指示和减少超时时间，使系统能处理更多的SYN连接，以达到防范SYN攻击的目的\n        # 缺省没有这个键值，系统不受 SynAttackProtect 保护。建议值：2\n        # 有效值：0，系统不受 SynAttackProtect 保护\n        # 有效值：1，系统通过减少重传次数和延迟未连接时路由缓冲项（route cache entry）防范SYN攻击\n        # 有效值：2，系统不仅使用backlog队列，还使用附加的半连接指示，以此来处理更多的SYN连接，使用此键值时，tcp/ip的TCPInitialRTT、window size和可滑动窗囗将被禁止\n        value = getRegValue(key, 'SynAttackProtect')\n        info['SynAttackProtect'] = value\n        if value == 1:\n            result['risk_level'] = 1\n            result['risk_desc'] = '系统通过减少重传次数和延迟未连接时路由缓冲项（route cache entry）防范SYN攻击，为进一步降低SYN攻击风险，可以禁止TCP/IP滑动窗口。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters下的键值：SynAttackProtect ' \\\n                                 '= 2，系统不仅使用backlog队列，还使用附加的半连接指示，以此来处理更多的SYN连接，使用此键值时，tcp/ip的TCPInitialRTT、window ' \\\n                                 'size和可滑动窗囗将被禁止 '\n        elif value <= 0:\n            result['risk_level'] = 2\n            result['risk_desc'] = '系统不受 SynAttackProtect 保护，无法有效防范SYN攻击。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters下的键值：SynAttackProtect ' \\\n                                 '= 2，系统不仅使用backlog队列，还使用附加的半连接指示，以此来处理更多的SYN连接，使用此键值时，tcp/ip的TCPInitialRTT、window ' \\\n                                 'size和可滑动窗囗将被禁止 '\n        return\n\n    if SCRIPT_USAGE == 3:\n        # EnableDeadGWDetect 禁止攻击者强制切换到备用网关\n        # 有效值：0（禁用），1（启用）\n        # 建议的数值数据： 0\n        value = getRegValue(key, 'EnableDeadGWDetect')\n        info['EnableDeadGWDetect'] = value\n        if value != 0:\n            result['risk_level'] = 2\n            result['risk_desc'] = '系统没有禁止攻击者强制切换到备用网关，无法有效抵御 SNMP 攻击。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters' \\\n                                 '下的键值：EnableDeadGWDetect = 0，系统不仅使用backlog队列，还使用附加的半连接指示，以此来处理更多的SYN连接，使用此键值时，tcp/ip' \\\n                                 '的TCPInitialRTT、window size和可滑动窗囗将被禁止 '\n        return\n\n    if SCRIPT_USAGE == 4:\n        # DisableIPSourceRouting\n        # 禁用 IP 源路由，后者允许发送者确认数据报在网络中应采用的路由。\n        # 有效值：0（转发所有数据包），1（不转发源路由数据包），2（丢弃所有传入的源路由数据包）。\n        # 建议的数值数据： 1\n        value = getRegValue(key, 'DisableIPSourceRouting')\n        info['DisableIPSourceRouting'] = value\n        if value >= 2:\n            result['risk_level'] = 1\n            result['risk_desc'] = '系统丢弃所有传入的源路由数据包。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters' \\\n                                 '下的键值：DisableIPSourceRouting = 1，禁用 IP 源路由，不允许发送者确认数据报在网络中应采用的路由。 '\n        elif value <= 0:\n            result['risk_level'] = 2\n            result['risk_desc'] = '系统转发所有数据包，攻击者可能规避 NAT 屏蔽，以便使用 IP 源路由来确定网络拓扑。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters' \\\n                                 '下的键值：DisableIPSourceRouting = 1，禁用 IP 源路由，不允许发送者确认数据报在网络中应采用的路由。 '\n\n    return\n\n\nif __name__ == '__main__':\n    _result = {}\n    process_and_anylyze(_result)\n\n    print(_result)\n",
+											"description": "windows/tcpip_service.py，SCRIPT_USAGE = 3",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.6.4 Win禁用IP源路由",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows禁用IP源路由",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsDisableIPSourceRoute",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "38bf2c29-8bd3-4e40-855d-d80687a7040c",
+											"description": "分组：Windows网络通信配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\nimport os\nimport winreg\n\n# SCRIPT_USAGE = 1  # 抵御 ICMP 攻击\n# SCRIPT_USAGE = 2  # 抵御 SYN 攻击\n# SCRIPT_USAGE = 3  # 抵御 SNMP 攻击\nSCRIPT_USAGE = 4  # 其它网络保护\n\n\ndef getRegValue(key, value_name):\n    try:\n        value, type = winreg.QueryValueEx(key, value_name)\n    except WindowsError:\n        value = -1\n\n    return value\n\n\ndef process_and_anylyze(result):\n    info = {}\n    result['info'] = info\n    result['risk_level'] = 0\n    result['risk_desc'] = '未发现网络配置缺陷。'\n    result['solution'] = '无'\n\n    if SCRIPT_USAGE == 1:\n        # ===================================================================\n        # 打开注册表 HKLM\\System\\CurrentControlSet\\Services\\AFD\\Parameters\n        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'System\\CurrentControlSet\\Services\\AFD\\Parameters')\n\n        # EnableICMPRedirect：ICMP 重定向数据包的处理\n        # 有效值：0（禁用），1（启用）。建议值：0\n        value = getRegValue(key, 'EnableICMPRedirect')\n        info['EnableICMPRedirect'] = value\n        if value != 0:\n            result['risk_level'] = 1\n            result['risk_desc'] = '没有禁用 ICMP 重定向数据包，易受到ICMP攻击。'\n            result[\n                'solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\AFD\\Parameters下的键值：EnableICMPRedirect = 0。'\n        return\n\n    # ===================================================================\n    # 打开注册表 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters\n    key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'System\\CurrentControlSet\\Services\\Tcpip\\Parameters')\n\n    if SCRIPT_USAGE == 2:\n        # SynAttackProtect 机制是通过关闭某些socket选项，增加额外的连接指示和减少超时时间，使系统能处理更多的SYN连接，以达到防范SYN攻击的目的\n        # 缺省没有这个键值，系统不受 SynAttackProtect 保护。建议值：2\n        # 有效值：0，系统不受 SynAttackProtect 保护\n        # 有效值：1，系统通过减少重传次数和延迟未连接时路由缓冲项（route cache entry）防范SYN攻击\n        # 有效值：2，系统不仅使用backlog队列，还使用附加的半连接指示，以此来处理更多的SYN连接，使用此键值时，tcp/ip的TCPInitialRTT、window size和可滑动窗囗将被禁止\n        value = getRegValue(key, 'SynAttackProtect')\n        info['SynAttackProtect'] = value\n        if value == 1:\n            result['risk_level'] = 1\n            result['risk_desc'] = '系统通过减少重传次数和延迟未连接时路由缓冲项（route cache entry）防范SYN攻击，为进一步降低SYN攻击风险，可以禁止TCP/IP滑动窗口。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters下的键值：SynAttackProtect ' \\\n                                 '= 2，系统不仅使用backlog队列，还使用附加的半连接指示，以此来处理更多的SYN连接，使用此键值时，tcp/ip的TCPInitialRTT、window ' \\\n                                 'size和可滑动窗囗将被禁止 '\n        elif value <= 0:\n            result['risk_level'] = 2\n            result['risk_desc'] = '系统不受 SynAttackProtect 保护，无法有效防范SYN攻击。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters下的键值：SynAttackProtect ' \\\n                                 '= 2，系统不仅使用backlog队列，还使用附加的半连接指示，以此来处理更多的SYN连接，使用此键值时，tcp/ip的TCPInitialRTT、window ' \\\n                                 'size和可滑动窗囗将被禁止 '\n        return\n\n    if SCRIPT_USAGE == 3:\n        # EnableDeadGWDetect 禁止攻击者强制切换到备用网关\n        # 有效值：0（禁用），1（启用）\n        # 建议的数值数据： 0\n        value = getRegValue(key, 'EnableDeadGWDetect')\n        info['EnableDeadGWDetect'] = value\n        if value != 0:\n            result['risk_level'] = 2\n            result['risk_desc'] = '系统没有禁止攻击者强制切换到备用网关，无法有效抵御 SNMP 攻击。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters' \\\n                                 '下的键值：EnableDeadGWDetect = 0，系统不仅使用backlog队列，还使用附加的半连接指示，以此来处理更多的SYN连接，使用此键值时，tcp/ip' \\\n                                 '的TCPInitialRTT、window size和可滑动窗囗将被禁止 '\n        return\n\n    if SCRIPT_USAGE == 4:\n        # DisableIPSourceRouting\n        # 禁用 IP 源路由，后者允许发送者确认数据报在网络中应采用的路由。\n        # 有效值：0（转发所有数据包），1（不转发源路由数据包），2（丢弃所有传入的源路由数据包）。\n        # 建议的数值数据： 1\n        value = getRegValue(key, 'DisableIPSourceRouting')\n        info['DisableIPSourceRouting'] = value\n        if value >= 2:\n            result['risk_level'] = 1\n            result['risk_desc'] = '系统丢弃所有传入的源路由数据包。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters' \\\n                                 '下的键值：DisableIPSourceRouting = 1，禁用 IP 源路由，不允许发送者确认数据报在网络中应采用的路由。 '\n        elif value <= 0:\n            result['risk_level'] = 2\n            result['risk_desc'] = '系统转发所有数据包，攻击者可能规避 NAT 屏蔽，以便使用 IP 源路由来确定网络拓扑。'\n            result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters' \\\n                                 '下的键值：DisableIPSourceRouting = 1，禁用 IP 源路由，不允许发送者确认数据报在网络中应采用的路由。 '\n\n    return\n\n\nif __name__ == '__main__':\n    _result = {}\n    process_and_anylyze(_result)\n\n    print(_result)\n",
+											"description": "windows/tcpip_service.py，SCRIPT_USAGE = 4",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.6.5 Win检查被动关闭端口",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows检查被动关闭端口",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsCloseWaitPort",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "38bf2c29-8bd3-4e40-855d-d80687a7040c",
+											"description": "分组：Windows网络通信配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\nimport os\nimport re\n\n\ndef process(result):\n    info = []\n    result['info'] = info\n    result['risk_level'] = 0\n    result['risk_desc'] = '未发现网络端口问题。'\n    result['solution'] = '无'\n\n    # 检查网络通信TCP端口\n    r = os.system(\"netstat -an -p TCP > netPort.log\")\n    output = open(\"netPort.log\", 'r').readlines()\n\n    # 解析每条TCP连接的信息\n    close_wait_count = 0\n    for index in range(4, len(output)):\n        # 提取行信息到数组中\n        # re.split(r'\\s+', output[index])也可实现同样效果\n        line = re.sub(' +', ' ', output[index].strip('\\n'))\n        item = line.split(' ')\n        connect_info = {\n            'protocol': item[1],\n            'local_ip': item[2],\n            'remote_ip': item[3],\n            'status': item[4],\n        }\n        info.append(connect_info)\n        # 保存 CLOSE_WAIT 状态的连接数\n        if item[4] == 'CLOSE_WAIT':\n            close_wait_count += 1\n\n    # 检查是否有过多的 CLOSE_WAIT 连接，以50为阈值\n    if close_wait_count > 50:\n        result['risk_level'] = 1\n        result['risk_desc'] = '大量端口（共计{}个）处于CLOSE_WAIT状态，有可能恶意程序在消耗本系统的资源。'.format(close_wait_count)\n        result['solution'] = '设置注册表项 HKLM\\System\\CurrentControlSet\\Services\\Tcpip\\Parameters下的键值：KeepAliveTime < ' \\\n                             '300000，以使被动关闭的端口能尽早释放出来。 '\n\n    os.remove(\"netPort.log\")\n\n    return\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
+											"description": "windows/netstat_info.py",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "C.7 Win日志审计配置",
+					"item": [
+						{
+							"name": "C.7.1 Win登录日志审核",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows登录日志审核",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsLogonAudit",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "88b73bae-1d44-4c1b-914b-16a25c801c4e",
+											"description": "分组：Windows日志审计配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\n\nimport configparser\nimport codecs\nimport os\n\n# 本脚本用于多条审计策略\nSCRIPT_USAGE = 1    # 登录日志审计策略\n# SCRIPT_USAGE = 2    # 系统事件审计策略\n# SCRIPT_USAGE = 3    # 对象访问事件审计策略\n# SCRIPT_USAGE = 4  # 特权使用事件审计策略\n# SCRIPT_USAGE = 5    # 策略更改事件审计策略\n# SCRIPT_USAGE = 6    # 账户管理事件审计策略\n# SCRIPT_USAGE = 7    # 过程追踪事件审计策略\n# SCRIPT_USAGE = 8    # 目录服务事件审计策略\n# SCRIPT_USAGE = 9    # 账户登录事件审计策略\n\nINVALID = '-1'\n\n\nclass Config:\n    def __init__(self, path):\n        self.path = path\n        self.cf = configparser.ConfigParser()\n        self.cf.read_file(codecs.open(self.path, \"r\", \"utf_16\"))\n        s = self.cf.sections()\n\n    def get(self, field, key):\n        try:\n            result = str(self.cf.get(field, key))\n        except:\n            return INVALID\n        return result\n\n    def set(self, field, key, value):\n        self.cf.set(field, key, value)\n        self.cf.write(open(self.path, 'w'))\n        return True\n\n\ndef process(info):\n    output = os.system(\"secedit /export /cfg Password.ini\")\n\n    cf = Config(\"Password.ini\")\n\n    info[\"Audit AuditLogonEvents\"] = cf.get(\"Event Audit\", \"AuditLogonEvents\")\n    info[\"Audit AuditSystemEvents\"] = cf.get(\"Event Audit\", \"AuditSystemEvents\")\n    info[\"Audit AuditObjectAccess\"] = cf.get(\"Event Audit\", \"AuditObjectAccess\")\n    info[\"Audit AuditPrivilegeUse\"] = cf.get(\"Event Audit\", \"AuditPrivilegeUse\")\n    info[\"Audit AuditPolicyChange\"] = cf.get(\"Event Audit\", \"AuditPolicyChange\")\n    info[\"Audit AuditAccountManage\"] = cf.get(\"Event Audit\", \"AuditAccountManage\")\n    info[\"Audit AuditProcessTracking\"] = cf.get(\"Event Audit\", \"AuditProcessTracking\")\n    info[\"Audit AuditDSAccess\"] = cf.get(\"Event Audit\", \"AuditDSAccess\")\n    info[\"Audit AuditAccountLogon\"] = cf.get(\"Event Audit\", \"AuditAccountLogon\")\n\n    os.remove('Password.ini')\n\n    return\n\n\ndef check_audit(audit_key, audit_type):\n    info = result['info']\n    value = info['Audit ' + audit_key]\n    if int(value) == 3:\n        result['risk_level'] = 0\n        result['risk_desc'] = f'{audit_type}审计策略配置正确'\n        result['solution'] = '无'\n    elif int(value) == 0:\n        result['risk_level'] = 2\n        result['risk_desc'] = f'系统没有配置{audit_type}审计策略，存在较严重的审计缺陷'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n    elif int(value) == 1:\n        result['risk_level'] = 1\n        result['risk_desc'] = f'系统只配置了{audit_type}的成功事件审计'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n    elif int(value) == 2:\n        result['risk_level'] = 1\n        result['risk_desc'] = f'系统只配置了{audit_type}的失败事件审计'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n\n\n# 检查审计策略的设定值：\n# 0：不审计\n# 1：审计成功事件\n# 2：审计失败事件\n# 3：审计成功、失败事件\ndef analyze(result):\n    info = result['info']\n    result['risk_level'] = 0\n    result['risk_desc'] = '审计策略配置正确'\n    result['solution'] = '无'\n\n    # 登录日志审计策略\n    if SCRIPT_USAGE == 1:\n        check_audit('AuditLogonEvents', '登录')\n\n    # 系统事件审计策略\n    if SCRIPT_USAGE == 2:\n        check_audit('AuditSystemEvents', '系统')\n\n    # 对象访问事件审计策略\n    if SCRIPT_USAGE == 3:\n        check_audit('AuditObjectAccess', '对象访问')\n\n    # 特权使用事件审计策略\n    if SCRIPT_USAGE == 4:\n        check_audit('AuditPrivilegeUse', '特权使用')\n\n    # 策略更改事件审计策略\n    if SCRIPT_USAGE == 5:\n        check_audit('AuditPolicyChange', '策略更改')\n\n    # 账户管理事件审计策略\n    if SCRIPT_USAGE == 6:\n        check_audit('AuditAccountManage', '账户管理')\n\n    # 过程追踪事件审计策略\n    if SCRIPT_USAGE == 7:\n        check_audit('AuditProcessTracking', '过程追踪')\n\n    # 目录服务事件审计策略\n    if SCRIPT_USAGE == 8:\n        check_audit('AuditDSAccess', '目录服务')\n\n    # 账户登录事件审计策略\n    if SCRIPT_USAGE == 9:\n        check_audit('AuditAccountLogon', '账户登录')\n\n\n    return\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n\n    print(result)\n",
+											"description": "windows/audit_policy.py, SCRIPT_USAGE = 1",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.7.2 Win系统事件审核",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows系统事件审核",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsSystemEventAudit",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "88b73bae-1d44-4c1b-914b-16a25c801c4e",
+											"description": "分组：Windows日志审计配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\n\nimport configparser\nimport codecs\nimport os\n\n# 本脚本用于多条审计策略\n# SCRIPT_USAGE = 1    # 登录日志审计策略\nSCRIPT_USAGE = 2    # 系统事件审计策略\n# SCRIPT_USAGE = 3    # 对象访问事件审计策略\n# SCRIPT_USAGE = 4  # 特权使用事件审计策略\n# SCRIPT_USAGE = 5    # 策略更改事件审计策略\n# SCRIPT_USAGE = 6    # 账户管理事件审计策略\n# SCRIPT_USAGE = 7    # 过程追踪事件审计策略\n# SCRIPT_USAGE = 8    # 目录服务事件审计策略\n# SCRIPT_USAGE = 9    # 账户登录事件审计策略\n\nINVALID = '-1'\n\n\nclass Config:\n    def __init__(self, path):\n        self.path = path\n        self.cf = configparser.ConfigParser()\n        self.cf.read_file(codecs.open(self.path, \"r\", \"utf_16\"))\n        s = self.cf.sections()\n\n    def get(self, field, key):\n        try:\n            result = str(self.cf.get(field, key))\n        except:\n            return INVALID\n        return result\n\n    def set(self, field, key, value):\n        self.cf.set(field, key, value)\n        self.cf.write(open(self.path, 'w'))\n        return True\n\n\ndef process(info):\n    output = os.system(\"secedit /export /cfg Password.ini\")\n\n    cf = Config(\"Password.ini\")\n\n    info[\"Audit AuditLogonEvents\"] = cf.get(\"Event Audit\", \"AuditLogonEvents\")\n    info[\"Audit AuditSystemEvents\"] = cf.get(\"Event Audit\", \"AuditSystemEvents\")\n    info[\"Audit AuditObjectAccess\"] = cf.get(\"Event Audit\", \"AuditObjectAccess\")\n    info[\"Audit AuditPrivilegeUse\"] = cf.get(\"Event Audit\", \"AuditPrivilegeUse\")\n    info[\"Audit AuditPolicyChange\"] = cf.get(\"Event Audit\", \"AuditPolicyChange\")\n    info[\"Audit AuditAccountManage\"] = cf.get(\"Event Audit\", \"AuditAccountManage\")\n    info[\"Audit AuditProcessTracking\"] = cf.get(\"Event Audit\", \"AuditProcessTracking\")\n    info[\"Audit AuditDSAccess\"] = cf.get(\"Event Audit\", \"AuditDSAccess\")\n    info[\"Audit AuditAccountLogon\"] = cf.get(\"Event Audit\", \"AuditAccountLogon\")\n\n    os.remove('Password.ini')\n\n    return\n\n\ndef check_audit(audit_key, audit_type):\n    info = result['info']\n    value = info['Audit ' + audit_key]\n    if int(value) == 3:\n        result['risk_level'] = 0\n        result['risk_desc'] = f'{audit_type}审计策略配置正确'\n        result['solution'] = '无'\n    elif int(value) == 0:\n        result['risk_level'] = 2\n        result['risk_desc'] = f'系统没有配置{audit_type}审计策略，存在较严重的审计缺陷'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n    elif int(value) == 1:\n        result['risk_level'] = 1\n        result['risk_desc'] = f'系统只配置了{audit_type}的成功事件审计'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n    elif int(value) == 2:\n        result['risk_level'] = 1\n        result['risk_desc'] = f'系统只配置了{audit_type}的失败事件审计'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n\n\n# 检查审计策略的设定值：\n# 0：不审计\n# 1：审计成功事件\n# 2：审计失败事件\n# 3：审计成功、失败事件\ndef analyze(result):\n    info = result['info']\n    result['risk_level'] = 0\n    result['risk_desc'] = '审计策略配置正确'\n    result['solution'] = '无'\n\n    # 登录日志审计策略\n    if SCRIPT_USAGE == 1:\n        check_audit('AuditLogonEvents', '登录')\n\n    # 系统事件审计策略\n    if SCRIPT_USAGE == 2:\n        check_audit('AuditSystemEvents', '系统')\n\n    # 对象访问事件审计策略\n    if SCRIPT_USAGE == 3:\n        check_audit('AuditObjectAccess', '对象访问')\n\n    # 特权使用事件审计策略\n    if SCRIPT_USAGE == 4:\n        check_audit('AuditPrivilegeUse', '特权使用')\n\n    # 策略更改事件审计策略\n    if SCRIPT_USAGE == 5:\n        check_audit('AuditPolicyChange', '策略更改')\n\n    # 账户管理事件审计策略\n    if SCRIPT_USAGE == 6:\n        check_audit('AuditAccountManage', '账户管理')\n\n    # 过程追踪事件审计策略\n    if SCRIPT_USAGE == 7:\n        check_audit('AuditProcessTracking', '过程追踪')\n\n    # 目录服务事件审计策略\n    if SCRIPT_USAGE == 8:\n        check_audit('AuditDSAccess', '目录服务')\n\n    # 账户登录事件审计策略\n    if SCRIPT_USAGE == 9:\n        check_audit('AuditAccountLogon', '账户登录')\n\n\n    return\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n\n    print(result)\n",
+											"description": "windows/audit_policy.py, SCRIPT_USAGE = 2",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.7.3 Win对象访问事件审核",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows对象访问事件审核",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsObjectAccessAudit",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "88b73bae-1d44-4c1b-914b-16a25c801c4e",
+											"description": "分组：Windows日志审计配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\n\nimport configparser\nimport codecs\nimport os\n\n# 本脚本用于多条审计策略\n# SCRIPT_USAGE = 1    # 登录日志审计策略\n# SCRIPT_USAGE = 2    # 系统事件审计策略\nSCRIPT_USAGE = 3    # 对象访问事件审计策略\n# SCRIPT_USAGE = 4  # 特权使用事件审计策略\n# SCRIPT_USAGE = 5    # 策略更改事件审计策略\n# SCRIPT_USAGE = 6    # 账户管理事件审计策略\n# SCRIPT_USAGE = 7    # 过程追踪事件审计策略\n# SCRIPT_USAGE = 8    # 目录服务事件审计策略\n# SCRIPT_USAGE = 9    # 账户登录事件审计策略\n\nINVALID = '-1'\n\n\nclass Config:\n    def __init__(self, path):\n        self.path = path\n        self.cf = configparser.ConfigParser()\n        self.cf.read_file(codecs.open(self.path, \"r\", \"utf_16\"))\n        s = self.cf.sections()\n\n    def get(self, field, key):\n        try:\n            result = str(self.cf.get(field, key))\n        except:\n            return INVALID\n        return result\n\n    def set(self, field, key, value):\n        self.cf.set(field, key, value)\n        self.cf.write(open(self.path, 'w'))\n        return True\n\n\ndef process(info):\n    output = os.system(\"secedit /export /cfg Password.ini\")\n\n    cf = Config(\"Password.ini\")\n\n    info[\"Audit AuditLogonEvents\"] = cf.get(\"Event Audit\", \"AuditLogonEvents\")\n    info[\"Audit AuditSystemEvents\"] = cf.get(\"Event Audit\", \"AuditSystemEvents\")\n    info[\"Audit AuditObjectAccess\"] = cf.get(\"Event Audit\", \"AuditObjectAccess\")\n    info[\"Audit AuditPrivilegeUse\"] = cf.get(\"Event Audit\", \"AuditPrivilegeUse\")\n    info[\"Audit AuditPolicyChange\"] = cf.get(\"Event Audit\", \"AuditPolicyChange\")\n    info[\"Audit AuditAccountManage\"] = cf.get(\"Event Audit\", \"AuditAccountManage\")\n    info[\"Audit AuditProcessTracking\"] = cf.get(\"Event Audit\", \"AuditProcessTracking\")\n    info[\"Audit AuditDSAccess\"] = cf.get(\"Event Audit\", \"AuditDSAccess\")\n    info[\"Audit AuditAccountLogon\"] = cf.get(\"Event Audit\", \"AuditAccountLogon\")\n\n    os.remove('Password.ini')\n\n    return\n\n\ndef check_audit(audit_key, audit_type):\n    info = result['info']\n    value = info['Audit ' + audit_key]\n    if int(value) == 3:\n        result['risk_level'] = 0\n        result['risk_desc'] = f'{audit_type}审计策略配置正确'\n        result['solution'] = '无'\n    elif int(value) == 0:\n        result['risk_level'] = 2\n        result['risk_desc'] = f'系统没有配置{audit_type}审计策略，存在较严重的审计缺陷'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n    elif int(value) == 1:\n        result['risk_level'] = 1\n        result['risk_desc'] = f'系统只配置了{audit_type}的成功事件审计'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n    elif int(value) == 2:\n        result['risk_level'] = 1\n        result['risk_desc'] = f'系统只配置了{audit_type}的失败事件审计'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n\n\n# 检查审计策略的设定值：\n# 0：不审计\n# 1：审计成功事件\n# 2：审计失败事件\n# 3：审计成功、失败事件\ndef analyze(result):\n    info = result['info']\n    result['risk_level'] = 0\n    result['risk_desc'] = '审计策略配置正确'\n    result['solution'] = '无'\n\n    # 登录日志审计策略\n    if SCRIPT_USAGE == 1:\n        check_audit('AuditLogonEvents', '登录')\n\n    # 系统事件审计策略\n    if SCRIPT_USAGE == 2:\n        check_audit('AuditSystemEvents', '系统')\n\n    # 对象访问事件审计策略\n    if SCRIPT_USAGE == 3:\n        check_audit('AuditObjectAccess', '对象访问')\n\n    # 特权使用事件审计策略\n    if SCRIPT_USAGE == 4:\n        check_audit('AuditPrivilegeUse', '特权使用')\n\n    # 策略更改事件审计策略\n    if SCRIPT_USAGE == 5:\n        check_audit('AuditPolicyChange', '策略更改')\n\n    # 账户管理事件审计策略\n    if SCRIPT_USAGE == 6:\n        check_audit('AuditAccountManage', '账户管理')\n\n    # 过程追踪事件审计策略\n    if SCRIPT_USAGE == 7:\n        check_audit('AuditProcessTracking', '过程追踪')\n\n    # 目录服务事件审计策略\n    if SCRIPT_USAGE == 8:\n        check_audit('AuditDSAccess', '目录服务')\n\n    # 账户登录事件审计策略\n    if SCRIPT_USAGE == 9:\n        check_audit('AuditAccountLogon', '账户登录')\n\n\n    return\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n\n    print(result)\n",
+											"description": "windows/audit_policy.py, SCRIPT_USAGE = 3",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.7.4 Win特权使用事件审核",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows特权使用事件审核",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsPrivilegeAudit",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "88b73bae-1d44-4c1b-914b-16a25c801c4e",
+											"description": "分组：Windows日志审计配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\n\nimport configparser\nimport codecs\nimport os\n\n# 本脚本用于多条审计策略\n# SCRIPT_USAGE = 1    # 登录日志审计策略\n# SCRIPT_USAGE = 2    # 系统事件审计策略\n# SCRIPT_USAGE = 3    # 对象访问事件审计策略\nSCRIPT_USAGE = 4  # 特权使用事件审计策略\n# SCRIPT_USAGE = 5    # 策略更改事件审计策略\n# SCRIPT_USAGE = 6    # 账户管理事件审计策略\n# SCRIPT_USAGE = 7    # 过程追踪事件审计策略\n# SCRIPT_USAGE = 8    # 目录服务事件审计策略\n# SCRIPT_USAGE = 9    # 账户登录事件审计策略\n\nINVALID = '-1'\n\n\nclass Config:\n    def __init__(self, path):\n        self.path = path\n        self.cf = configparser.ConfigParser()\n        self.cf.read_file(codecs.open(self.path, \"r\", \"utf_16\"))\n        s = self.cf.sections()\n\n    def get(self, field, key):\n        try:\n            result = str(self.cf.get(field, key))\n        except:\n            return INVALID\n        return result\n\n    def set(self, field, key, value):\n        self.cf.set(field, key, value)\n        self.cf.write(open(self.path, 'w'))\n        return True\n\n\ndef process(info):\n    output = os.system(\"secedit /export /cfg Password.ini\")\n\n    cf = Config(\"Password.ini\")\n\n    info[\"Audit AuditLogonEvents\"] = cf.get(\"Event Audit\", \"AuditLogonEvents\")\n    info[\"Audit AuditSystemEvents\"] = cf.get(\"Event Audit\", \"AuditSystemEvents\")\n    info[\"Audit AuditObjectAccess\"] = cf.get(\"Event Audit\", \"AuditObjectAccess\")\n    info[\"Audit AuditPrivilegeUse\"] = cf.get(\"Event Audit\", \"AuditPrivilegeUse\")\n    info[\"Audit AuditPolicyChange\"] = cf.get(\"Event Audit\", \"AuditPolicyChange\")\n    info[\"Audit AuditAccountManage\"] = cf.get(\"Event Audit\", \"AuditAccountManage\")\n    info[\"Audit AuditProcessTracking\"] = cf.get(\"Event Audit\", \"AuditProcessTracking\")\n    info[\"Audit AuditDSAccess\"] = cf.get(\"Event Audit\", \"AuditDSAccess\")\n    info[\"Audit AuditAccountLogon\"] = cf.get(\"Event Audit\", \"AuditAccountLogon\")\n\n    os.remove('Password.ini')\n\n    return\n\n\ndef check_audit(audit_key, audit_type):\n    info = result['info']\n    value = info['Audit ' + audit_key]\n    if int(value) == 3:\n        result['risk_level'] = 0\n        result['risk_desc'] = f'{audit_type}审计策略配置正确'\n        result['solution'] = '无'\n    elif int(value) == 0:\n        result['risk_level'] = 2\n        result['risk_desc'] = f'系统没有配置{audit_type}审计策略，存在较严重的审计缺陷'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n    elif int(value) == 1:\n        result['risk_level'] = 1\n        result['risk_desc'] = f'系统只配置了{audit_type}的成功事件审计'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n    elif int(value) == 2:\n        result['risk_level'] = 1\n        result['risk_desc'] = f'系统只配置了{audit_type}的失败事件审计'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n\n\n# 检查审计策略的设定值：\n# 0：不审计\n# 1：审计成功事件\n# 2：审计失败事件\n# 3：审计成功、失败事件\ndef analyze(result):\n    info = result['info']\n    result['risk_level'] = 0\n    result['risk_desc'] = '审计策略配置正确'\n    result['solution'] = '无'\n\n    # 登录日志审计策略\n    if SCRIPT_USAGE == 1:\n        check_audit('AuditLogonEvents', '登录')\n\n    # 系统事件审计策略\n    if SCRIPT_USAGE == 2:\n        check_audit('AuditSystemEvents', '系统')\n\n    # 对象访问事件审计策略\n    if SCRIPT_USAGE == 3:\n        check_audit('AuditObjectAccess', '对象访问')\n\n    # 特权使用事件审计策略\n    if SCRIPT_USAGE == 4:\n        check_audit('AuditPrivilegeUse', '特权使用')\n\n    # 策略更改事件审计策略\n    if SCRIPT_USAGE == 5:\n        check_audit('AuditPolicyChange', '策略更改')\n\n    # 账户管理事件审计策略\n    if SCRIPT_USAGE == 6:\n        check_audit('AuditAccountManage', '账户管理')\n\n    # 过程追踪事件审计策略\n    if SCRIPT_USAGE == 7:\n        check_audit('AuditProcessTracking', '过程追踪')\n\n    # 目录服务事件审计策略\n    if SCRIPT_USAGE == 8:\n        check_audit('AuditDSAccess', '目录服务')\n\n    # 账户登录事件审计策略\n    if SCRIPT_USAGE == 9:\n        check_audit('AuditAccountLogon', '账户登录')\n\n\n    return\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n\n    print(result)\n",
+											"description": "windows/audit_policy.py, SCRIPT_USAGE = 4",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.7.5 Win策略更改事件审核",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows策略更改事件审核",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsPolicyChangeAudit",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "88b73bae-1d44-4c1b-914b-16a25c801c4e",
+											"description": "分组：Windows日志审计配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\n\nimport configparser\nimport codecs\nimport os\n\n# 本脚本用于多条审计策略\n# SCRIPT_USAGE = 1    # 登录日志审计策略\n# SCRIPT_USAGE = 2    # 系统事件审计策略\n# SCRIPT_USAGE = 3    # 对象访问事件审计策略\n# SCRIPT_USAGE = 4  # 特权使用事件审计策略\nSCRIPT_USAGE = 5    # 策略更改事件审计策略\n# SCRIPT_USAGE = 6    # 账户管理事件审计策略\n# SCRIPT_USAGE = 7    # 过程追踪事件审计策略\n# SCRIPT_USAGE = 8    # 目录服务事件审计策略\n# SCRIPT_USAGE = 9    # 账户登录事件审计策略\n\nINVALID = '-1'\n\n\nclass Config:\n    def __init__(self, path):\n        self.path = path\n        self.cf = configparser.ConfigParser()\n        self.cf.read_file(codecs.open(self.path, \"r\", \"utf_16\"))\n        s = self.cf.sections()\n\n    def get(self, field, key):\n        try:\n            result = str(self.cf.get(field, key))\n        except:\n            return INVALID\n        return result\n\n    def set(self, field, key, value):\n        self.cf.set(field, key, value)\n        self.cf.write(open(self.path, 'w'))\n        return True\n\n\ndef process(info):\n    output = os.system(\"secedit /export /cfg Password.ini\")\n\n    cf = Config(\"Password.ini\")\n\n    info[\"Audit AuditLogonEvents\"] = cf.get(\"Event Audit\", \"AuditLogonEvents\")\n    info[\"Audit AuditSystemEvents\"] = cf.get(\"Event Audit\", \"AuditSystemEvents\")\n    info[\"Audit AuditObjectAccess\"] = cf.get(\"Event Audit\", \"AuditObjectAccess\")\n    info[\"Audit AuditPrivilegeUse\"] = cf.get(\"Event Audit\", \"AuditPrivilegeUse\")\n    info[\"Audit AuditPolicyChange\"] = cf.get(\"Event Audit\", \"AuditPolicyChange\")\n    info[\"Audit AuditAccountManage\"] = cf.get(\"Event Audit\", \"AuditAccountManage\")\n    info[\"Audit AuditProcessTracking\"] = cf.get(\"Event Audit\", \"AuditProcessTracking\")\n    info[\"Audit AuditDSAccess\"] = cf.get(\"Event Audit\", \"AuditDSAccess\")\n    info[\"Audit AuditAccountLogon\"] = cf.get(\"Event Audit\", \"AuditAccountLogon\")\n\n    os.remove('Password.ini')\n\n    return\n\n\ndef check_audit(audit_key, audit_type):\n    info = result['info']\n    value = info['Audit ' + audit_key]\n    if int(value) == 3:\n        result['risk_level'] = 0\n        result['risk_desc'] = f'{audit_type}审计策略配置正确'\n        result['solution'] = '无'\n    elif int(value) == 0:\n        result['risk_level'] = 2\n        result['risk_desc'] = f'系统没有配置{audit_type}审计策略，存在较严重的审计缺陷'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n    elif int(value) == 1:\n        result['risk_level'] = 1\n        result['risk_desc'] = f'系统只配置了{audit_type}的成功事件审计'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n    elif int(value) == 2:\n        result['risk_level'] = 1\n        result['risk_desc'] = f'系统只配置了{audit_type}的失败事件审计'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n\n\n# 检查审计策略的设定值：\n# 0：不审计\n# 1：审计成功事件\n# 2：审计失败事件\n# 3：审计成功、失败事件\ndef analyze(result):\n    info = result['info']\n    result['risk_level'] = 0\n    result['risk_desc'] = '审计策略配置正确'\n    result['solution'] = '无'\n\n    # 登录日志审计策略\n    if SCRIPT_USAGE == 1:\n        check_audit('AuditLogonEvents', '登录')\n\n    # 系统事件审计策略\n    if SCRIPT_USAGE == 2:\n        check_audit('AuditSystemEvents', '系统')\n\n    # 对象访问事件审计策略\n    if SCRIPT_USAGE == 3:\n        check_audit('AuditObjectAccess', '对象访问')\n\n    # 特权使用事件审计策略\n    if SCRIPT_USAGE == 4:\n        check_audit('AuditPrivilegeUse', '特权使用')\n\n    # 策略更改事件审计策略\n    if SCRIPT_USAGE == 5:\n        check_audit('AuditPolicyChange', '策略更改')\n\n    # 账户管理事件审计策略\n    if SCRIPT_USAGE == 6:\n        check_audit('AuditAccountManage', '账户管理')\n\n    # 过程追踪事件审计策略\n    if SCRIPT_USAGE == 7:\n        check_audit('AuditProcessTracking', '过程追踪')\n\n    # 目录服务事件审计策略\n    if SCRIPT_USAGE == 8:\n        check_audit('AuditDSAccess', '目录服务')\n\n    # 账户登录事件审计策略\n    if SCRIPT_USAGE == 9:\n        check_audit('AuditAccountLogon', '账户登录')\n\n\n    return\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n\n    print(result)\n",
+											"description": "windows/audit_policy.py, SCRIPT_USAGE = 5",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.7.6 Win账户管理事件审核",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows账户管理事件审核",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsAccountManageAudit",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "88b73bae-1d44-4c1b-914b-16a25c801c4e",
+											"description": "分组：Windows日志审计配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\n\nimport configparser\nimport codecs\nimport os\n\n# 本脚本用于多条审计策略\n# SCRIPT_USAGE = 1    # 登录日志审计策略\n# SCRIPT_USAGE = 2    # 系统事件审计策略\n# SCRIPT_USAGE = 3    # 对象访问事件审计策略\n# SCRIPT_USAGE = 4  # 特权使用事件审计策略\n# SCRIPT_USAGE = 5    # 策略更改事件审计策略\nSCRIPT_USAGE = 6    # 账户管理事件审计策略\n# SCRIPT_USAGE = 7    # 过程追踪事件审计策略\n# SCRIPT_USAGE = 8    # 目录服务事件审计策略\n# SCRIPT_USAGE = 9    # 账户登录事件审计策略\n\nINVALID = '-1'\n\n\nclass Config:\n    def __init__(self, path):\n        self.path = path\n        self.cf = configparser.ConfigParser()\n        self.cf.read_file(codecs.open(self.path, \"r\", \"utf_16\"))\n        s = self.cf.sections()\n\n    def get(self, field, key):\n        try:\n            result = str(self.cf.get(field, key))\n        except:\n            return INVALID\n        return result\n\n    def set(self, field, key, value):\n        self.cf.set(field, key, value)\n        self.cf.write(open(self.path, 'w'))\n        return True\n\n\ndef process(info):\n    output = os.system(\"secedit /export /cfg Password.ini\")\n\n    cf = Config(\"Password.ini\")\n\n    info[\"Audit AuditLogonEvents\"] = cf.get(\"Event Audit\", \"AuditLogonEvents\")\n    info[\"Audit AuditSystemEvents\"] = cf.get(\"Event Audit\", \"AuditSystemEvents\")\n    info[\"Audit AuditObjectAccess\"] = cf.get(\"Event Audit\", \"AuditObjectAccess\")\n    info[\"Audit AuditPrivilegeUse\"] = cf.get(\"Event Audit\", \"AuditPrivilegeUse\")\n    info[\"Audit AuditPolicyChange\"] = cf.get(\"Event Audit\", \"AuditPolicyChange\")\n    info[\"Audit AuditAccountManage\"] = cf.get(\"Event Audit\", \"AuditAccountManage\")\n    info[\"Audit AuditProcessTracking\"] = cf.get(\"Event Audit\", \"AuditProcessTracking\")\n    info[\"Audit AuditDSAccess\"] = cf.get(\"Event Audit\", \"AuditDSAccess\")\n    info[\"Audit AuditAccountLogon\"] = cf.get(\"Event Audit\", \"AuditAccountLogon\")\n\n    os.remove('Password.ini')\n\n    return\n\n\ndef check_audit(audit_key, audit_type):\n    info = result['info']\n    value = info['Audit ' + audit_key]\n    if int(value) == 3:\n        result['risk_level'] = 0\n        result['risk_desc'] = f'{audit_type}审计策略配置正确'\n        result['solution'] = '无'\n    elif int(value) == 0:\n        result['risk_level'] = 2\n        result['risk_desc'] = f'系统没有配置{audit_type}审计策略，存在较严重的审计缺陷'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n    elif int(value) == 1:\n        result['risk_level'] = 1\n        result['risk_desc'] = f'系统只配置了{audit_type}的成功事件审计'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n    elif int(value) == 2:\n        result['risk_level'] = 1\n        result['risk_desc'] = f'系统只配置了{audit_type}的失败事件审计'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n\n\n# 检查审计策略的设定值：\n# 0：不审计\n# 1：审计成功事件\n# 2：审计失败事件\n# 3：审计成功、失败事件\ndef analyze(result):\n    info = result['info']\n    result['risk_level'] = 0\n    result['risk_desc'] = '审计策略配置正确'\n    result['solution'] = '无'\n\n    # 登录日志审计策略\n    if SCRIPT_USAGE == 1:\n        check_audit('AuditLogonEvents', '登录')\n\n    # 系统事件审计策略\n    if SCRIPT_USAGE == 2:\n        check_audit('AuditSystemEvents', '系统')\n\n    # 对象访问事件审计策略\n    if SCRIPT_USAGE == 3:\n        check_audit('AuditObjectAccess', '对象访问')\n\n    # 特权使用事件审计策略\n    if SCRIPT_USAGE == 4:\n        check_audit('AuditPrivilegeUse', '特权使用')\n\n    # 策略更改事件审计策略\n    if SCRIPT_USAGE == 5:\n        check_audit('AuditPolicyChange', '策略更改')\n\n    # 账户管理事件审计策略\n    if SCRIPT_USAGE == 6:\n        check_audit('AuditAccountManage', '账户管理')\n\n    # 过程追踪事件审计策略\n    if SCRIPT_USAGE == 7:\n        check_audit('AuditProcessTracking', '过程追踪')\n\n    # 目录服务事件审计策略\n    if SCRIPT_USAGE == 8:\n        check_audit('AuditDSAccess', '目录服务')\n\n    # 账户登录事件审计策略\n    if SCRIPT_USAGE == 9:\n        check_audit('AuditAccountLogon', '账户登录')\n\n\n    return\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n\n    print(result)\n",
+											"description": "windows/audit_policy.py, SCRIPT_USAGE = 6",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.7.7 Win过程追踪事件审核",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows过程追踪事件审核",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsProcessTrackAudit",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "88b73bae-1d44-4c1b-914b-16a25c801c4e",
+											"description": "分组：Windows日志审计配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\n\nimport configparser\nimport codecs\nimport os\n\n# 本脚本用于多条审计策略\n# SCRIPT_USAGE = 1    # 登录日志审计策略\n# SCRIPT_USAGE = 2    # 系统事件审计策略\n# SCRIPT_USAGE = 3    # 对象访问事件审计策略\n# SCRIPT_USAGE = 4  # 特权使用事件审计策略\n# SCRIPT_USAGE = 5    # 策略更改事件审计策略\n# SCRIPT_USAGE = 6    # 账户管理事件审计策略\nSCRIPT_USAGE = 7    # 过程追踪事件审计策略\n# SCRIPT_USAGE = 8    # 目录服务事件审计策略\n# SCRIPT_USAGE = 9    # 账户登录事件审计策略\n\nINVALID = '-1'\n\n\nclass Config:\n    def __init__(self, path):\n        self.path = path\n        self.cf = configparser.ConfigParser()\n        self.cf.read_file(codecs.open(self.path, \"r\", \"utf_16\"))\n        s = self.cf.sections()\n\n    def get(self, field, key):\n        try:\n            result = str(self.cf.get(field, key))\n        except:\n            return INVALID\n        return result\n\n    def set(self, field, key, value):\n        self.cf.set(field, key, value)\n        self.cf.write(open(self.path, 'w'))\n        return True\n\n\ndef process(info):\n    output = os.system(\"secedit /export /cfg Password.ini\")\n\n    cf = Config(\"Password.ini\")\n\n    info[\"Audit AuditLogonEvents\"] = cf.get(\"Event Audit\", \"AuditLogonEvents\")\n    info[\"Audit AuditSystemEvents\"] = cf.get(\"Event Audit\", \"AuditSystemEvents\")\n    info[\"Audit AuditObjectAccess\"] = cf.get(\"Event Audit\", \"AuditObjectAccess\")\n    info[\"Audit AuditPrivilegeUse\"] = cf.get(\"Event Audit\", \"AuditPrivilegeUse\")\n    info[\"Audit AuditPolicyChange\"] = cf.get(\"Event Audit\", \"AuditPolicyChange\")\n    info[\"Audit AuditAccountManage\"] = cf.get(\"Event Audit\", \"AuditAccountManage\")\n    info[\"Audit AuditProcessTracking\"] = cf.get(\"Event Audit\", \"AuditProcessTracking\")\n    info[\"Audit AuditDSAccess\"] = cf.get(\"Event Audit\", \"AuditDSAccess\")\n    info[\"Audit AuditAccountLogon\"] = cf.get(\"Event Audit\", \"AuditAccountLogon\")\n\n    os.remove('Password.ini')\n\n    return\n\n\ndef check_audit(audit_key, audit_type):\n    info = result['info']\n    value = info['Audit ' + audit_key]\n    if int(value) == 3:\n        result['risk_level'] = 0\n        result['risk_desc'] = f'{audit_type}审计策略配置正确'\n        result['solution'] = '无'\n    elif int(value) == 0:\n        result['risk_level'] = 2\n        result['risk_desc'] = f'系统没有配置{audit_type}审计策略，存在较严重的审计缺陷'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n    elif int(value) == 1:\n        result['risk_level'] = 1\n        result['risk_desc'] = f'系统只配置了{audit_type}的成功事件审计'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n    elif int(value) == 2:\n        result['risk_level'] = 1\n        result['risk_desc'] = f'系统只配置了{audit_type}的失败事件审计'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n\n    if result['risk_level'] != 0:\n        result['solution'] += '审计安全设置的位置是：Computer Configuration\\Windows Settings\\Security Settings\\Local ' \\\n                              'Policies\\Audit Policy '\n\n\n# 检查审计策略的设定值：\n# 0：不审计\n# 1：审计成功事件\n# 2：审计失败事件\n# 3：审计成功、失败事件\ndef analyze(result):\n    info = result['info']\n    result['risk_level'] = 0\n    result['risk_desc'] = '审计策略配置正确'\n    result['solution'] = '无'\n\n    # 登录日志审计策略\n    if SCRIPT_USAGE == 1:\n        check_audit('AuditLogonEvents', '登录')\n\n    # 系统事件审计策略\n    if SCRIPT_USAGE == 2:\n        check_audit('AuditSystemEvents', '系统')\n\n    # 对象访问事件审计策略\n    if SCRIPT_USAGE == 3:\n        check_audit('AuditObjectAccess', '对象访问')\n\n    # 特权使用事件审计策略\n    if SCRIPT_USAGE == 4:\n        check_audit('AuditPrivilegeUse', '特权使用')\n\n    # 策略更改事件审计策略\n    if SCRIPT_USAGE == 5:\n        check_audit('AuditPolicyChange', '策略更改')\n\n    # 账户管理事件审计策略\n    if SCRIPT_USAGE == 6:\n        check_audit('AuditAccountManage', '账户管理')\n\n    # 过程追踪事件审计策略\n    if SCRIPT_USAGE == 7:\n        check_audit('AuditProcessTracking', '过程追踪')\n\n    # 目录服务事件审计策略\n    if SCRIPT_USAGE == 8:\n        check_audit('AuditDSAccess', '目录服务')\n\n    # 账户登录事件审计策略\n    if SCRIPT_USAGE == 9:\n        check_audit('AuditAccountLogon', '账户登录')\n\n\n    return\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n\n    print(result)\n",
+											"description": "windows/audit_policy.py, SCRIPT_USAGE = 7",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.7.8 Win目录服务事件审核",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows目录服务事件审核",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsDSAccessAudit",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "88b73bae-1d44-4c1b-914b-16a25c801c4e",
+											"description": "分组：Windows日志审计配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\n\nimport configparser\nimport codecs\nimport os\n\n# 本脚本用于多条审计策略\n# SCRIPT_USAGE = 1    # 登录日志审计策略\n# SCRIPT_USAGE = 2    # 系统事件审计策略\n# SCRIPT_USAGE = 3    # 对象访问事件审计策略\n# SCRIPT_USAGE = 4  # 特权使用事件审计策略\n# SCRIPT_USAGE = 5    # 策略更改事件审计策略\n# SCRIPT_USAGE = 6    # 账户管理事件审计策略\n# SCRIPT_USAGE = 7    # 过程追踪事件审计策略\nSCRIPT_USAGE = 8    # 目录服务事件审计策略\n# SCRIPT_USAGE = 9    # 账户登录事件审计策略\n\nINVALID = '-1'\n\n\nclass Config:\n    def __init__(self, path):\n        self.path = path\n        self.cf = configparser.ConfigParser()\n        self.cf.read_file(codecs.open(self.path, \"r\", \"utf_16\"))\n        s = self.cf.sections()\n\n    def get(self, field, key):\n        try:\n            result = str(self.cf.get(field, key))\n        except:\n            return INVALID\n        return result\n\n    def set(self, field, key, value):\n        self.cf.set(field, key, value)\n        self.cf.write(open(self.path, 'w'))\n        return True\n\n\ndef process(info):\n    output = os.system(\"secedit /export /cfg Password.ini\")\n\n    cf = Config(\"Password.ini\")\n\n    info[\"Audit AuditLogonEvents\"] = cf.get(\"Event Audit\", \"AuditLogonEvents\")\n    info[\"Audit AuditSystemEvents\"] = cf.get(\"Event Audit\", \"AuditSystemEvents\")\n    info[\"Audit AuditObjectAccess\"] = cf.get(\"Event Audit\", \"AuditObjectAccess\")\n    info[\"Audit AuditPrivilegeUse\"] = cf.get(\"Event Audit\", \"AuditPrivilegeUse\")\n    info[\"Audit AuditPolicyChange\"] = cf.get(\"Event Audit\", \"AuditPolicyChange\")\n    info[\"Audit AuditAccountManage\"] = cf.get(\"Event Audit\", \"AuditAccountManage\")\n    info[\"Audit AuditProcessTracking\"] = cf.get(\"Event Audit\", \"AuditProcessTracking\")\n    info[\"Audit AuditDSAccess\"] = cf.get(\"Event Audit\", \"AuditDSAccess\")\n    info[\"Audit AuditAccountLogon\"] = cf.get(\"Event Audit\", \"AuditAccountLogon\")\n\n    os.remove('Password.ini')\n\n    return\n\n\ndef check_audit(audit_key, audit_type):\n    info = result['info']\n    value = info['Audit ' + audit_key]\n    if int(value) == 3:\n        result['risk_level'] = 0\n        result['risk_desc'] = f'{audit_type}审计策略配置正确'\n        result['solution'] = '无'\n    elif int(value) == 0:\n        result['risk_level'] = 2\n        result['risk_desc'] = f'系统没有配置{audit_type}审计策略，存在较严重的审计缺陷'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n    elif int(value) == 1:\n        result['risk_level'] = 1\n        result['risk_desc'] = f'系统只配置了{audit_type}的成功事件审计'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n    elif int(value) == 2:\n        result['risk_level'] = 1\n        result['risk_desc'] = f'系统只配置了{audit_type}的失败事件审计'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n\n    if result['risk_level'] != 0:\n        result['solution'] += '审计安全设置的位置是：Computer Configuration\\Windows Settings\\Security Settings\\Local ' \\\n                              'Policies\\Audit Policy '\n\n\n# 检查审计策略的设定值：\n# 0：不审计\n# 1：审计成功事件\n# 2：审计失败事件\n# 3：审计成功、失败事件\ndef analyze(result):\n    info = result['info']\n    result['risk_level'] = 0\n    result['risk_desc'] = '审计策略配置正确'\n    result['solution'] = '无'\n\n    # 登录日志审计策略\n    if SCRIPT_USAGE == 1:\n        check_audit('AuditLogonEvents', '登录')\n\n    # 系统事件审计策略\n    if SCRIPT_USAGE == 2:\n        check_audit('AuditSystemEvents', '系统')\n\n    # 对象访问事件审计策略\n    if SCRIPT_USAGE == 3:\n        check_audit('AuditObjectAccess', '对象访问')\n\n    # 特权使用事件审计策略\n    if SCRIPT_USAGE == 4:\n        check_audit('AuditPrivilegeUse', '特权使用')\n\n    # 策略更改事件审计策略\n    if SCRIPT_USAGE == 5:\n        check_audit('AuditPolicyChange', '策略更改')\n\n    # 账户管理事件审计策略\n    if SCRIPT_USAGE == 6:\n        check_audit('AuditAccountManage', '账户管理')\n\n    # 过程追踪事件审计策略\n    if SCRIPT_USAGE == 7:\n        check_audit('AuditProcessTracking', '过程追踪')\n\n    # 目录服务事件审计策略\n    if SCRIPT_USAGE == 8:\n        check_audit('AuditDSAccess', '目录服务')\n\n    # 账户登录事件审计策略\n    if SCRIPT_USAGE == 9:\n        check_audit('AuditAccountLogon', '账户登录')\n\n\n    return\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n\n    print(result)\n",
+											"description": "windows/audit_policy.py, SCRIPT_USAGE = 8",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.7.9 Win账户登录事件审核",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows账户登录事件审核",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsAccountLogonAudit",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "88b73bae-1d44-4c1b-914b-16a25c801c4e",
+											"description": "分组：Windows日志审计配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\n\nimport configparser\nimport codecs\nimport os\n\n# 本脚本用于多条审计策略\n# SCRIPT_USAGE = 1    # 登录日志审计策略\n# SCRIPT_USAGE = 2    # 系统事件审计策略\n# SCRIPT_USAGE = 3    # 对象访问事件审计策略\n# SCRIPT_USAGE = 4  # 特权使用事件审计策略\n# SCRIPT_USAGE = 5    # 策略更改事件审计策略\n# SCRIPT_USAGE = 6    # 账户管理事件审计策略\n# SCRIPT_USAGE = 7    # 过程追踪事件审计策略\n# SCRIPT_USAGE = 8    # 目录服务事件审计策略\nSCRIPT_USAGE = 9    # 账户登录事件审计策略\n\nINVALID = '-1'\n\n\nclass Config:\n    def __init__(self, path):\n        self.path = path\n        self.cf = configparser.ConfigParser()\n        self.cf.read_file(codecs.open(self.path, \"r\", \"utf_16\"))\n        s = self.cf.sections()\n\n    def get(self, field, key):\n        try:\n            result = str(self.cf.get(field, key))\n        except:\n            return INVALID\n        return result\n\n    def set(self, field, key, value):\n        self.cf.set(field, key, value)\n        self.cf.write(open(self.path, 'w'))\n        return True\n\n\ndef process(info):\n    output = os.system(\"secedit /export /cfg Password.ini\")\n\n    cf = Config(\"Password.ini\")\n\n    info[\"Audit AuditLogonEvents\"] = cf.get(\"Event Audit\", \"AuditLogonEvents\")\n    info[\"Audit AuditSystemEvents\"] = cf.get(\"Event Audit\", \"AuditSystemEvents\")\n    info[\"Audit AuditObjectAccess\"] = cf.get(\"Event Audit\", \"AuditObjectAccess\")\n    info[\"Audit AuditPrivilegeUse\"] = cf.get(\"Event Audit\", \"AuditPrivilegeUse\")\n    info[\"Audit AuditPolicyChange\"] = cf.get(\"Event Audit\", \"AuditPolicyChange\")\n    info[\"Audit AuditAccountManage\"] = cf.get(\"Event Audit\", \"AuditAccountManage\")\n    info[\"Audit AuditProcessTracking\"] = cf.get(\"Event Audit\", \"AuditProcessTracking\")\n    info[\"Audit AuditDSAccess\"] = cf.get(\"Event Audit\", \"AuditDSAccess\")\n    info[\"Audit AuditAccountLogon\"] = cf.get(\"Event Audit\", \"AuditAccountLogon\")\n\n    os.remove('Password.ini')\n\n    return\n\n\ndef check_audit(audit_key, audit_type):\n    info = result['info']\n    value = info['Audit ' + audit_key]\n    if int(value) == 3:\n        result['risk_level'] = 0\n        result['risk_desc'] = f'{audit_type}审计策略配置正确'\n        result['solution'] = '无'\n    elif int(value) == 0:\n        result['risk_level'] = 2\n        result['risk_desc'] = f'系统没有配置{audit_type}审计策略，存在较严重的审计缺陷'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n    elif int(value) == 1:\n        result['risk_level'] = 1\n        result['risk_desc'] = f'系统只配置了{audit_type}的成功事件审计'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n    elif int(value) == 2:\n        result['risk_level'] = 1\n        result['risk_desc'] = f'系统只配置了{audit_type}的失败事件审计'\n        result['solution'] = f'设置{audit_key}的审计策略为：成功事件+失败事件。'\n\n    if result['risk_level'] != 0:\n        result['solution'] += '审计安全设置的位置是：Computer Configuration\\Windows Settings\\Security Settings\\Local ' \\\n                              'Policies\\Audit Policy '\n\n\n# 检查审计策略的设定值：\n# 0：不审计\n# 1：审计成功事件\n# 2：审计失败事件\n# 3：审计成功、失败事件\ndef analyze(result):\n    info = result['info']\n    result['risk_level'] = 0\n    result['risk_desc'] = '审计策略配置正确'\n    result['solution'] = '无'\n\n    # 登录日志审计策略\n    if SCRIPT_USAGE == 1:\n        check_audit('AuditLogonEvents', '登录')\n\n    # 系统事件审计策略\n    if SCRIPT_USAGE == 2:\n        check_audit('AuditSystemEvents', '系统')\n\n    # 对象访问事件审计策略\n    if SCRIPT_USAGE == 3:\n        check_audit('AuditObjectAccess', '对象访问')\n\n    # 特权使用事件审计策略\n    if SCRIPT_USAGE == 4:\n        check_audit('AuditPrivilegeUse', '特权使用')\n\n    # 策略更改事件审计策略\n    if SCRIPT_USAGE == 5:\n        check_audit('AuditPolicyChange', '策略更改')\n\n    # 账户管理事件审计策略\n    if SCRIPT_USAGE == 6:\n        check_audit('AuditAccountManage', '账户管理')\n\n    # 过程追踪事件审计策略\n    if SCRIPT_USAGE == 7:\n        check_audit('AuditProcessTracking', '过程追踪')\n\n    # 目录服务事件审计策略\n    if SCRIPT_USAGE == 8:\n        check_audit('AuditDSAccess', '目录服务')\n\n    # 账户登录事件审计策略\n    if SCRIPT_USAGE == 9:\n        check_audit('AuditAccountLogon', '账户登录')\n\n\n    return\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n\n    result = {'info': info}\n    analyze(result)\n\n    print(result)\n",
+											"description": "windows/audit_policy.py, SCRIPT_USAGE = 9",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "C.8 Win文件安全防护",
+					"item": [
+						{
+							"name": "C.8.1 Win系统文件隐藏缺陷",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows系统文件隐藏缺陷",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsFileHideDefect",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "fd4068f1-6100-4711-bb65-c716c982ea8f",
+											"description": "分组：Windows系统文件安全防护",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\nimport os\nimport winreg\n\n\ndef getRegValue(key, value_name):\n    try:\n        value, type = winreg.QueryValueEx(key, value_name)\n    except WindowsError:\n        value = -1\n        type = -1\n\n    return value, type\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    # 打开注册表 HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\Folder\\Hidden\\SHOWALL\n    key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced'\n                                                    r'\\Folder\\Hidden\\SHOWALL')\n\n    # 读取系统隐藏文件的可读性\n    value, type = getRegValue(key, 'CheckedValue')\n    # 键值类型4：REG_DWORD\n    if type != 4 or value != 1:\n        info['Hide File Defect'] = 1\n        result['risk_level'] = 3\n        result['risk_desc'] = '木马修改了注册表，以保护自己，需修复注册表。'\n        result['solution'] = '在注册表 HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced' \\\n                             '\\Folder\\Hidden\\SHOWALL下，将CheckedValue删除，再新建一个DWORD值命名为CheckedValue，数值取1即可。 '\n    else:\n        info['Hide File Defect'] = 0\n        result['risk_level'] = 0\n        result['risk_desc'] = '未发现隐藏文件漏洞。'\n        result['solution'] = '无'\n\n    return\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
+											"description": "windows/file_hide_defect.py",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.8.2 Win文件系统检查",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Windows磁盘文件系统",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "WindowsDiskFileSystem",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "fd4068f1-6100-4711-bb65-c716c982ea8f",
+											"description": "分组：Windows系统文件安全防护",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\nimport psutil\n# from json import JSONEncoder\nimport json\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    # 获取所有磁盘的分区信息\n    disk_part = psutil.disk_partitions()\n\n    # 系统磁盘的分区信息\n    sys_disk_part = disk_part[0]._asdict()\n    # info['System Disk Partition'] = JSONEncoder().encode(sys_disk_part)\n    info['System Disk Partition'] = json.dumps(sys_disk_part)\n    # sys_disk_part_dict = sys_disk_part._asdict()\n    if sys_disk_part['device'] != 'C:\\\\':\n        result['risk_level'] = 3\n        result['risk_desc'] = '未成功获取磁盘分区信息。'\n        result['solution'] = '请检查磁盘分区信息，确保系统盘的正确分区。'\n    elif sys_disk_part['fstype'] != 'NTFS':\n        result['risk_level'] = 2\n        result['risk_desc'] = '系统盘没有采用NTFS文件系统，不支持文件安全设置。'\n        result['solution'] = '为保证文件系统的安全性，建议将磁盘改成NTFS文件系统，并重新安装操作系统。'\n    else:\n        result['risk_level'] = 0\n        result['risk_desc'] = '系统盘采用了NTFS文件系统，支持文件安全设置。'\n        result['solution'] = '无。'\n\n    return\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
+											"description": "windows/file_system.py",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "C.9 Linux用户账号配置",
+					"item": [
+						{
+							"name": "C.9.1 Linux多余账号",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Linux多余账号",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "LinuxRedundantAccounts",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "d56bb9e2-7b9d-45fc-a67f-72dc7898ffa9",
+											"description": "分组：Linux用户账号配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "import os\nimport platform\nimport json\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n    # os_json = json.dumps(os_info)\n    # print(os_info)\n    # print(os_json)\n\n    # 获取所有用户\n    os.system(\"cat /etc/passwd > passwd.txt\")\n    all_users = open(\"passwd.txt\", \"r\").readlines()\n\n    # 获取所有有效用户 (每行结尾不是 nologin)\n    os.system(\"grep -v nologin$ /etc/passwd > passwd.txt\")\n    active_users = open(\"passwd.txt\", \"r\").readlines()\n\n    all_users_count = len(all_users)\n    active_users_count = len(active_users)\n    info['Active Users'] = active_users\n\n    # 活跃用户大于5时，需检查确认是否有多余账户\n    if active_users_count > 5:\n        result['risk_level'] = 1\n        result['risk_desc'] = '系统账户过多，共计{}个账户，其中{}个活跃账户。'.format(all_users_count, active_users_count)\n        result['solution'] = '请联系系统管理员，使用超级用户登录系统，锁定与设备或系统运行、维护等工作无关的帐号\\npasswd -l <username>'\n    else:\n        result['risk_level'] = 0\n        result['risk_desc'] = '系统用户数量处于正常状态。'\n        result['solution'] = '无'\n\n    os.remove(\"passwd.txt\")\n    return os_info\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
+											"description": "windows/unused_user.py",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.9.2 Linux root远程登录限制",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Linux root远程登录限制",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "LinuxRootRemoteLogin",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "d56bb9e2-7b9d-45fc-a67f-72dc7898ffa9",
+											"description": "分组：Linux用户账号配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "import os\nimport platform\nimport json\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n\n    # 获取root账户SSH远程登录限制的配置\n    os.system(\"grep '^PermitRootLogin' /etc/ssh/sshd_config > root.txt\")\n    permit = open(\"root.txt\", \"r\").readlines()\n\n    # 如果读取不到 PermitRootLogin 开头的行，说明配置文件中这行被注释了\n    # 按照 PermitRootLogin yes 做错误处理\n    if len(permit) == 0:\n        permit = [].push(\"PermitRootLogin yes\")\n\n    info['PermitRootLogin'] = permit[0]\n\n    # 分割\n    split_permit = permit[0].split()\n\n    # 判断是否允许root远程登录\n    if split_permit[1] == \"yes\":\n        result['risk_level'] = 2\n        result['risk_desc'] = '系统未限制root账户远程登录。'\n        result['solution'] = '修改/etc/ssh/sshd_config文件，将PermitRootLogin yes改为PermitRootLogin no，重启sshd服务。'\n    else:\n        result['risk_level'] = 0\n        result['risk_desc'] = '系统已限制root账户远程登录。'\n        result['solution'] = '无'\n\n    os.remove(\"root.txt\")\n    return os_info\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
+											"description": "windows/root_remote_login.py",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "C10. Linux口令配置",
+					"item": [
+						{
+							"name": "C.10.1 Linux口令要求",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Linux口令要求",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "LinuxPwdRequisite",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "4c025006-3742-4cc4-8923-3b67055350fc",
+											"description": "分组：Linux口令配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "import os\nimport platform\nimport json\nimport re\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n\n    # 获取密码要求的配置\n    os.system(\"grep '^password\\t*requisite' /etc/pam.d/common-password > passwd_req.txt\")\n    passwd_req = open(\"passwd_req.txt\", \"r\").readlines()\n\n    # password requisite pam_deny.so minlen=6\n    # 参数说明如下：\n    # 1、retry=N，确定用户创建密码时允许重试的次数；\n    # 2、minlen=N，确定密码最小长度要求，事实上，在默认配置下，此参数代表密码最小长度为N-1；\n    # 3、dcredit=N，当N小于0时，代表新密码中数字字符数量不得少于（-N）个。例如，dcredit=-2代表密码中要至少包含两个数字字符；\n    # 4、ucredit=N，当N小于0时，代表则新密码中大写字符数量不得少于（-N）个；\n    # 5、lcredit=N，当N小于0时，代表则新密码中小写字符数量不得少于（-N）个；\n    # 6、ocredit=N，当N小于0时，代表则新密码中特殊字符数量不得少于（-N）个；\n    if len(passwd_req) == 0:\n        # 如果读取不到 password requisite 参数，按没有密码要求处理\n        info['Password requisite'] = \"没有找到口令要求的配置。\"\n        result['risk_level'] = 2\n        result['risk_desc'] = '系统没有对用户口令做任何限制要求，用户口令可能过于简单，对系统造成威胁。'\n        result['solution'] = '修改/etc/pam.d/common-password文件，设置password requisite minlen = 12。'\n    else:\n        # passwd_req = 'password    requisite     minlen = 8'\n        passwd_req = passwd_req[0]\n        info['Password requisite'] = passwd_req\n        pos = passwd_req.find('minlen')\n        if pos < 0:\n            result['risk_level'] = 1\n            result['risk_desc'] = '未设置口令最小长度，系统安全要求最少12位。'\n            result['solution'] = 'vi /etc/pam.d/common-password，找到password模块接口的配置部分，设置password requisite minlen = 12。'\n        else:\n            min_len = passwd_req[pos:].strip().replace(' ', '')\n            min_len = int(min_len[7:])\n            if min_len < 12:\n                result['risk_level'] = 1\n                result['risk_desc'] = '当前口令最小长度设置为{}位，系统安全要求最少12位。'.format(min_len)\n                result['solution'] = 'vi /etc/pam.d/common-password，找到password模块接口的配置部分，设置password requisite minlen = ' \\\n                                     '12。 '\n            else:\n                result['risk_level'] = 0\n                result['risk_desc'] = '用户口令设置符合要求。'\n                result['solution'] = '无'\n\n    os.remove(\"passwd_req.txt\")\n    return os_info\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
+											"description": "windows/passwd_requisite.py",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.10.2 Linux口令最长生存期",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Linux口令最长生存期",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "LinuxPassMaxDays",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "4c025006-3742-4cc4-8923-3b67055350fc",
+											"description": "分组：Linux口令配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "import os\nimport platform\nimport json\nimport re\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n\n    # 获取密码要求的配置\n    os.system(\"grep '^PASS_MAX_DAYS' /etc/login.defs > pass_maxd.txt\")\n    pass_max_days_list = open(\"pass_maxd.txt\", \"r\").readlines()\n\n    # cat /etc/login.defs文件中指定配置项，其中：\n    # 要求操作系统的账户口令的最长生存期不长于90天\n    # PASS_MAX_DAYS配置项决定密码最长使用期限；\n    # PASS_MIN_DAYS配置项决定密码最短使用期限；\n    # PASS_WARN_AGE配置项决定密码到期提醒时间。\n    # vi /etc/login.defs文件，修改PASS_MAX_DAYS值为小于等于90\n    if len(pass_max_days_list) == 0:\n        # 如果读取不到 PASS_MAX_DAYS 配置，按没有该配置处理\n        info['PASS_MAX_DAYS'] = \"没有设置口令的最长使用期限。\"\n        result['risk_level'] = 2\n        result['risk_desc'] = '没有设置口令的最长使用期限。'\n        result['solution'] = '配置方法：vi /etc/login.defs文件，修改PASS_MAX_DAYS值为小于等于90。'\n    else:\n        # PASS_MAX_DAYS\t99999\n        pass_max_days = pass_max_days_list[0]\n        info['PASS_MAX_DAYS'] = pass_max_days\n        pass_max_days = re.sub(' +', ' ', pass_max_days)\n        pass_max_days = int(pass_max_days.split()[1])\n        if pass_max_days > 90:\n            result['risk_level'] = 1\n            result['risk_desc'] = '账户口令的最长生存期的当前设置为{}天,违背了不长于90天的原则。'.format(pass_max_days)\n            result['solution'] = '配置方法：vi /etc/login.defs文件，修改PASS_MAX_DAYS值为小于等于90。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '账户口令的最长生存期的当前设置为{}天，符合不长于90天的要求。'.format(pass_max_days)\n            result['solution'] = '无'\n\n    os.remove(\"pass_maxd.txt\")\n    return os_info\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
+											"description": "windows/passwd_max_days.py",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "C11. Linux文件安全防护",
+					"item": [
+						{
+							"name": "C.11.1 Linux关键文件权限控制",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Linux关键文件权限控制",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "LinuxCriticalFileRights",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "337cb5d7-bf22-4745-824d-38216971d148",
+											"description": "分组：Linux文件安全防护",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "import os\nimport platform\nimport json\nimport re\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n\n    result['risk_level'] = 0\n    result['risk_desc'] = ''\n    result['solution'] = ''\n\n    # /etc/passwd 所有用户都可读，root用户可写\n    # -rw-r--r--\n    os.system(\"ls -l /etc/passwd > passwd.txt\")\n    passwd = open(\"passwd.txt\", \"r\").readlines()\n    if len(passwd) != 0:\n        info['passwd file'] = passwd[0]\n        if passwd[0][0:10] != '-rw-r--r--':\n            result['risk_level'] = 2\n            result['risk_desc'] += '/etc/passwd 的文件权限不符合\"所有用户都可读，root用户可写\"的要求。\\n'\n            result['solution'] += '配置命令：chmod 644 /etc/passwd 。\\n'\n    os.remove('passwd.txt')\n\n    # /etc/shadow 只有root可读\n    # -r--------\n    os.system(\"ls -l /etc/shadow > shadow.txt\")\n    shadow = open(\"shadow.txt\", \"r\").readlines()\n    if len(shadow) != 0:\n        info['shadow file'] = shadow[0]\n        if shadow[0][0:10] != '-r--------':\n            result['risk_level'] = 2\n            result['risk_desc'] += '/etc/shadow 的文件权限不符合\"只有root可读\"的要求。\\n'\n            result['solution'] += '配置命令：chmod 600 /etc/shadow 。\\n'\n    os.remove('shadow.txt')\n\n    # /etc/group 必须所有用户都可读，root用户可写\n    # -rw-r--r--\n    os.system(\"ls -l /etc/group > group.txt\")\n    group = open(\"group.txt\", \"r\").readlines()\n    if len(group) != 0:\n        info['group file'] = group[0]\n        if group[0][0:10] != '-rw-r--r--':\n            result['risk_level'] = 2\n            result['risk_desc'] += '/etc/group 的文件权限不符合\"所有用户都可读，root用户可写\"的要求。\\n'\n            result['solution'] += '配置命令：chmod 644 /etc/group 。\\n'\n    os.remove('group.txt')\n\n    if result['risk_level'] == 0:\n        result['risk_desc'] = '关键目录权限符合要求。'\n        result['solution'] = '无'\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
+											"description": "windows/critical_files_right.py",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "C12. Linux日志审计",
+					"item": [
+						{
+							"name": "C.12.1 Linux安全日志完备性",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Linux安全日志完备性",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "LinuxSecureLogConfig",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "b344bfbe-0c1b-46a3-b995-e2d0a6773fa6",
+											"description": "分组：Linux日志审计",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "import os\nimport platform\nimport json\nimport re\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n\n    # 安全日志完备性要求\n    # 系统应配置完备日志记录，记录对与系统相关的安全事件。\n    os.system(\"grep authpriv.* /etc/rsyslog.conf > rsyslog.txt\")\n    rsyslog = open(\"rsyslog.txt\", \"r\").readlines()\n    if len(rsyslog) == 0:\n        info['rsyslog authpriv'] = '没有相应的日志配置'\n        result['risk_level'] = 2\n        result['risk_desc'] = '系统应配置完备日志记录，记录对与系统相关的安全事件。'\n        result['solution'] = '修改配置文件vi /etc/rsyslog.conf，配置如下类似语句：\\nauthpriv.*            /var/log/auth.log'\n    else:\n        info['rsyslog authpriv'] = rsyslog\n        result['risk_level'] = 0\n        result['risk_desc'] = '系统已配置完备日志记录'\n        result['solution'] = '无'\n\n    os.remove('rsyslog.txt')\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
+											"description": "windows/secure_log.py",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.12.2 Linux历史时间戳",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Linux历史时间戳",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "LinuxHistoryTimestamp",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "b344bfbe-0c1b-46a3-b995-e2d0a6773fa6",
+											"description": "分组：Linux日志审计",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "import os\nimport platform\nimport json\nimport re\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n\n    # 设置history时间戳，便于审计。\n    # 系统应配置完备日志记录，记录对与系统相关的安全事件。\n    os.system(\"grep HISTTIMEFORMAT /etc/profile > history.txt\")\n    history = open(\"history.txt\", \"r\").readlines()\n    if len(history) == 0:\n        info['History timestamp'] = '没有配置 history 时间戳。'\n        result['risk_level'] = 1\n        result['risk_desc'] = '系统应配置 history 时间戳，便于审计。'\n        result['solution'] = '在/etc/profile 文件中增加如下行：\\nexport HISTTIMEFORMAT=\"%F %T `whoami` \"'\n    else:\n        info['History timestamp'] = history[0]\n        result['risk_level'] = 0\n        result['risk_desc'] = '系统已配置 history 时间戳。'\n        result['solution'] = '无'\n\n    os.remove('history.txt')\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
+											"description": "windows/history_timestamp.py",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "C13. Linux系统服务",
+					"item": [
+						{
+							"name": "C.13.1 Linux SSH服务",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Linux SSH 服务",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "LinuxSSHService",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "debcd26a-dbd8-426f-8789-5be3fccef021",
+											"description": "分组：Linux系统服务",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "import os\nimport platform\nimport json\nimport re\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef check_config(cfg_list, cfg, value):\n    if len(cfg_list) > 0:\n        for info in cfg_list:\n            if info.find(cfg) == 0 and info.find(value) > len(cfg):\n                return True\n    return False\n\n\ndef get_line(info_list, key):\n    if len(info_list) > 0:\n        for info in info_list:\n            if info.find(key) >= 0:\n                return info\n    return ''\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n\n    result['risk_level'] = 0\n    result['risk_desc'] = ''\n    result['solution'] = ''\n\n    # SSH登录配置\n    # 系统应配置使用SSH等加密协议进行远程登录维护，并安全配置SSHD的设置。不使用TELENT进行远程登录维护。\n\n    # 检查 ssh 服务\n    os.system(\"ps -elf | grep sshd > ps.txt\")\n    ps_result = open(\"ps.txt\", \"r\").readlines()\n    line_info = get_line(ps_result, '/usr/sbin/sshd')\n    if len(line_info) == 0:\n        info['SSH Service'] = '没有启动 SSH 服务。'\n        result['risk_level'] = 2\n        result['risk_desc'] += '没有启动SSH服务。\\n'\n        result['solution'] += '命令：systemctl start sshd 启动服务\\n'\n    else:\n        info['SSH Service'] = line_info\n\n    # 检查 telnet 服务\n    os.system(\"ps -elf | grep xinetd > ps.txt\")\n    ps_result = open(\"ps.txt\", \"r\").readlines()\n    line_info = get_line(ps_result, '/etc/rc.d/init.d/xinetd')\n    if len(line_info) > 0:\n        info['Telnet Service'] = line_info\n        result['risk_level'] = 2\n        result['risk_desc'] += '系统启动了 Telnet 服务，采用这种远程维护是不安全的。\\n'\n        result['solution'] += '关闭 Telnet 服务，且将其设置成开机不自动启动。\\n'\n    else:\n        info['Telnet Service'] = '没有启动 Telnet 服务。'\n\n    os.remove('ps.txt')\n\n    # 读取 SSH 配置\n    os.system(\"cat /etc/ssh/sshd_config > sshd_config.txt\")\n    sshd_config = open(\"sshd_config.txt\", \"r\").readlines()\n    info['SSH Config'] = sshd_config\n\n    # 窗口图形传输使用ssh加密\n    if not check_config(sshd_config, 'X11Forwarding', 'yes'):\n        result['risk_level'] = 2\n        result['risk_desc'] += '未允许窗口图形传输使用 SSH 加密。\\n'\n        result['solution'] += 'sshd_config 增加配置：X11Forwarding yes。\\n'\n\n    # 完全禁止SSHD使用.rhosts文件\n    if not check_config(sshd_config, 'IgnoreRhosts', 'yes'):\n        result['risk_level'] = 2\n        result['risk_desc'] += '未禁止SSHD使用.rhosts文件。\\n'\n        result['solution'] += 'sshd_config 增加配置：IgnoreRhosts yes。\\n'\n\n    # 不设置使用基于rhosts的安全验证\n    if not check_config(sshd_config, 'RhostsAuthentication', 'no'):\n        result['risk_level'] = 2\n        result['risk_desc'] += '未禁止基于rhosts的安全验证。\\n'\n        result['solution'] += 'sshd_config 增加配置：RhostsAuthentication no。\\n'\n\n    # 不设置使用RSA算法的基于rhosts的安全验证\n    if not check_config(sshd_config, 'RhostsRSAAuthentication', 'no'):\n        result['risk_level'] = 2\n        result['risk_desc'] += '未禁止使用RSA算法的基于rhosts的安全验证。\\n'\n        result['solution'] += 'sshd_config 增加配置：RhostsRSAAuthentication no。\\n'\n\n    # 不允许基于主机白名单方式认证\n    if not check_config(sshd_config, 'HostbasedAuthentication', 'no'):\n        result['risk_level'] = 2\n        result['risk_desc'] += '未禁止基于主机白名单方式认证。\\n'\n        result['solution'] += 'sshd_config 增加配置：HostbasedAuthentication no。\\n'\n\n    # 不允许root登录\n    if not check_config(sshd_config, 'PermitRootLogin', 'no'):\n        result['risk_level'] = 2\n        result['risk_desc'] += '未禁止root登录。\\n'\n        result['solution'] += 'sshd_config 增加配置：PermitRootLogin no。\\n'\n\n    # 不允许空密码\n    if not check_config(sshd_config, 'PermitEmptyPasswords', 'no'):\n        result['risk_level'] = 2\n        result['risk_desc'] += '未禁止空密码。\\n'\n        result['solution'] += 'sshd_config 增加配置：PermitEmptyPasswords no。\\n'\n\n    # 设置ssh登录时显示的banner\n    if not check_config(sshd_config, 'Banner', '/etc/motd'):\n        result['risk_level'] = 2\n        result['risk_desc'] += '未设置ssh登录时显示的banner。\\n'\n        result['solution'] += 'sshd_config 增加配置：Banner /etc/motd。\\n'\n\n    os.remove('sshd_config.txt')\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
+											"description": "windows/sshd_config.py",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "2000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "C.13.2 Linux系统服务筛查",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Linux系统服务筛查",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "LinuxSysServicesCheck",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "debcd26a-dbd8-426f-8789-5be3fccef021",
+											"description": "分组：Linux系统服务",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "import os\nimport platform\nimport json\nimport re\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef is_service_running(info_list, service):\n    if len(info_list) > 0:\n        for info in info_list:\n            if info.find(service) >= 0:\n                return True\n    return False\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n\n    result['risk_level'] = 0\n    result['risk_desc'] = ''\n    result['solution'] = ''\n\n    # 获取所有系统服务\n    os.system(\"systemctl list-units > services.txt\")\n    services = open(\"services.txt\", \"r\").readlines()\n    info['Running Services'] = services\n\n    # Linux/Unix系统服务中，部分服务存在较高安全风险，应当禁用，包括：\n    # “lpd”，此服务为行式打印机后台程序，用于假脱机打印工作的UNIX后台程序，此服务通常情况下不用，建议禁用；\n    # “telnet”，此服务采用明文传输数据，登陆信息容易被窃取，建议用ssh代替；\n    # “routed”，此服务为路由守候进程，使用动态RIP路由选择协议，建议禁用；\n    # “sendmail”，此服务为邮件服务守护进程，非邮件服务器应将其关闭；\n    # “Bluetooth”，此服务为蓝牙服务，如果不需要蓝牙服务时应关闭；\n    # “identd”，此服务为AUTH服务，在提供用户信息方面与finger类似，一般情况下该服务不是必须的，建议关闭；\n    # “xfs”，此服务为Linux中X Window的字体服务，关于该服务历史上出现过信息泄露和拒绝服务等漏洞，应以减少系统风险；\n    # R服务（“rlogin”、“rwho”、“rsh”、“rexec”），R服务设计上存在严重的安全缺陷，仅适用于封闭环境中信任主机之间便捷访问，其他场合下均必须禁用；\n    # 基于inetd/xinetd的服务（daytime、chargen、echo等），此类服务建议禁用。\n    check_list = ['lpd', 'telnet', 'routed', 'sendmail', 'Bluetooth', 'identd', 'xfs',\n                  'rlogin', 'rwho', 'rsh', 'rexec', 'inetd', 'xinetd']\n    for service in check_list:\n        if is_service_running(services, service):\n            result['risk_level'] = 2\n            result['risk_desc'] += '系统启动了 {} 服务，该服务有安全风险。\\n'.format(service)\n            result['solution'] += '关闭 {} 服务，且将其设置成开机不自动启动。\\n'.format(service)\n\n    if result['risk_level'] == 0:\n        result['risk_desc'] = '未发现有安全风险的系统服务。'\n        result['solution'] = '无'\n\n    os.remove('services.txt')\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
+											"description": "windows/system_service.py",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "2000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "C14. Linux防火墙安全",
+					"item": [
+						{
+							"name": "C.14.1 Linux防火墙服务",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Linux防火墙服务",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "LinuxFirewallService",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "c111a6ad-5b51-48b0-88c1-76a34c42f3df",
+											"description": "分组：Linux防火墙安全",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "import os\nimport platform\nimport json\nimport re\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n\n    is_fw_run = False\n\n    # 查看 iptables 服务\n    os.system(\"systemctl list-units | grep iptables > firewall.txt\")\n    fw_service = open(\"firewall.txt\", \"r\").readlines()\n    info['Service iptables'] = fw_service\n    if len(fw_service) > 0:\n        is_fw_run = True\n\n    # 查看 firewalld 服务\n    os.system(\"systemctl list-units | grep firewalld > firewall.txt\")\n    fw_service = open(\"firewall.txt\", \"r\").readlines()\n    info['Service firewalld'] = fw_service\n    if len(fw_service) > 0:\n        is_fw_run = True\n\n    if is_fw_run:\n        result['risk_level'] = 0\n        result['risk_desc'] = '系统防火墙正在运行中，可有效防范一些网络攻击。'\n        result['solution'] = '无'\n    else:\n        result['risk_level'] = 3\n        result['risk_desc'] = '系统防火墙未开启，有较大的安全风险。'\n        result['solution'] = '请检查 firewalld 服务是否正常运行，如果没有安装防火墙，请先安装并启动防火墙；同时设置 firewalld 服务为开机启动。'\n\n    os.remove('firewall.txt')\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
+											"description": "windows/firewall.py",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "2000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
 				}
 			]
 		}

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 // 测试联调时，解除 RabbitListener 注释
-//@RabbitListener(queues = RabbitConfig.DEFAULT_TOPIC )
+@RabbitListener(queues = RabbitConfig.DEFAULT_TOPIC )
 public class MainTopicReceiver {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

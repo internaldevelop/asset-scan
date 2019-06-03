@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.List;
 
 @Component
-@RabbitListener(queues = RabbitConfig.TASK_RUN_STATUS_TOPIC )
+@RabbitListener(queues = RabbitConfig.TASK_RUN_STATUS_TOPIC)
 public class TaskRunStatusTopicReceiver {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -29,17 +29,22 @@ public class TaskRunStatusTopicReceiver {
         logger.info("<--- receiver topics: " + RabbitConfig.TASK_RUN_STATUS_TOPIC);
         logger.info("<--- receive message: " + message);
 
-        // 把收到的数据解析成JSON对象
-        JSONObject jsonMessage = JSONObject.parseObject(message);
-        if (jsonMessage == null)
-            return;
+        try {
+            // 把收到的数据解析成JSON对象
+            JSONObject jsonMessage = JSONObject.parseObject(message);
+            if (jsonMessage == null)
+                return;
 
-        // 获取任务运行状态对象
-        TaskRunStatusDto taskRunStatusDto = jsonMessage.getObject("status", TaskRunStatusDto.class);
-        if (taskRunStatusDto != null) {
-            // 获取消息通知的任务的运行状态，发送给所有客户端
-            TaskRunStatusDto runStatus = taskRunStatusService.getTaskRunStatus(taskRunStatusDto.getTask_uuid());
-            WebSocketServer.sendInfo(SockMsgTypeEnum.SINGLE_TASK_RUN_INFO, runStatus, null);
+            // 获取任务运行状态对象
+            TaskRunStatusDto taskRunStatusDto = jsonMessage.getObject("status", TaskRunStatusDto.class);
+            if (taskRunStatusDto != null) {
+                // 获取消息通知的任务的运行状态，发送给所有客户端
+                TaskRunStatusDto runStatus = taskRunStatusService.getTaskRunStatus(taskRunStatusDto.getTask_uuid());
+                WebSocketServer.sendInfo(SockMsgTypeEnum.SINGLE_TASK_RUN_INFO, runStatus, null);
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return;
         }
     }
 }
