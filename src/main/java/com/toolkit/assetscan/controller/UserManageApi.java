@@ -1,8 +1,10 @@
 package com.toolkit.assetscan.controller;
 
 import com.toolkit.assetscan.bean.po.UserPo;
+import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.common.VerifyUtil;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
+import com.toolkit.assetscan.global.params.Const;
 import com.toolkit.assetscan.global.redis.IRedisClient;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.StringUtils;
@@ -107,13 +109,28 @@ public class UserManageApi {
     Object verifyPassword(
             @RequestParam(value = "uuid", required = false) String userUuid,
             @RequestParam(value = "account", required = false) String account,
-            @RequestParam("password") String password) {
-        if ( StringUtils.isValid(userUuid) )
-            return userManageService.verifyPasswordByUuid( userUuid, password );
-        else if ( StringUtils.isValid(account) )
-            return userManageService.verifyPasswordByAccount( account, password );
-        else
+            @RequestParam("password") String password,
+            HttpServletRequest request) {
+        if ( StringUtils.isValid(userUuid) ) {
+            ResponseBean resp = userManageService.verifyPasswordByUuid(userUuid, password);
+            if (resp.getCode() != ErrorCodeEnum.ERROR_OK.getCode()) {
+                request.getSession().setAttribute(Const.USER, "");
+            } else {
+                ResponseBean userResp = userManageService.getUserByUuid(userUuid);
+                request.getSession().setAttribute(Const.USER, ((UserPo)userResp.getPayload()).getAccount());
+            }
+            return resp;
+        } else if ( StringUtils.isValid(account) ) {
+            ResponseBean resp = userManageService.verifyPasswordByAccount(account, password);
+            if (resp.getCode() != ErrorCodeEnum.ERROR_OK.getCode()) {
+                request.getSession().setAttribute(Const.USER, "");
+            } else {
+                request.getSession().setAttribute(Const.USER, account);
+            }
+            return resp;
+        } else {
             return responseHelper.error(ErrorCodeEnum.ERROR_NEED_PARAMETER);
+        }
     }
 
     /**

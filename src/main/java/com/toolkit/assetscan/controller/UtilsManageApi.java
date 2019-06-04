@@ -7,6 +7,8 @@ import com.toolkit.assetscan.service.mq.TopicSender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+
 @RestController
 @CrossOrigin(origins = "*",maxAge = 3600)
 @RequestMapping(value = "/api/utils")
@@ -49,6 +51,22 @@ public class UtilsManageApi {
 
         msgProducer.send(topic, message);
         return "MQ message sended";
+    }
+
+    /**
+     * 测试设置 session 参数
+     * @param attribute
+     * @param value
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = "set-session", method = RequestMethod.GET)
+    public @ResponseBody
+    Object setSessionUserName(@RequestParam("attribute") String attribute,
+                              @RequestParam("value") String value,
+                              HttpServletRequest request) {
+        request.getSession().setAttribute(attribute, value);
+        return request.getSession().getId();
     }
 
 }

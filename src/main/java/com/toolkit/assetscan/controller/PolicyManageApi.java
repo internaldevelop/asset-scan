@@ -91,7 +91,7 @@ public class PolicyManageApi {
     }
 
     /**
-     * 4.6 根据groupCoded获取所在组所有的策略
+     * 4.7 根据groupCoded获取所在组所有的策略
      * @param policyGroupCode
      * @return
      */
@@ -101,7 +101,7 @@ public class PolicyManageApi {
     }
 
     /**
-     * 4.7 code:1 补丁安装情况; code:2 系统服务分析; code:3 系统文件安全防护分析; code:4 用户账号配置分析; code:5 口令策略配置分析; code:6 网络通信配置分析; code:7 日志审计分析;
+     * 4.8 code:1 补丁安装情况; code:2 系统服务分析; code:3 系统文件安全防护分析; code:4 用户账号配置分析; code:5 口令策略配置分析; code:6 网络通信配置分析; code:7 日志审计分析;
      * @param code
      * @return
      */
@@ -112,7 +112,7 @@ public class PolicyManageApi {
     }
 
     /**
-     * 4.8 统计根据groupIdd获取所在组所有的策略
+     * 4.9 统计根据groupIdd获取所在组所有的策略
      * @param policyGroupId
      * @return
      */
@@ -123,7 +123,7 @@ public class PolicyManageApi {
     }
 
     /**
-     * 4.9 联合资产和策略组表查询策略详细信息
+     * 4.10 联合资产和策略组表查询策略详细信息
      * @return
      */
     @RequestMapping(value = "/all-detail-info", method = RequestMethod.GET)
@@ -133,7 +133,7 @@ public class PolicyManageApi {
     }
 
     /**
-     * 4.10 根据groupUuid获取所在组所有的策略
+     * 4.11 根据groupUuid获取所在组所有的策略
      * @param policyGroupUuid
      * @return
      */

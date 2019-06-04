@@ -1,6 +1,7 @@
 package com.toolkit.assetscan.global.interceptor;
 
 
+import com.toolkit.assetscan.global.params.Const;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.SystemPropertyUtils;
@@ -22,8 +23,14 @@ public class ControllerInterceptor implements HandlerInterceptor {
             String className = ((HandlerMethod) handler).getBean().getClass().getName();
             // 获取方法名
             String methodName = ((HandlerMethod) handler).getMethod().getName();
+            // 会话id和用户名
+            String sessionId = request.getSession().getId();
+            String userName = (String)request.getSession().getAttribute(Const.USER);
             //
-            logger.info("---PreHandle---:\t" + "Class: " + className + "\tMethod: " + methodName);
+//            logger.info("---PreHandle---:" + "\tClass: " + className + "\tMethod: " + methodName +
+//                    "\tsessionId: " + sessionId + "\tuserName: " + userName);
+            logger.info("---PreHandle---:" + "\tMethod: " + methodName +
+                    "\tsessionId: " + sessionId + "\tuserName: " + userName);
 
             String exceptionName = ((HandlerMethod) handler).getMethod().getExceptionTypes().getClass().getName();
             logger.info(exceptionName);
@@ -41,7 +48,8 @@ public class ControllerInterceptor implements HandlerInterceptor {
             String className = ((HandlerMethod) obj).getBean().getClass().getName();
             // 获取方法名
             String methodName = ((HandlerMethod) obj).getMethod().getName();
-            logger.info("---PostHandle---:\t" + "Class: " + className + "\tMethod: " + methodName);
+//            logger.info("---PostHandle---:" + "\tClass: " + className + "\tMethod: " + methodName);
+            logger.info("---PostHandle---:" + "\tMethod: " + methodName);
         } else {
 
         }
