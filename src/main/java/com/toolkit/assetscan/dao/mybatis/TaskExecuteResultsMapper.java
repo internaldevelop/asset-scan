@@ -125,6 +125,8 @@ public interface TaskExecuteResultsMapper {
             "	t.uuid AS result_uuid, \n" +
             "	t.start_time, \n" +
             "	t.end_time, \n" +
+            "	t.end_time-t.start_time AS run_time, \n" +
+            "	a.name AS asset_name, \n" +
             "	t.process_flag, \n" +
             "	t.risk_level, \n" +
             "	t.risk_desc, \n" +
@@ -135,9 +137,59 @@ public interface TaskExecuteResultsMapper {
             "	pg.name AS policy_group_name \n" +
             " FROM\n" +
             "	task_execute_results t\n" +
+            " INNER JOIN exec_actions ea ON ea.uuid = t.exec_action_uuid\n" +
+            " INNER JOIN tasks ta ON ea.task_uuid = ta.uuid\n" +
+            " INNER JOIN assets a ON ta.asset_uuid = a.uuid\n" +
             " INNER JOIN policies p ON t.policy_uuid = p.uuid\n" +
             " INNER JOIN policy_groups pg ON p.group_uuid = pg.uuid\n" +
             " WHERE t.exec_action_uuid=#{exec_action_uuid} AND t.risk_level=#{risk_level} \n")
     List<ExecRiskInfoDto> getRiskInfo(@Param("exec_action_uuid") String execUuid,
                                       @Param("risk_level") int riskLevel);
+
+    /** 举例
+     * SELECT
+     * 	r.uuid,
+     * 	r.create_time,
+     * 	r.policy_uuid
+     * FROM task_execute_results r
+     * WHERE
+     * 	r.create_time>='2019-05-31 16:14:49' AND r.create_time<='2019-06-04 10:11:45'
+     * 	AND IF(LENGTH('123')=0, 1, FIND_IN_SET(r.policy_uuid, '87b907eb-234a-4409-825e-7d04acfaae40,e0db6657-9c89-4afc-9f55-5516030788ee,'));
+     * 	AND r.risk_desc LIKE '%审计%'
+     * @param beginTime
+     * @param endTime
+     * @param policyUuidList
+     * @param scanResult
+     * @return
+     */
+    @Select("SELECT\n" +
+            "	t.uuid AS result_uuid, \n" +
+            "	t.start_time, \n" +
+            "	t.end_time, \n" +
+            "	t.end_time-t.start_time AS run_time, \n" +
+            "	a.name AS asset_name, \n" +
+            "	t.process_flag, \n" +
+            "	t.risk_level, \n" +
+            "	t.risk_desc, \n" +
+            "	t.solutions, \n" +
+            "	t.policy_uuid, \n" +
+            "	p.name AS policy_name, \n" +
+            "	p.group_uuid AS policy_group_uuid, \n" +
+            "	pg.name AS policy_group_name \n" +
+            " FROM\n" +
+            "	task_execute_results t\n" +
+            " INNER JOIN exec_actions ea ON ea.uuid = t.exec_action_uuid\n" +
+            " INNER JOIN tasks ta ON ea.task_uuid = ta.uuid\n" +
+            " INNER JOIN assets a ON ta.asset_uuid = a.uuid\n" +
+            " INNER JOIN policies p ON t.policy_uuid = p.uuid\n" +
+            " INNER JOIN policy_groups pg ON p.group_uuid = pg.uuid\n" +
+            " WHERE\n" +
+            "   t.create_time>=#{begin_time, jdbcType=TIMESTAMP} AND t.create_time<=#{end_time, jdbcType=TIMESTAMP} \n" +
+            "   AND IF(LENGTH(#{policy_uuid_list})=0, 1, FIND_IN_SET(t.policy_uuid, #{policy_uuid_list})) \n" +
+            "   AND t.risk_desc LIKE '%${scan_result}%' \n"
+    )
+    List<ExecRiskInfoDto> getHistoryRiskInfo(@Param("begin_time") java.sql.Timestamp beginTime,
+                                             @Param("end_time") java.sql.Timestamp endTime,
+                                             @Param("policy_uuid_list") String policyUuidList,
+                                             @Param("scan_result") String scanResult);
 }

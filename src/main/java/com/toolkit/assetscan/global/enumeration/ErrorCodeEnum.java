@@ -58,6 +58,9 @@ public enum ErrorCodeEnum {
     ERROR_INCORRECT_TASK_RUN_STATUS(2034, "任务运行状态错误"),
     ERROR_TASK_RUN_STATUS_NOT_FOUND(2035, "无法获取任务的运行状态"),
     ERROR_PROJECT_NOT_FOUND(2036, "项目未找到"),
+    ERROR_TIME_INCORRECT(2037, "指定的时间不符合要求"),
+    ERROR_TIME_AFTER_CURRENT(2038, "指定时间晚于当前时间"),
+    ERROR_NO_RESULT_HISTORY(2039, "没有找到扫描历史记录"),
     ;
 
     private Integer code;

@@ -11,6 +11,7 @@ import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.params.CheckParams;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.security.VerifyHelper;
+import com.toolkit.assetscan.global.utils.MyUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -104,7 +105,7 @@ public class TaskExecuteResultsManageService {
         // 获取任务指定运行（任务状态指定，即最新执行）的执行结果
         List<TaskExecuteResultsPo> taskExecResultsList = taskExecuteResultsMapper.getTaskExecBriefByExecUuid(runStatus.getExecute_uuid());
         if (taskExecResultsList == null || taskExecResultsList.size() == 0)
-            return responseHelper.error(ErrorCodeEnum.ERROR_TASK_INFO_NOT_FOUND);
+            return responseHelper.error(ErrorCodeEnum.ERROR_NO_RESULT_HISTORY);
 
         JSONObject jsonPayload = new JSONObject();
         jsonPayload.put("run_status", runStatus);
@@ -117,7 +118,43 @@ public class TaskExecuteResultsManageService {
     public Object getResultRisksInfo(String execUuid, int riskLevel) {
         List<ExecRiskInfoDto> execRiskInfoDtoList = taskExecuteResultsMapper.getRiskInfo(execUuid, riskLevel);
         if (execRiskInfoDtoList == null)
-            return responseHelper.error(ErrorCodeEnum.ERROR_TASK_INFO_NOT_FOUND);
+            return responseHelper.error(ErrorCodeEnum.ERROR_NO_RESULT_HISTORY);
+        return responseHelper.success(execRiskInfoDtoList);
+    }
+
+    public Object queryResultsHistory(java.sql.Timestamp beginTime,
+                                      java.sql.Timestamp endTime,
+                                      String policyUuidList,
+                                      String scanResult) {
+        java.sql.Timestamp currentTime = MyUtils.getCurrentSystemTimestamp();
+        // 未提供起始时间，按1970年时间算起
+        if (beginTime == null) {
+            beginTime = new java.sql.Timestamp(0);
+        }
+        // 未提供结束时间，用当前时间处理
+        if (endTime == null) {
+            endTime = currentTime;
+        }
+        // 检验起止时间是否历史时间
+        if ( beginTime.after(currentTime)|| endTime.after(currentTime) )
+            return responseHelper.error(ErrorCodeEnum.ERROR_TIME_AFTER_CURRENT);
+
+        // 起始时间不能晚于结束时间
+        if ( beginTime.after(endTime))
+            return responseHelper.error(ErrorCodeEnum.ERROR_TIME_INCORRECT);
+
+        // 如果策略 uuid 列表未提供，则用空字符串表示全部策略；扫描结果也是同样处理
+        if (policyUuidList == null)
+            policyUuidList = "";
+        if (scanResult == null)
+            scanResult = "";
+
+        // 读取历史记录
+        List<ExecRiskInfoDto> execRiskInfoDtoList = taskExecuteResultsMapper.getHistoryRiskInfo(
+                        beginTime, endTime, policyUuidList, scanResult);
+        if (execRiskInfoDtoList == null)
+            return responseHelper.error(ErrorCodeEnum.ERROR_NO_RESULT_HISTORY);
+
         return responseHelper.success(execRiskInfoDtoList);
     }
 

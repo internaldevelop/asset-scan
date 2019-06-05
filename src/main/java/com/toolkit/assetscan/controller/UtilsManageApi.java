@@ -1,6 +1,7 @@
 package com.toolkit.assetscan.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.toolkit.assetscan.dao.mybatis.TaskExecuteResultsMapper;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
 import com.toolkit.assetscan.service.mq.TopicSender;
@@ -13,6 +14,8 @@ import javax.servlet.http.HttpServletRequest;
 @CrossOrigin(origins = "*",maxAge = 3600)
 @RequestMapping(value = "/api/utils")
 public class UtilsManageApi {
+    @Autowired
+    private TaskExecuteResultsMapper taskExecuteResultsMapper;
     private final ResponseHelper responseHelper;
     @Autowired
     public UtilsManageApi(ResponseHelper responseHelper) {
@@ -68,5 +71,14 @@ public class UtilsManageApi {
         request.getSession().setAttribute(attribute, value);
         return request.getSession().getId();
     }
+
+    @RequestMapping(value = "get-result-history", method = RequestMethod.POST)
+    public @ResponseBody
+    Object getResultHistory(@RequestParam("begin_time") java.sql.Timestamp beginTime,
+                            @RequestParam("end_time") java.sql.Timestamp endTime,
+                            @RequestParam("policy_uuid_list") String policyUuidList) {
+        return taskExecuteResultsMapper.getHistoryRiskInfo(beginTime, endTime, policyUuidList, "");
+    }
+
 
 }
