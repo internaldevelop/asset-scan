@@ -274,7 +274,7 @@ public class TaskManageService {
                 }
                 responseBeanList.add(responseBean);
             }
-            responseHelper.success(responseBeanList);
+            return responseHelper.success(responseBeanList);
         }
         return null;
     }
