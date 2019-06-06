@@ -160,8 +160,8 @@ public class TaskManageApi {
         } else if (tasksUuidList != null && !tasksUuidList.isEmpty()) {
             // 获取多个任务的运行状态信息
             List <TaskRunStatusDto> taskRunStatusDtoList = taskRunStatusService.getTasksListRunStatus(tasksUuidList);
-            if (taskRunStatusDtoList == null || taskRunStatusDtoList.size() == 0)
-                return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND.ERROR_TASK_RUN_STATUS_NOT_FOUND);
+            /*if (taskRunStatusDtoList == null || taskRunStatusDtoList.size() == 0)
+                return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND.ERROR_TASK_RUN_STATUS_NOT_FOUND);*/
 
             return responseHelper.success(taskRunStatusDtoList);
 
