@@ -48,7 +48,20 @@ public interface TaskExecuteResultsMapper {
      * @return 成功时返回 TaskExecuteResultsProps 的列表，失败时返回 null1
      */
     @Select("SELECT\n" +
-            "	ter.*,\n" +
+//            "   ter.id,\n" +
+            "	ter.uuid,\n" +
+            "	ter.task_uuid,\n" +
+            "	ter.start_time,\n" +
+            "	ter.end_time,\n" +
+//            "   ter.results,\n" +
+//            "   ter.process_flag,\n" +
+            "	ter.risk_level,\n" +
+            "   ter.risk_desc,\n" +
+            "	ter.solutions,\n" +
+//            "	ter.policy_uuid,\n" +
+//            "	ter.create_time,\n" +
+//            "	ter.exec_action_uuid,\n",
+
             "	t. NAME AS task_name,\n" +
             "	t.description AS description,\n" +
             "	t.id AS task_id,\n" +
@@ -60,7 +73,8 @@ public interface TaskExecuteResultsMapper {
             " INNER JOIN tasks t ON ter.task_uuid = t.uuid\n" +
             " INNER JOIN assets a ON t.asset_uuid = a.uuid\n" +
             " INNER JOIN policies p ON ter.policy_uuid = p.uuid\n" +
-            " where t.`name` LIKE '%${taskNameIpType}%' OR a.ip LIKE '%${taskNameIpType}%' OR p.name LIKE '%${taskNameIpType}%'")
+            " where t.`name` LIKE '%${taskNameIpType}%' OR a.ip LIKE '%${taskNameIpType}%' OR p.name LIKE '%${taskNameIpType}%'\n" +
+            " ORDER BY ter.id DESC")
     List<TaskResultsDto> allTaskResults(@Param("taskNameIpType") String taskNameIpType);
 
     @Select("SELECT\n" +
@@ -78,6 +92,19 @@ public interface TaskExecuteResultsMapper {
     List<TaskResultsStatisticsDto> getResultsStatistics();
 
     @Select("SELECT\n" +
+            "	g.`name` AS policy_group_name,\n" +
+            "	a.os_type AS os_type,\n" +
+            "	COUNT( 1 ) AS num \n" +
+            " FROM\n" +
+            "	task_execute_results ter\n" +
+            "	INNER JOIN tasks t ON ter.task_uuid = t.uuid\n" +
+            "	INNER JOIN assets a ON t.asset_uuid = a.uuid\n" +
+            "	INNER JOIN policies p ON ter.policy_uuid = p.uuid \n" +
+            "	INNER JOIN groups g ON g.uuid = p.group_uuid\n" +
+            "GROUP BY g.id, a.os_type")
+    List<TaskResultsStatisticsDto> getResultsStatisticsGroup();
+
+    @Select("SELECT\n" +
             "	p.`name` AS policy_name,\n" +
             "	COUNT(1) AS num\n" +
             " FROM\n" +
@@ -87,6 +114,17 @@ public interface TaskExecuteResultsMapper {
             " GROUP BY\n" +
             "	p.id")
     List<TaskResultsStatisticsDto> getResultsPolicieStatistics();
+
+    @Select("SELECT\n" +
+            "	g.`name` AS policy_group_name,\n" +
+            "	COUNT( 1 ) AS num \n" +
+            " FROM\n" +
+            "	task_execute_results ter\n" +
+            "	INNER JOIN tasks t ON ter.task_uuid = t.uuid\n" +
+            "	INNER JOIN policies p ON ter.policy_uuid = p.uuid \n" +
+            "	INNER JOIN groups g ON g.uuid = p.group_uuid\n" +
+            " GROUP BY g.id")
+    List<TaskResultsStatisticsDto> getResultsPolicieStatisticsGroup();
 
     @Select("SELECT\n" +
             "	a.os_type AS os_type,\n" +

@@ -44,7 +44,7 @@ public class TaskExecuteResultsManageService {
     public ResponseBean getAllTasksResults(String taskNameIpType) {
         List<TaskResultsDto> tasksList = taskExecuteResultsMapper.allTaskResults(taskNameIpType);
         if ( (tasksList == null) || (tasksList.size() == 0) )
-            return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND);
+            return responseHelper.error(ErrorCodeEnum.ERROR_NOT_DATA);
 
         return responseHelper.success(tasksList);
     }
@@ -61,12 +61,28 @@ public class TaskExecuteResultsManageService {
         return responseHelper.success(tasksList);
     }
 
+    public Object getResultsStatisticsGroup() {
+        List<TaskResultsStatisticsDto> tasksList = taskExecuteResultsMapper.getResultsStatisticsGroup();
+        if ( (tasksList == null) || (tasksList.size() == 0) )
+            return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND);
+
+        return responseHelper.success(tasksList);
+    }
+
     /**
      * 任务统计（策略数量）
      * @return
      */
     public Object getResultsPolicieStatistics() {
         List<TaskResultsStatisticsDto> tasksList = taskExecuteResultsMapper.getResultsPolicieStatistics();
+        if ( (tasksList == null) || (tasksList.size() == 0) )
+            return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND);
+
+        return responseHelper.success(tasksList);
+    }
+
+    public Object getResultsPolicieStatisticsGroup() {
+        List<TaskResultsStatisticsDto> tasksList = taskExecuteResultsMapper.getResultsPolicieStatisticsGroup();
         if ( (tasksList == null) || (tasksList.size() == 0) )
             return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND);
 

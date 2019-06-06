@@ -47,6 +47,17 @@ public class TaskExecuteResultsManageApi {
     }
 
     /**
+     * 任务检测结果(策略组系统数量) 统计图表数据获取 (策略数量多，故改成策略组统计)
+     * @return : 任务检测结果(策略组系统数量) 统计图表数据获取
+     * @return
+     */
+    @RequestMapping(value = "/statistics-group", method = RequestMethod.GET)
+    public @ResponseBody
+    Object getResultsStatisticsGroup() {
+        return taskExecuteResultsManageService.getResultsStatisticsGroup();
+    }
+
+    /**
      * 5.2 任务检测结果(策略系统数量) 统计图表数据获取
      * @return : 任务检测结果(策略系统数量) 统计图表数据获取
      */
@@ -57,10 +68,20 @@ public class TaskExecuteResultsManageApi {
     }
 
     /**
+     * 任务检测结果(策略组数量) 统计图表数据获取(策略数量多，故改成策略组统计)
+     * @return : 任务检测结果(策略组数量) 统计图表数据获取
+     */
+    @RequestMapping(value = "/policy-statistics-group", method = RequestMethod.GET)
+    public @ResponseBody
+    Object getResultsPolicieStatisticsGroup() {
+        return taskExecuteResultsManageService.getResultsPolicieStatisticsGroup();
+    }
+
+    /**
      * 5.3 任务检测结果(策略数量) 统计图表数据获取
      * @return : 任务检测结果(策略数量) 统计图表数据获取
      */
-    @RequestMapping(value = "/policie-statistics", method = RequestMethod.GET)
+    @RequestMapping(value = "/policy-statistics", method = RequestMethod.GET)
     public @ResponseBody
     Object getResultsPolicieStatistics() {
         return taskExecuteResultsManageService.getResultsPolicieStatistics();
