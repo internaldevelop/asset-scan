@@ -53,7 +53,7 @@ public class PolicyManageApi {
     @RequestMapping(value = "/all", method = RequestMethod.GET)
     public @ResponseBody
     Object getAllPolicies() {
-        return policyManageService.getAllPolicies();
+        return policyManageService.getAllPolicies(false);
     }
 
     /**
@@ -141,5 +141,15 @@ public class PolicyManageApi {
     public @ResponseBody
     Object getPoliciesByGroupUuid(@RequestParam("groupUuid") String policyGroupUuid) {
         return policyManageService.getPoliciesByGroupUuid(policyGroupUuid);
+    }
+
+    /**
+     * 4.12 获取所有策略的简要信息
+     * @return
+     */
+    @RequestMapping(value = "/all-brief", method = RequestMethod.GET)
+    public @ResponseBody
+    Object getAllPoliciesBrief() {
+        return policyManageService.getAllPolicies(true);
     }
 }

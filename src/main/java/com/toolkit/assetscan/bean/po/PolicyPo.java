@@ -16,7 +16,7 @@ public class PolicyPo {
     private String name;
     private String code;
     private String group_uuid;
-    private String type;
+    private int type;
     private int risk_level;
     private String solutions;
     private String create_user_uuid;

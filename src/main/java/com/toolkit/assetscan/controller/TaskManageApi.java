@@ -5,6 +5,7 @@ import com.toolkit.assetscan.bean.dto.TaskRunStatusDto;
 import com.toolkit.assetscan.bean.po.ProjectPo;
 import com.toolkit.assetscan.bean.po.TaskPo;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
+import com.toolkit.assetscan.global.params.Const;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.service.TaskManageService;
 import com.toolkit.assetscan.service.TaskRunStatusService;
@@ -99,7 +100,7 @@ public class TaskManageApi {
     @RequestMapping(value = "/execute", method = RequestMethod.POST)
     public @ResponseBody
     Object  executeTask(@RequestParam("uuid") String taskUuid) {
-        return taskManageService.executeSingleTask(taskManageService.DEFAULT_PROJ_UUID, taskUuid);
+        return taskManageService.executeSingleTask(Const.DEFAULT_PROJ_UUID, taskUuid);
     }
 
     /**

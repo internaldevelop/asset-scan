@@ -23,11 +23,11 @@ public interface TaskExecActionsMapper {
      */
     @Insert("INSERT INTO exec_actions( " +
             "uuid, task_uuid, project_uuid, " +
-            "comment, status, " +
+            "user_uuid, comment, status, " +
             "exec_time) " +
             "VALUES ( " +
             "#{uuid}, #{task_uuid}, #{project_uuid}, " +
-            "#{comment}, #{status}, " +
+            "#{user_uuid}, #{comment}, #{status}, " +
             "#{exec_time, jdbcType=TIMESTAMP}) "
     )
     int addTaskExecAction(TaskExecuteActionPo executeActionPo);

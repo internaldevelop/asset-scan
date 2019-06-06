@@ -125,6 +125,23 @@ public class TaskExecuteResultsManageApi {
     }
 
     /**
+     * 5.7 策略运行结果的历史记录（风险漏洞信息、策略、策略组信息）
+     * @param beginTime
+     * @param endTime
+     * @param policyUuidList
+     * @param scanResult
+     * @return
+     */
+    @RequestMapping(value = "/history", method = RequestMethod.POST)
+    public @ResponseBody
+    Object getResultHistory(@RequestParam(value = "begin_time", required = false) java.sql.Timestamp beginTime,
+                            @RequestParam(value = "end_time", required = false) java.sql.Timestamp endTime,
+                            @RequestParam(value = "policy_uuid_list", required = false) String policyUuidList,
+                            @RequestParam(value = "scan_result", required = false) String scanResult) {
+        return taskExecuteResultsManageService.queryResultsHistory(beginTime, endTime, policyUuidList, scanResult);
+    }
+
+    /**
      * 5.9 获取IEE漏洞数（测试第二数据源）
      * @return
      */

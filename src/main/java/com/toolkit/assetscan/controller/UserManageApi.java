@@ -114,18 +114,23 @@ public class UserManageApi {
         if ( StringUtils.isValid(userUuid) ) {
             ResponseBean resp = userManageService.verifyPasswordByUuid(userUuid, password);
             if (resp.getCode() != ErrorCodeEnum.ERROR_OK.getCode()) {
-                request.getSession().setAttribute(Const.USER, "");
+                request.getSession().setAttribute(Const.ACCOUNT, "");
+                request.getSession().setAttribute(Const.USER_UUID, "");
             } else {
                 ResponseBean userResp = userManageService.getUserByUuid(userUuid);
-                request.getSession().setAttribute(Const.USER, ((UserPo)userResp.getPayload()).getAccount());
+                request.getSession().setAttribute(Const.ACCOUNT, ((UserPo)userResp.getPayload()).getAccount());
+                request.getSession().setAttribute(Const.USER_UUID, userUuid);
             }
             return resp;
         } else if ( StringUtils.isValid(account) ) {
             ResponseBean resp = userManageService.verifyPasswordByAccount(account, password);
             if (resp.getCode() != ErrorCodeEnum.ERROR_OK.getCode()) {
-                request.getSession().setAttribute(Const.USER, "");
+                request.getSession().setAttribute(Const.ACCOUNT, "");
+                request.getSession().setAttribute(Const.USER_UUID, "");
             } else {
-                request.getSession().setAttribute(Const.USER, account);
+                String uuid = userManageService.accountToUuid(account);
+                request.getSession().setAttribute(Const.ACCOUNT, account);
+                request.getSession().setAttribute(Const.USER_UUID, uuid);
             }
             return resp;
         } else {

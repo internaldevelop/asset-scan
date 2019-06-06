@@ -12,10 +12,15 @@ public class ExecRiskInfoDto {
     private java.sql.Timestamp start_time;
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private java.sql.Timestamp end_time;
+    private int run_time;
+    private String asset_name;
     private int process_flag;
     private int risk_level;
     private String risk_desc;
     private String solutions;
+    private String user_uuid;
+    private String user_account;
+    private String user_name;
     private String policy_uuid;
     private String policy_name;
     private String policy_group_uuid;

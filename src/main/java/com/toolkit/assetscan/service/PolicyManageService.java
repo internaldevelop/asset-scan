@@ -82,8 +82,13 @@ public class PolicyManageService {
         return successReturnInfo( policyPo.getName(), policyPo.getCode(), policyPo.getUuid() );
     }
 
-    public ResponseBean getAllPolicies() {
-        List<PolicyPo> policiesList = policiesMapper.allPolicies();
+    public ResponseBean getAllPolicies(boolean briefInfo) {
+        List<PolicyPo> policiesList = null;
+        if (briefInfo) {
+            policiesList = policiesMapper.allPoliciesBrief();
+        } else {
+            policiesList = policiesMapper.allPolicies();
+        }
         if ( (policiesList == null) || (policiesList.size() == 0) )
             return responseHelper.error(ErrorCodeEnum.ERROR_POLICY_NOT_FOUND);
 

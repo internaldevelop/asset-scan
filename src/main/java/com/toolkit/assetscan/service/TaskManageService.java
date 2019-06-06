@@ -15,6 +15,7 @@ import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.enumeration.ProjectRunTimeModeEnum;
 import com.toolkit.assetscan.global.enumeration.TaskRunStatusEnum;
 import com.toolkit.assetscan.global.enumeration.TaskStatusEnum;
+import com.toolkit.assetscan.global.params.Const;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +32,8 @@ import java.util.TimerTask;
 @Component
 public class TaskManageService {
 
-    public final String DEFAULT_PROJ_UUID = "db3f58ff-9c3d-4a85-b9d7-8fe6d7a1ec0e";
+    @Autowired
+    private HttpServletRequest httpServletRequest;
     private ResponseBean responseBean;
     private final TasksMapper tasksMapper;
     private final TasksManageHelper tasksManageHelper;
@@ -274,7 +277,7 @@ public class TaskManageService {
                 }
                 responseBeanList.add(responseBean);
             }
-            responseHelper.success(responseBeanList);
+            return responseHelper.success(responseBeanList);
         }
         return null;
     }
@@ -301,6 +304,7 @@ public class TaskManageService {
         HashMap<String, String> map = new HashMap<>();
         map.put("project_uuid", projectUuid);
         map.put("task_uuid", taskUuid);
+        map.put("user_uuid", (String)httpServletRequest.getSession().getAttribute(Const.USER_UUID));
 
         // 向节点发送请求，并返回节点的响应结果
         ResponseEntity<ResponseBean> responseEntity = restTemplate.getForEntity(url, ResponseBean.class, map);

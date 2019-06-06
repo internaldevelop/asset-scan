@@ -207,4 +207,18 @@ public interface PoliciesMapper {
             "	LEFT JOIN assets ON policies.asset_uuid = assets.uuid\n" +
             "	LEFT JOIN policy_groups ON policies.group_uuid = policy_groups.uuid\n")
     List<PolicyDetailInfoDto> getAllPolicyDetailInfos();
+
+    /**
+     * 获得所有策略的简要信息
+     * @return PolicyProps 的集合
+     */
+    @Select("SELECT \n" +
+            "   uuid, \n" +
+            "   name, \n" +
+            "   code, \n" +
+            "   group_uuid, \n" +
+            "   baseline \n" +
+            "FROM policies p  \n" +
+            "WHERE p.status>=0  \n")
+    List<PolicyPo> allPoliciesBrief();
 }
