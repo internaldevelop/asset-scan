@@ -124,6 +124,9 @@ public class UserManageService {
 
         return successReturnUserInfo(account, userUuid);
     }
+    public String accountToUuid(String account) {
+        return usersMapper.getUserUuidByAccount(account);
+    }
 
     /**
      * 根据用户 UUID 更新用户记录

@@ -172,6 +172,9 @@ public interface TaskExecuteResultsMapper {
             "	t.risk_level, \n" +
             "	t.risk_desc, \n" +
             "	t.solutions, \n" +
+            "	u.uuid AS user_uuid, \n" +
+            "	u.account AS user_account, \n" +
+            "	u.name AS user_name, \n" +
             "	t.policy_uuid, \n" +
             "	p.name AS policy_name, \n" +
             "	p.group_uuid AS policy_group_uuid, \n" +
@@ -179,6 +182,7 @@ public interface TaskExecuteResultsMapper {
             " FROM\n" +
             "	task_execute_results t\n" +
             " INNER JOIN exec_actions ea ON ea.uuid = t.exec_action_uuid\n" +
+            " INNER JOIN users u ON ea.user_uuid = u.uuid\n" +
             " INNER JOIN tasks ta ON ea.task_uuid = ta.uuid\n" +
             " INNER JOIN assets a ON ta.asset_uuid = a.uuid\n" +
             " INNER JOIN policies p ON t.policy_uuid = p.uuid\n" +

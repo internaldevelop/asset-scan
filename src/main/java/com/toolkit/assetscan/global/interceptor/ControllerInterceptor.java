@@ -4,7 +4,6 @@ package com.toolkit.assetscan.global.interceptor;
 import com.toolkit.assetscan.global.params.Const;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.util.SystemPropertyUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -25,7 +24,7 @@ public class ControllerInterceptor implements HandlerInterceptor {
             String methodName = ((HandlerMethod) handler).getMethod().getName();
             // 会话id和用户名
             String sessionId = request.getSession().getId();
-            String userName = (String)request.getSession().getAttribute(Const.USER);
+            String userName = (String)request.getSession().getAttribute(Const.ACCOUNT);
             //
 //            logger.info("---PreHandle---:" + "\tClass: " + className + "\tMethod: " + methodName +
 //                    "\tsessionId: " + sessionId + "\tuserName: " + userName);
