@@ -1470,6 +1470,40 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "4.12 获取所有策略的简要信息",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4f03d584-0050-4232-99b5-5867aa484743",
+								"exec": [
+									"pm.test(\"get all policies\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/policies/all-brief",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"policies",
+								"all-brief"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -1509,6 +1543,111 @@
 								"tasks",
 								"results",
 								"statistical"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5.5 单个任务执行信息",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tasks/results/brief?task_uuid={{task_uuid}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"results",
+								"brief"
+							],
+							"query": [
+								{
+									"key": "task_uuid",
+									"value": "{{task_uuid}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5.6 任务执行结果(某批次)风险信息",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tasks/results/risks?exec_action_uuid=65b091a7-ea9e-4274-80e0-43964ac8cd7d&risk_level=2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"results",
+								"risks"
+							],
+							"query": [
+								{
+									"key": "exec_action_uuid",
+									"value": "65b091a7-ea9e-4274-80e0-43964ac8cd7d"
+								},
+								{
+									"key": "risk_level",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5.7 策略运行结果的历史记录",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "begin_time",
+									"value": "2019-05-31 16:14:49",
+									"type": "text"
+								},
+								{
+									"key": "end_time",
+									"value": "2019-06-04 10:11:45",
+									"type": "text"
+								},
+								{
+									"key": "policy_uuid_list",
+									"value": "87b907eb-234a-4409-825e-7d04acfaae40,e0db6657-9c89-4afc-9f55-5516030788ee,",
+									"type": "text"
+								},
+								{
+									"key": "scan_result",
+									"value": "审计",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/results/history",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"results",
+								"history"
 							]
 						}
 					},
@@ -1823,6 +1962,29 @@
 			]
 		},
 		{
+			"name": "7. 操作日志",
+			"item": [
+				{
+					"name": "7.1 查询所有的操作日志",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actions/all-exec-logs",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"actions",
+								"all-exec-logs"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "A. 字典表",
 			"item": [
 				{
@@ -1986,6 +2148,26 @@
 											"key": "task_uuid",
 											"value": "32f4c7db-5ff1-4b16-b640-c57845c81fb2"
 										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "B.1.2 OS信息",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8191/test/os",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8191",
+									"path": [
+										"test",
+										"os"
 									]
 								}
 							},
