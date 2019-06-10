@@ -13,8 +13,13 @@ public interface ProjectsMapper {
      * 读取所有有效的项目信息
      * @return 所有有效项目信息的集合
      */
-    @Select("SELECT * FROM projects p WHERE p.status>=0 ")
-    List<ProjectPo> allProjects();
+    @Select("SELECT \n" +
+            "    * \n" +
+            "FROM projects p \n" +
+            "WHERE \n" +
+            "    p.status>=0 \n" +
+            "    AND p.uuid<>#{default_project}")
+    List<ProjectPo> allProjects(@Param("default_project") String defaultProject);
 
     /**
      * 添加一条项目信息

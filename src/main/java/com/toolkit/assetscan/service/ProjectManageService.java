@@ -8,6 +8,7 @@ import com.toolkit.assetscan.dao.mybatis.ProjectsMapper;
 import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.enumeration.TaskStatusEnum;
+import com.toolkit.assetscan.global.params.Const;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
 import org.springframework.stereotype.Component;
@@ -78,7 +79,7 @@ public class ProjectManageService {
     }
 
     public ResponseBean getAllProjects() {
-        List<ProjectPo> projectsList = projectsMapper.allProjects();
+        List<ProjectPo> projectsList = projectsMapper.allProjects(Const.DEFAULT_PROJ_UUID);
         return responseHelper.success(projectsList);
     }
 
