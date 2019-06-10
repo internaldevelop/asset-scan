@@ -100,7 +100,7 @@ public interface TaskExecuteResultsMapper {
             "	INNER JOIN tasks t ON ter.task_uuid = t.uuid\n" +
             "	INNER JOIN assets a ON t.asset_uuid = a.uuid\n" +
             "	INNER JOIN policies p ON ter.policy_uuid = p.uuid \n" +
-            "	INNER JOIN groups g ON g.uuid = p.group_uuid\n" +
+            "	INNER JOIN policy_groups g ON g.uuid = p.group_uuid\n" +
             "GROUP BY g.id, a.os_type")
     List<TaskResultsStatisticsDto> getResultsStatisticsGroup();
 
@@ -122,7 +122,7 @@ public interface TaskExecuteResultsMapper {
             "	task_execute_results ter\n" +
             "	INNER JOIN tasks t ON ter.task_uuid = t.uuid\n" +
             "	INNER JOIN policies p ON ter.policy_uuid = p.uuid \n" +
-            "	INNER JOIN groups g ON g.uuid = p.group_uuid\n" +
+            "	INNER JOIN policy_groups g ON g.uuid = p.group_uuid\n" +
             " GROUP BY g.id")
     List<TaskResultsStatisticsDto> getResultsPolicieStatisticsGroup();
 

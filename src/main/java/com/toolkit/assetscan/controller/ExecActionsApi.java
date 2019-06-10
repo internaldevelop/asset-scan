@@ -24,4 +24,44 @@ public class ExecActionsApi {
     Object queryExecActions() {
         return execActionsService.queryAllExecActions();
     }
+
+    /**
+     * 7.2 统计执行次数（按任务）
+     * @return
+     */
+    @RequestMapping(value = "/count-by-task", method = RequestMethod.GET)
+    public @ResponseBody
+    Object queryExecCountByTask() {
+        return execActionsService.queryExecCountByTask();
+    }
+
+    /**
+     * 7.3 统计执行次数（按项目）
+     * @return
+     */
+    @RequestMapping(value = "/count-by-project", method = RequestMethod.GET)
+    public @ResponseBody
+    Object queryExecCountByProject() {
+        return execActionsService.queryExecCountByProject();
+    }
+
+    /**
+     * 7.4 统计执行次数（按操作人员）
+     * @return
+     */
+    @RequestMapping(value = "/count-by-operator", method = RequestMethod.GET)
+    public @ResponseBody
+    Object queryExecCountByOperator() {
+        return execActionsService.queryExecCountByOperator();
+    }
+
+    /**
+     * 7.5 统计执行次数（按资产）
+     * @return
+     */
+    @RequestMapping(value = "/count-by-asset", method = RequestMethod.GET)
+    public @ResponseBody
+    Object queryExecCountByAsset() {
+        return execActionsService.queryExecCountByAsset();
+    }
 }
