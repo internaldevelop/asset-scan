@@ -184,6 +184,7 @@ public class UserManageService {
         jsonData.put("user_uuid", passwordPo.getUser_uuid());
         jsonData.put("mat", passwordPo.getPwd_mat());
         jsonData.put("rat", passwordPo.getPwd_rat());
+        jsonData.put("user_group", passwordPo.getUser_group());
         return responseHelper.error(err, jsonData);
     }
 

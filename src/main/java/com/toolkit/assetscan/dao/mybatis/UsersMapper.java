@@ -104,7 +104,7 @@ public interface UsersMapper {
      * @param userUuid 用户的 UUID
      * @return PasswordProps 指定用户的密码参数
      */
-    @Select("SELECT uuid AS user_uuid, password, pwd_mat, pwd_rat FROM users u WHERE uuid=#{uuid} AND u.status>=0")
+    @Select("SELECT uuid AS user_uuid, password, pwd_mat, pwd_rat, user_group FROM users u WHERE uuid=#{uuid} AND u.status>=0")
     PasswordPo getPasswordByUuid(@Param("uuid") String userUuid);
 
     /**
