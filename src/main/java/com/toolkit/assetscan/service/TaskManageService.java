@@ -298,7 +298,7 @@ public class TaskManageService {
 
         // 构造URL
         String ip = "http://" + taskInfosDto.getAsset_ip() + ":8191";
-        String url = ip + "/nodes/manage/run-project-task?project_uuid={project_uuid}&task_uuid={task_uuid}";
+        String url = ip + "/nodes/manage/run-project-task?project_uuid={project_uuid}&task_uuid={task_uuid}&user_uuid={user_uuid}";
 
         // 构造参数map
         HashMap<String, String> map = new HashMap<>();
