@@ -18,6 +18,8 @@ public class ExecRiskInfoDto {
     private int risk_level;
     private String risk_desc;
     private String solutions;
+    private String task_uuid;
+    private String task_name;
     private String user_uuid;
     private String user_account;
     private String user_name;

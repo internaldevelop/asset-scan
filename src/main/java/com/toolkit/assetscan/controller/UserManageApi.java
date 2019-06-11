@@ -149,6 +149,12 @@ public class UserManageApi {
         return userManageService.getUserByUuid( userUuid );
     }
 
+    /**
+     * 2.8 激活用户
+     * @param userUuid
+     * @param account
+     * @return
+     */
     @RequestMapping(value = "/activate", method = RequestMethod.POST)
     public @ResponseBody
     Object activateUser(
@@ -163,7 +169,21 @@ public class UserManageApi {
     }
 
     /**
-     * 2.8 生成动态验证码
+     * 2.9 修改用户组
+     * @param userUuid
+     * @param userGroup
+     * @return
+     */
+    @RequestMapping(value = "/change-user-group", method = RequestMethod.POST)
+    public @ResponseBody
+    Object changeUserGroup(
+            @RequestParam(value = "uuid") String userUuid,
+            @RequestParam(value = "user_group") int userGroup) {
+        return userManageService.changeUserGroup( userUuid, userGroup );
+    }
+
+    /**
+     * 2.10 生成动态验证码
      * @param request
      * @return
      */

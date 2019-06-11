@@ -113,8 +113,8 @@ public class TaskExecuteResultsManageApi {
 
     /**
      * 5.6 某批次策略运行结果（风险漏洞信息、策略、策略组信息）
-     * @param execUuid 执行批次的 UUID
-     * @param riskLevel 风险级别
+     * @param execUuid 执行批次的 UUID。为空：所有的操作；不为空：指定操作UUID
+     * @param riskLevel 风险级别。0：无风险；1~3级风险；99：所有一级以上的风险
      * @return
      */
     @RequestMapping(value = "/risks", method = RequestMethod.GET)

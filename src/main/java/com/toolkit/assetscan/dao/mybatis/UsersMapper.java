@@ -104,7 +104,15 @@ public interface UsersMapper {
      * @param userUuid 用户的 UUID
      * @return PasswordProps 指定用户的密码参数
      */
-    @Select("SELECT uuid AS user_uuid, password, pwd_mat, pwd_rat, user_group FROM users u WHERE uuid=#{uuid} AND u.status>=0")
+    @Select("SELECT \n" +
+            "    uuid AS user_uuid, \n" +
+            "    password, \n" +
+            "    pwd_mat, \n" +
+            "    pwd_rat, \n" +
+            "    u.status AS user_status, \n" +
+            "    user_group \n" +
+            "FROM users u \n" +
+            "WHERE uuid=#{uuid} AND u.status>=0")
     PasswordPo getPasswordByUuid(@Param("uuid") String userUuid);
 
     /**
@@ -126,4 +134,16 @@ public interface UsersMapper {
             "WHERE " +
             "uuid=#{uuid} ")
     int updateStatus(@Param("uuid") String userUuid, @Param("status")int status);
+
+    /**
+     * 更新用户组
+     * @param userUuid
+     * @param userGroup
+     * @return
+     */
+    @Update("UPDATE users u SET " +
+            "u.user_group=#{user_group} " +
+            "WHERE " +
+            "uuid=#{uuid} ")
+    int updateUserGroup(@Param("uuid") String userUuid, @Param("user_group")int userGroup);
 }

@@ -1579,7 +1579,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/tasks/results/risks?exec_action_uuid=65b091a7-ea9e-4274-80e0-43964ac8cd7d&risk_level=2",
+							"raw": "{{base_url}}/tasks/results/risks?exec_action_uuid=ab3e8ab8-695a-4958-9583-30c82788269a&risk_level=3",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1591,11 +1591,13 @@
 							"query": [
 								{
 									"key": "exec_action_uuid",
-									"value": "65b091a7-ea9e-4274-80e0-43964ac8cd7d"
+									"value": "ab3e8ab8-695a-4958-9583-30c82788269a",
+									"description": "为空：所有的操作；不为空：指定操作UUID"
 								},
 								{
 									"key": "risk_level",
-									"value": "2"
+									"value": "3",
+									"description": "0：无风险；1~3级风险；99：所有一级以上的风险"
 								}
 							]
 						}
@@ -1977,6 +1979,78 @@
 							"path": [
 								"actions",
 								"all-exec-logs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7.2 统计执行次数（按任务）",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actions/count-by-task",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"actions",
+								"count-by-task"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7.3 统计执行次数（按项目）",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actions/count-by-project",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"actions",
+								"count-by-project"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7.4 统计执行次数（按操作人员）",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actions/count-by-operator",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"actions",
+								"count-by-operator"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7.5 统计执行次数（按资产）",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actions/count-by-asset",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"actions",
+								"count-by-asset"
 							]
 						}
 					},

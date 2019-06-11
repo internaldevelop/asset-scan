@@ -10,5 +10,6 @@ public class PasswordPo {
     private String password;
     private int pwd_mat;
     private int pwd_rat;
+    private int user_status;
     private int user_group;
 }

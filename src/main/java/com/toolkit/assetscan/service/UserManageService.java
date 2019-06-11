@@ -200,6 +200,8 @@ public class UserManageService {
 
         // 获取用户密码参数
         PasswordPo passwordPo = usersMapper.getPasswordByUuid(userUuid);
+        if (passwordPo.getUser_status() <= 0)
+            return responseHelper.error(ErrorCodeEnum.ERROR_USER_INACTIVE);
 
         // 剩余尝试次数为0时，表示密码已锁定
         if (passwordPo.getPwd_rat() == 0) {
@@ -249,6 +251,17 @@ public class UserManageService {
         JSONObject jsonData = new JSONObject();
         jsonData.put("user_uuid", userUuid);
         jsonData.put("status", UserStatusEnum.USER_ACTIVE.getStatus());
+        return responseHelper.success(jsonData);
+    }
+
+    public ResponseBean changeUserGroup(String userUuid, int userGroup) {
+        int rv = usersMapper.updateUserGroup(userUuid, userGroup);
+        if (rv != 1)
+            return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
+
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("user_uuid", userUuid);
+        jsonData.put("user_group", userGroup);
         return responseHelper.success(jsonData);
     }
 }

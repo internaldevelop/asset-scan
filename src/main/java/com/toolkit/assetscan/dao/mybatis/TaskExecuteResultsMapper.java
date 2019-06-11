@@ -169,6 +169,11 @@ public interface TaskExecuteResultsMapper {
             "	t.risk_level, \n" +
             "	t.risk_desc, \n" +
             "	t.solutions, \n" +
+            "	ta.uuid AS task_uuid, \n" +
+            "	ta.name AS task_name, \n" +
+            "	u.uuid AS user_uuid, \n" +
+            "	u.account AS user_account, \n" +
+            "	u.name AS user_name, \n" +
             "	t.policy_uuid, \n" +
             "	p.name AS policy_name, \n" +
             "	p.group_uuid AS policy_group_uuid, \n" +
@@ -176,11 +181,14 @@ public interface TaskExecuteResultsMapper {
             " FROM\n" +
             "	task_execute_results t\n" +
             " INNER JOIN exec_actions ea ON ea.uuid = t.exec_action_uuid\n" +
+            " INNER JOIN users u ON ea.user_uuid = u.uuid\n" +
             " INNER JOIN tasks ta ON ea.task_uuid = ta.uuid\n" +
             " INNER JOIN assets a ON ta.asset_uuid = a.uuid\n" +
             " INNER JOIN policies p ON t.policy_uuid = p.uuid\n" +
             " INNER JOIN policy_groups pg ON p.group_uuid = pg.uuid\n" +
-            " WHERE t.exec_action_uuid=#{exec_action_uuid} AND t.risk_level=#{risk_level} \n")
+            " WHERE\n" +
+            "   IF(LENGTH(#{exec_action_uuid})=0, 1, t.exec_action_uuid=#{exec_action_uuid}) \n" +
+            "   AND IF(#{risk_level}>=99, t.risk_level>0, t.risk_level=#{risk_level}) \n" )
     List<ExecRiskInfoDto> getRiskInfo(@Param("exec_action_uuid") String execUuid,
                                       @Param("risk_level") int riskLevel);
 
