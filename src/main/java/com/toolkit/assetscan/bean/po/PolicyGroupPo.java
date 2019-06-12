@@ -5,8 +5,8 @@ import lombok.Data;
 import org.springframework.stereotype.Component;
 
 /**
- * PolicyGroupProps 对应 groups 表
- * 各字段名称一致，各字段定义略，可参考 groups 表的各字段注释
+ * PolicyGroupProps 对应 policy_groups 表
+ * 各字段名称一致，各字段定义略，可参考 policy_groups 表的各字段注释
  */
 @Component
 @Data

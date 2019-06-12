@@ -124,6 +124,14 @@ public interface UsersMapper {
     int getExistAccountCount(@Param("account") String account);
 
     /**
+     * 获取系统中用户名的数量，便于查重
+     * @param userName
+     * @return
+     */
+    @Select("SELECT count(*) from users u where  u.name=#{name} AND u.status>=0")
+    int getExistUserNameCount(@Param("name") String userName);
+
+    /**
      * 更新指定用户记录的状态
      * @param userUuid 指定用户的 UUID
      * @param status 新的状态

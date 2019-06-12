@@ -15,8 +15,13 @@ public class UsersManageHelper {
         this.usersMapper = usersMapper;
     }
 
-    public boolean isUserAccount(String account) {
+    public boolean isAccountExist(String account) {
         int count = usersMapper.getExistAccountCount(account);
+        return ( (count > 0) ? true : false);
+    }
+
+    public boolean isUserNameExist(String userName) {
+        int count = usersMapper.getExistUserNameCount(userName);
         return ( (count > 0) ? true : false);
     }
 

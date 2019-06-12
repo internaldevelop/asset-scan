@@ -71,8 +71,10 @@ public class UserManageService {
             return responseBean;
 
         // 检查新建账户名是否已存在
-        if (usersManageHelper.isUserAccount(userPo.getAccount()))
-            return responseHelper.error(ErrorCodeEnum.ERROR_USERNAME_USED);
+        if (usersManageHelper.isAccountExist(userPo.getAccount()))
+            return responseHelper.error(ErrorCodeEnum.ERROR_USER_REGISTERED);
+//        if (usersManageHelper.isUserNameExist(userPo.getName()))
+//            return responseHelper.error(ErrorCodeEnum.ERROR_USERNAME_USED);
 
         // 设置新用户的创建时间和失效时间
         java.sql.Timestamp currentTime = MyUtils.getCurrentSystemTimestamp();
