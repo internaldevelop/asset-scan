@@ -7,6 +7,7 @@ import com.toolkit.assetscan.bean.po.TaskPo;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.params.Const;
 import com.toolkit.assetscan.global.response.ResponseHelper;
+import com.toolkit.assetscan.service.TaskExecuteScheduler;
 import com.toolkit.assetscan.service.TaskManageService;
 import com.toolkit.assetscan.service.TaskRunStatusService;
 import io.swagger.annotations.Api;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -30,6 +32,9 @@ public class TaskManageApi {
 
     @Autowired
     private TaskRunStatusService taskRunStatusService;
+    @Autowired
+    private HttpServletRequest httpServletRequest;
+
 
     @Autowired
     public TaskManageApi(TaskManageService taskManageService, ResponseHelper responseHelper) {
@@ -100,7 +105,8 @@ public class TaskManageApi {
     @RequestMapping(value = "/execute", method = RequestMethod.POST)
     public @ResponseBody
     Object  executeTask(@RequestParam("uuid") String taskUuid) {
-        return taskManageService.executeSingleTask(Const.DEFAULT_PROJ_UUID, taskUuid);
+        return taskManageService.executeSingleTask(Const.DEFAULT_PROJ_UUID, taskUuid,
+                (String)httpServletRequest.getSession().getAttribute(Const.USER_UUID));
     }
 
     /**
@@ -192,4 +198,44 @@ public class TaskManageApi {
     Object  executeTask(@ModelAttribute ProjectPo projectPo) {
         return taskManageService.runProjectTask(projectPo);
     }
+
+    @Autowired
+    TaskExecuteScheduler taskExecuteScheduler;
+
+    /**
+     * 3.12 设置任务的定时计划
+     * @param taskUuid
+     * @param projectUuid
+     * @param runTime  格式强制为 HH:mm:ss
+     * @return
+     */
+    @RequestMapping(value = "/set-task-schedule", method = RequestMethod.GET)
+    public @ResponseBody
+    Object  setTaskExecuteSchedule(@RequestParam("task_uuid") String taskUuid,
+                                   @RequestParam(value = "project_uuid", required = false) String projectUuid,
+                                   @RequestParam("run_time") String runTime) {
+        // 未指定 project_uuid ，则使用缺省项目 UUID
+        if (projectUuid == null || projectUuid.isEmpty())
+            projectUuid = Const.DEFAULT_PROJ_UUID;
+        return taskExecuteScheduler.setTask(taskUuid, projectUuid,
+                (String)httpServletRequest.getSession().getAttribute(Const.USER_UUID),
+                runTime);
+    }
+
+    /**
+     * 3.13 停止任务的定时计划
+     * @param taskUuid
+     * @param projectUuid
+     * @return
+     */
+    @RequestMapping(value = "stop-scheduler", method = RequestMethod.GET)
+    public @ResponseBody
+    Object stopTaskScheduler(@RequestParam("task_uuid") String taskUuid,
+                             @RequestParam(value = "project_uuid", required = false) String projectUuid) {
+        // 未指定 project_uuid ，则使用缺省项目 UUID
+        if (projectUuid == null || projectUuid.isEmpty())
+            projectUuid = Const.DEFAULT_PROJ_UUID;
+        return taskExecuteScheduler.stopTask(taskUuid, projectUuid);
+    }
+
 }

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.toolkit.assetscan.dao.mybatis.TaskExecuteResultsMapper;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
+import com.toolkit.assetscan.service.TaskExecuteScheduler;
 import com.toolkit.assetscan.service.mq.TopicSender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,8 @@ import javax.servlet.http.HttpServletRequest;
 @CrossOrigin(origins = "*",maxAge = 3600)
 @RequestMapping(value = "/api/utils")
 public class UtilsManageApi {
+    @Autowired
+    TaskExecuteScheduler taskExecuteScheduler;
     @Autowired
     private TaskExecuteResultsMapper taskExecuteResultsMapper;
     private final ResponseHelper responseHelper;
@@ -79,6 +82,22 @@ public class UtilsManageApi {
                             @RequestParam("policy_uuid_list") String policyUuidList) {
         return taskExecuteResultsMapper.getHistoryRiskInfo(beginTime, endTime, policyUuidList, "");
     }
+
+    @RequestMapping(value = "start-scheduler", method = RequestMethod.GET)
+    public @ResponseBody
+    Object startTaskScheduler(@RequestParam("task_uuid") String taskUuid,
+                              @RequestParam("project_uuid") String projectUuid,
+                              @RequestParam("run_time") String runTime) {
+        return taskExecuteScheduler.startTask(taskUuid, projectUuid, "", runTime);
+    }
+
+    @RequestMapping(value = "stop-scheduler", method = RequestMethod.GET)
+    public @ResponseBody
+    Object stopTaskScheduler(@RequestParam("task_uuid") String taskUuid,
+                              @RequestParam("project_uuid") String projectUuid) {
+        return taskExecuteScheduler.stopTask(taskUuid, projectUuid);
+    }
+
 
 
 }

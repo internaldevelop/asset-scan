@@ -257,7 +257,8 @@ public class TaskManageService {
                 JSONObject object = jsonArray.getJSONObject(i);
                 String taskUuid = object.getString("uuid");
                 if (ProjectRunTimeModeEnum.MODE_NOW.getRunTimeMode() == timeMode) {
-                    responseBean = executeSingleTask(projectPo.getUuid(), taskUuid);
+                    responseBean = executeSingleTask(projectPo.getUuid(), taskUuid,
+                            (String)httpServletRequest.getSession().getAttribute(Const.USER_UUID));
                 } else {
                     int delayTime = 0;
                     if (ProjectRunTimeModeEnum.MODE_30MINS_LATER.getRunTimeMode() == timeMode) {
@@ -270,7 +271,7 @@ public class TaskManageService {
                     java.util.Timer timer = new java.util.Timer(true);
                     TimerTask task = new TimerTask() {
                         public void run() {
-                            final ResponseBean result = executeSingleTask(taskUuid, projectPo.getUuid());
+                            final ResponseBean result = executeSingleTask(taskUuid, projectPo.getUuid(), "");
                         }
                     };
                     timer.schedule(task, delayTime);
@@ -282,7 +283,7 @@ public class TaskManageService {
         return null;
     }
 
-    public ResponseBean executeSingleTask(String projectUuid, String taskUuid) {
+    public ResponseBean executeSingleTask(String projectUuid, String taskUuid, String userUuid) {
         // 根据任务UUID，获取任务DTO
         TaskInfosDto taskInfosDto = tasksMapper.getTaskDtoByUuid(taskUuid);
         if (taskInfosDto == null)
@@ -304,7 +305,8 @@ public class TaskManageService {
         HashMap<String, String> map = new HashMap<>();
         map.put("project_uuid", projectUuid);
         map.put("task_uuid", taskUuid);
-        map.put("user_uuid", (String)httpServletRequest.getSession().getAttribute(Const.USER_UUID));
+        map.put("user_uuid", userUuid);
+//        map.put("user_uuid", (String)httpServletRequest.getSession().getAttribute(Const.USER_UUID));
 
         // 向节点发送请求，并返回节点的响应结果
         ResponseEntity<ResponseBean> responseEntity = restTemplate.getForEntity(url, ResponseBean.class, map);
