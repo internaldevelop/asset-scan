@@ -1,6 +1,8 @@
 package com.toolkit.assetscan.service.mq;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.toolkit.assetscan.bean.dto.TaskRunStatusDto;
 import com.toolkit.assetscan.global.rabbitmq.config.RabbitConfig;
 import com.toolkit.assetscan.global.websocket.SockMsgTypeEnum;
@@ -31,16 +33,17 @@ public class TaskRunStatusTopicReceiver {
 
         try {
             // 把收到的数据解析成JSON对象
-            JSONObject jsonMessage = JSONObject.parseObject(message);
-            if (jsonMessage == null)
-                return;
+//            JSONObject jsonMessage = JSONObject.parseObject(message);
+//            if (jsonMessage == null)
+//                return;
 
             // 获取任务运行状态对象
-            TaskRunStatusDto taskRunStatusDto = jsonMessage.getObject("status", TaskRunStatusDto.class);
+//            TaskRunStatusDto taskRunStatusDto = jsonMessage.getObject("status", TaskRunStatusDto.class);
+            TaskRunStatusDto taskRunStatusDto = JSON.parseObject(message, new TypeReference<TaskRunStatusDto>() {});
             if (taskRunStatusDto != null) {
                 // 获取消息通知的任务的运行状态，发送给所有客户端
-                TaskRunStatusDto runStatus = taskRunStatusService.getTaskRunStatus(taskRunStatusDto.getTask_uuid());
-                WebSocketServer.sendInfo(SockMsgTypeEnum.SINGLE_TASK_RUN_INFO, runStatus, null);
+//                TaskRunStatusDto runStatus = taskRunStatusService.getTaskRunStatus(taskRunStatusDto.getTask_uuid());
+                WebSocketServer.sendInfo(SockMsgTypeEnum.SINGLE_TASK_RUN_INFO, taskRunStatusDto, null);
             }
         } catch (Exception e) {
             logger.error(e.getMessage());

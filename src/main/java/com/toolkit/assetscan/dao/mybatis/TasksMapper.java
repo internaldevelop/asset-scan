@@ -24,13 +24,13 @@ public interface TasksMapper {
     @Insert("INSERT INTO tasks( " +
             "uuid, name, code, " +
             "description, asset_uuid, policy_groups, " +
-            "create_user_uuid, status, " +
+            "timer_config, create_user_uuid, status, " +
             "update_time, " +
             "create_time) " +
             "VALUES ( " +
             "#{uuid}, #{name}, #{code}, " +
             "#{description}, #{asset_uuid}, #{policy_groups}, " +
-            "#{create_user_uuid}, #{status}, " +
+            "#{timer_config}, #{create_user_uuid}, #{status}, " +
             "#{update_time, jdbcType=TIMESTAMP}, " +
             "#{create_time, jdbcType=TIMESTAMP}) "
     )
@@ -42,7 +42,7 @@ public interface TasksMapper {
      * @return 影响记录数量，>0 表示成功，否则失败
      */
     @Update("UPDATE tasks t SET " +
-            "name=#{name}, code=#{code}, " +
+            "name=#{name}, code=#{code}, timer_config=#{timer_config}, " +
             "description=#{description}, asset_uuid=#{asset_uuid}, policy_groups=#{policy_groups}, " +
             "update_time=#{update_time}," +
             "create_user_uuid=#{create_user_uuid} " +

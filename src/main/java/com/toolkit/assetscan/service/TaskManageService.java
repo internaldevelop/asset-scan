@@ -293,7 +293,7 @@ public class TaskManageService {
         taskRunStatusDto.setProject_uuid(projectUuid);
         taskRunStatusDto.setTask_uuid(taskUuid);
         taskRunStatusDto.setRun_status(TaskRunStatusEnum.IDLE.getStatus());
-        if (!taskRunStatusService.setTaskRunStatus(taskUuid, taskRunStatusDto))
+        if (!taskRunStatusService.setTaskRunStatus(taskRunStatusDto))
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
 
         // 构造URL

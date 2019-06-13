@@ -140,17 +140,23 @@ public class TaskManageApi {
     /**
      * 3.10 获取任务的运行状态信息
      * 如果下列两个参数都为空，则返回所有可查询到的任务运行状态信息
+     * @param projectUuid 项目UUID，如果没有该请求参数，使用缺省项目 UUID
      * @param taskUuid 单个任务的 UUID
      * @param tasksUuidList 多个任务 UUID 的集合，用逗号 ',' 分隔的 UUID 字符串
      * @return
      */
     @RequestMapping(value = "run-status", method = RequestMethod.GET)
     public @ResponseBody
-    Object getTaskRunStatus(@RequestParam(value = "uuid", required = false) String taskUuid,
-                            @RequestParam(value = "uuid_list", required = false) String tasksUuidList) {
+    Object queryTaskRunStatus(@RequestParam(value = "project_uuid", required = false) String projectUuid,
+                              @RequestParam(value = "uuid", required = false) String taskUuid,
+                              @RequestParam(value = "uuid_list", required = false) String tasksUuidList) {
+        // 未指定 project_uuid ，则使用缺省项目 UUID
+        if (projectUuid == null || projectUuid.isEmpty())
+            projectUuid = Const.DEFAULT_PROJ_UUID;
+
         if (taskUuid != null && !taskUuid.isEmpty()) {
             // 获取单个任务的运行状态信息
-            TaskRunStatusDto taskRunStatusDto = taskRunStatusService.getTaskRunStatus(taskUuid);
+            TaskRunStatusDto taskRunStatusDto = taskRunStatusService.getTaskRunStatus(taskUuid, projectUuid);
             if (taskRunStatusDto == null) {
                 return responseHelper.error(ErrorCodeEnum.ERROR_TASK_RUN_STATUS_NOT_FOUND);
             }
@@ -159,7 +165,7 @@ public class TaskManageApi {
 
         } else if (tasksUuidList != null && !tasksUuidList.isEmpty()) {
             // 获取多个任务的运行状态信息
-            List <TaskRunStatusDto> taskRunStatusDtoList = taskRunStatusService.getTasksListRunStatus(tasksUuidList);
+            List <TaskRunStatusDto> taskRunStatusDtoList = taskRunStatusService.getTasksListRunStatus(tasksUuidList, projectUuid);
             /*if (taskRunStatusDtoList == null || taskRunStatusDtoList.size() == 0)
                 return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND.ERROR_TASK_RUN_STATUS_NOT_FOUND);*/
 
@@ -167,7 +173,7 @@ public class TaskManageApi {
 
         } else {
             // 获取所有可查询到任务的运行状态信息
-            List <TaskRunStatusDto> taskRunStatusDtoList = taskRunStatusService.getAllTasksRunStatus();
+            List <TaskRunStatusDto> taskRunStatusDtoList = taskRunStatusService.getAllTasksRunStatus(projectUuid);
             if (taskRunStatusDtoList == null || taskRunStatusDtoList.size() == 0)
                 return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND.ERROR_TASK_RUN_STATUS_NOT_FOUND);
 

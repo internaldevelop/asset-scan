@@ -23,18 +23,18 @@ public class TaskRunStatusService {
         return "task_run_index";
     }
 
-    public TaskRunStatusDto getTaskRunStatus(String taskUuid) {
+    public TaskRunStatusDto getTaskRunStatus(String taskUuid, String projectUuid) {
         String key = _getTaskRedisKey(taskUuid);
         String value = (String)redisClient.get(key);
         JSONObject jsonObject = JSONObject.parseObject(value);
         TaskRunStatusDto taskRunStatusDto = null;
-        if (jsonObject !=null ) {
-            taskRunStatusDto = jsonObject.getObject("status", TaskRunStatusDto.class);
+        if (jsonObject != null ) {
+            taskRunStatusDto = jsonObject.getObject(projectUuid, TaskRunStatusDto.class);
         }
         return taskRunStatusDto;
     }
 
-    public List<TaskRunStatusDto> getTasksListRunStatus(String tasksUuidList) {
+    public List<TaskRunStatusDto> getTasksListRunStatus(String tasksUuidList, String projectUuid) {
         String[] uuidArray = tasksUuidList.split(",");
 //        List<String> uuidLists = JSONObject.parseArray(tasksUuidList, String.class);
         List<TaskRunStatusDto> runStatusDtoList = new ArrayList<>();
@@ -44,7 +44,7 @@ public class TaskRunStatusService {
                 continue;
 
             // 调用单个任务的状态
-            TaskRunStatusDto runStatusDto = getTaskRunStatus(taskUuid);
+            TaskRunStatusDto runStatusDto = getTaskRunStatus(taskUuid, projectUuid);
             if (runStatusDto != null) {
                 runStatusDtoList.add(runStatusDto);
             }
@@ -52,7 +52,7 @@ public class TaskRunStatusService {
         return runStatusDtoList;
     }
 
-    public List<TaskRunStatusDto> getAllTasksRunStatus() {
+    public List<TaskRunStatusDto> getAllTasksRunStatus(String projectUuid) {
         List<TaskRunStatusDto> runStatusDtoList = new ArrayList<>();
         // 获取运行状态信息的任务UUID索引
         Map<String, Serializable> map = redisClient.getMap(_getTaskIndexRedisKey());
@@ -71,7 +71,7 @@ public class TaskRunStatusService {
                 continue;
 
             // 获取索引中有效UUID的任务执行信息
-            TaskRunStatusDto runStatusDto = getTaskRunStatus(key);
+            TaskRunStatusDto runStatusDto = getTaskRunStatus(key, projectUuid);
             if (runStatusDto != null) {
                 runStatusDtoList.add(runStatusDto);
             }
@@ -79,17 +79,22 @@ public class TaskRunStatusService {
         return runStatusDtoList;
     }
 
-    public boolean setTaskRunStatus(String taskUuid, TaskRunStatusDto taskRunStatusDto) {
+    public boolean setTaskRunStatus(TaskRunStatusDto taskRunStatusDto) {
         // 记录有运行状态的任务索引（task_uuid）
         Map<String, Serializable> map = new HashMap<>();
-        map.put(taskUuid, "1");
+        map.put(taskRunStatusDto.getTask_uuid(), "1");
         if (!redisClient.addMap(_getTaskIndexRedisKey(), map))
             return false;
 
-        // 记录该任务的执行状态
-        String key = _getTaskRedisKey(taskUuid);
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("status", taskRunStatusDto);
+        // 记录该任务的执行状态（新建对象或追加）
+        JSONObject jsonObject;
+        String key = _getTaskRedisKey(taskRunStatusDto.getTask_uuid());
+        String value = (String)redisClient.get(key);
+        if (value != null && !value.isEmpty())
+            jsonObject = JSONObject.parseObject(value);
+        else
+            jsonObject = new JSONObject();
+        jsonObject.put(taskRunStatusDto.getProject_uuid(), taskRunStatusDto);
         return redisClient.set(key, jsonObject.toJSONString());
     }
 

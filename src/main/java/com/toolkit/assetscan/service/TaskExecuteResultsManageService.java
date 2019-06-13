@@ -107,9 +107,9 @@ public class TaskExecuteResultsManageService {
      * @param taskUuid
      * @return
      */
-    public Object getTaskExecBriefInfo(String taskUuid) {
+    public Object getTaskExecBriefInfo(String taskUuid, String projectUuid) {
         // 提取任务运行状态信息
-        TaskRunStatusDto runStatus = taskRunStatusService.getTaskRunStatus(taskUuid);
+        TaskRunStatusDto runStatus = taskRunStatusService.getTaskRunStatus(taskUuid, projectUuid);
         if (runStatus == null)
             return responseHelper.error(ErrorCodeEnum.ERROR_TASK_RUN_STATUS_NOT_FOUND);
 

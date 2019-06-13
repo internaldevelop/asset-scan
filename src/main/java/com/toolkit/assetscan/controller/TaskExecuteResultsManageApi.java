@@ -6,6 +6,7 @@ import com.toolkit.assetscan.global.common.ExcelUtil;
 import com.toolkit.assetscan.global.common.HtmlUtil;
 import com.toolkit.assetscan.global.common.PdfUtil;
 import com.toolkit.assetscan.global.common.WordUtil;
+import com.toolkit.assetscan.global.params.Const;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.service.TaskExecuteResultsManageService;
 import io.swagger.annotations.Api;
@@ -99,6 +100,7 @@ public class TaskExecuteResultsManageApi {
 
     /**
      * 5.5 单个指定任务执行信息（执行状态信息和执行统计数据）
+     * @param projectUuid 项目UUID，如果没有该请求参数，使用缺省项目 UUID
      * @param taskUuid
      * @return 返回 payload 数据，包含三部分：
      *          run_status：缓存的任务执行状态信息
@@ -107,8 +109,13 @@ public class TaskExecuteResultsManageApi {
      */
     @RequestMapping(value = "/brief", method = RequestMethod.GET)
     public @ResponseBody
-    Object getTaskExecBrief(@RequestParam("task_uuid") String taskUuid) {
-        return taskExecuteResultsManageService.getTaskExecBriefInfo(taskUuid);
+    Object getTaskExecBrief(@RequestParam(value = "project_uuid", required = false) String projectUuid,
+                            @RequestParam("task_uuid") String taskUuid) {
+        // 未指定 project_uuid ，则使用缺省项目 UUID
+        if (projectUuid == null || projectUuid.isEmpty())
+            projectUuid = Const.DEFAULT_PROJ_UUID;
+
+        return taskExecuteResultsManageService.getTaskExecBriefInfo(taskUuid, projectUuid);
     }
 
     /**

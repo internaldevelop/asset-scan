@@ -12,6 +12,7 @@ public class TaskPo {
     private String name;
     private String code;
     private String description;
+    private String timer_config;
     private String asset_uuid;
     private String policy_groups;
     private String create_user_uuid;
