@@ -152,7 +152,7 @@ public interface PoliciesMapper {
             "	INNER JOIN tasks t ON a.uuid = t.asset_uuid\n" +
             "	INNER JOIN task_execute_results ter ON t.uuid = ter.task_uuid\n" +
             "	INNER JOIN policies p ON ter.policy_uuid = p.uuid\n" +
-            "	INNER JOIN policy_groups pg ON pg.uuid = p.group_uuid AND pg.`code` = 'UserAccountConfig' \n" +
+            "	INNER JOIN policy_groups pg ON pg.uuid = p.group_uuid AND (pg.`code` = 'WinUserAccountConfig' OR pg.`code` = 'LinuxUserAccountConfig') \n" + //AND pg.`code` = 'UserAccountConfig'
             " GROUP BY a.ip")
     List<TaskResultsDto> userAccountReport();
 
@@ -166,7 +166,7 @@ public interface PoliciesMapper {
             "	INNER JOIN tasks t ON a.uuid = t.asset_uuid\n" +
             "	INNER JOIN task_execute_results ter ON t.uuid = ter.task_uuid\n" +
             "	INNER JOIN policies p ON ter.policy_uuid = p.uuid\n" +
-            "	INNER JOIN policy_groups pg ON pg.uuid = p.group_uuid AND pg.`code` = 'UserPwdConfig' \n" +
+            "	INNER JOIN policy_groups pg ON pg.uuid = p.group_uuid AND (pg.`code` = 'WinUserPwdConfig' OR pg.`code` = 'LinuxUserPwdConfig') \n" + //AND pg.`code` = 'UserPwdConfig'
             " GROUP BY a.ip")
     List<TaskResultsDto> pwdPolicyReport();
 
@@ -180,7 +180,7 @@ public interface PoliciesMapper {
             "	INNER JOIN tasks t ON a.uuid = t.asset_uuid\n" +
             "	INNER JOIN task_execute_results ter ON t.uuid = ter.task_uuid\n" +
             "	INNER JOIN policies p ON ter.policy_uuid = p.uuid\n" +
-            "	INNER JOIN policy_groups pg ON pg.uuid = p.group_uuid AND pg.`code` = 'NetworkCommConfig' \n" +
+            "	INNER JOIN policy_groups pg ON pg.uuid = p.group_uuid AND (pg.`code` = 'WinNetworkCommConfig' OR pg.`code` = 'LinuxNetworkCommConfig')  \n" + //AND pg.`code` = 'NetworkCommConfig'
             " GROUP BY a.ip")
     List<TaskResultsDto> networkReport();
 
@@ -194,7 +194,7 @@ public interface PoliciesMapper {
             "	INNER JOIN tasks t ON a.uuid = t.asset_uuid\n" +
             "	INNER JOIN task_execute_results ter ON t.uuid = ter.task_uuid\n" +
             "	INNER JOIN policies p ON ter.policy_uuid = p.uuid\n" +
-            "	INNER JOIN policy_groups pg ON pg.uuid = p.group_uuid AND pg.`code` = 'LogAuditConfig' \n" +
+            "	INNER JOIN policy_groups pg ON pg.uuid = p.group_uuid AND (pg.`code` = 'WinLogAuditConfig' OR pg.`code` = 'LinuxLogAuditConfig') \n" + //AND pg.`code` = 'LogAuditConfig'
             " GROUP BY a.ip")
     List<TaskResultsDto> logReport();
 

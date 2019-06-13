@@ -10,6 +10,7 @@ import com.toolkit.assetscan.dao.mybatis.PoliciesMapper;
 import com.toolkit.assetscan.dao.mybatis.PolicyGroupsMapper;
 import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
+import com.toolkit.assetscan.global.enumeration.GeneralStatusEnum;
 import com.toolkit.assetscan.global.enumeration.ReportEnum;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
@@ -54,6 +55,10 @@ public class PolicyManageService {
 
         // 为新策略随机分配一个UUID
         policyPo.setUuid(MyUtils.generateUuid());
+
+        policyPo.setStatus(GeneralStatusEnum.VALID.getStatus());
+        // 目前OS类型和基线保持一致
+        policyPo.setBaseline(policyPo.getOs_type());
 
         // 记录新策略的创建时间
         java.sql.Timestamp currentTime = MyUtils.getCurrentSystemTimestamp();
@@ -120,6 +125,9 @@ public class PolicyManageService {
     }
 
     public ResponseBean updatePolicy(PolicyPo policyPo) {
+        policyPo.setStatus(GeneralStatusEnum.VALID.getStatus());
+        // 目前OS类型和基线保持一致
+        policyPo.setBaseline(policyPo.getOs_type());
         if (!policiesManageHelper.updatePolicy(policyPo))
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
         return successReturnInfo( policyPo.getName(), policyPo.getCode(), policyPo.getUuid() );
@@ -128,25 +136,25 @@ public class PolicyManageService {
     public Object statisticsReport(String code) {
         List patchList = new ArrayList();
 
-        if (ReportEnum.PATCH_NOT_INSTALLED.value().equals(code)) {  // 补丁安装情况
+        if (ReportEnum.GROUP_WINDOWS_PATCH_INSTALL.value().equals(code) || ReportEnum.GROUP_LINUX_PATCH_INSTALL.value().equals(code)) {  // 补丁安装情况
             patchList = policiesMapper.patchNotInstalledReport();
-        } else if (ReportEnum.SYSTEM_SERVICE.value().equals(code)) {  // 系统服务分析
+        } else if (ReportEnum.GROUP_WINDOWS_SERVICES.value().equals(code) || ReportEnum.GROUP_LINUX_SERVICES.value().equals(code)) {  // 系统服务分析
             patchList = policiesMapper.systemServiceReport();
-        } else if (ReportEnum.SYSTEM_FILE_SERVICE.value().equals(code)) {  // 系统文件安全防护分析
+        } else if (ReportEnum.GROUP_WINDOWS_FILE_SECURITY.value().equals(code) || ReportEnum.GROUP_LINUX_FILE_SECURITY.value().equals(code)) {  // 系统文件安全防护分析
             patchList = policiesMapper.systemFileServiceReport();
-        } else if (ReportEnum.USER_ACCOUNT_ANALYSIS.value().equals(code)) {  // 用户账号配置分析
+        } else if (ReportEnum.GROUP_WINDOWS_USER_ACCOUNT_CONFIGURATION.value().equals(code) || ReportEnum.GROUP_LINUX_USER_ACCOUNT_CONFIGURATION.value().equals(code)) {  // 用户账号配置分析
             patchList = policiesMapper.userAccountReport();
-        } else if (ReportEnum.PWD_POLICY_ANALYSIS.value().equals(code)) {  // 口令策略配置分析
+        } else if (ReportEnum.GROUP_WINDOWS_PASSWORD_CONFIGURATION.value().equals(code) || ReportEnum.GROUP_LINUX_PASSWORD_CONFIGURATION.value().equals(code)) {  // 口令策略配置分析
             patchList = policiesMapper.pwdPolicyReport();
-        } else if (ReportEnum.NETWORK_ANALYSIS.value().equals(code)) {  // 网络通信配置分析
+        } else if (ReportEnum.GROUP_WINDOWS_NETWORK_COMMUNICATION_CONFIGURATION.value().equals(code) || ReportEnum.GROUP_LINUX_NETWORK_COMMUNICATION_CONFIGURATION.value().equals(code)) {  // 网络通信配置分析
             patchList = policiesMapper.networkReport();
-        } else if (ReportEnum.LOG_ANALYSIS.value().equals(code)) {  // 日志审计分析
+        } else if (ReportEnum.GROUP_WINDOWS_LOG_AUDIT_CONFIGURATION.value().equals(code) || ReportEnum.GROUP_LINUX_LOG_AUDIT_CONFIGURATION.value().equals(code)) {  // 日志审计分析
             patchList = policiesMapper.logReport();
-        }
+        } // 还没有添加防火墙相关的
 
-        if ( patchList.size() == 0 ) {
+        /*if ( patchList.size() == 0 ) {
             return responseHelper.error(ErrorCodeEnum.ERROR_NOT_DATA);
-        }
+        }*/
         return responseHelper.success(patchList);
 
     }
