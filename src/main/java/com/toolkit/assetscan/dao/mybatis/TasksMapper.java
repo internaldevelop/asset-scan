@@ -1,6 +1,7 @@
 package com.toolkit.assetscan.dao.mybatis;
 
 import com.toolkit.assetscan.bean.dto.TaskInfosDto;
+import com.toolkit.assetscan.bean.dto.TaskSchedulerDto;
 import com.toolkit.assetscan.bean.po.TaskPo;
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Component;
@@ -116,4 +117,15 @@ public interface TasksMapper {
             " WHERE\n" +
             "   t.uuid=#{uuid} AND t.status>=0")
     TaskInfosDto getTaskDtoByUuid(@Param("uuid") String taskUuid);
+
+    // 所有任务的计划执行参数
+    @Select("SELECT\n" +
+            "	t.uuid AS task_uuid,\n" +
+            "	t.create_user_uuid AS user_uuid,\n" +
+            "	t.timer_config AS timer_config\n" +
+            " FROM\n" +
+            "	tasks t\n" +
+            " WHERE\n" +
+            "   t.status>=0")
+    List<TaskSchedulerDto> getAllTaskScheduler();
 }

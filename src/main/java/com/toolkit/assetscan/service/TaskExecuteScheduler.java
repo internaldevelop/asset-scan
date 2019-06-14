@@ -1,6 +1,14 @@
 package com.toolkit.assetscan.service;
 
 
+import com.alibaba.fastjson.JSONObject;
+import com.toolkit.assetscan.bean.dto.TaskSchedulerDto;
+import com.toolkit.assetscan.dao.mybatis.TasksMapper;
+import com.toolkit.assetscan.global.bean.ResponseBean;
+import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
+import com.toolkit.assetscan.global.enumeration.ScheduleModeEnum;
+import com.toolkit.assetscan.global.params.Const;
+import com.toolkit.assetscan.global.response.ResponseHelper;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,12 +33,49 @@ public class TaskExecuteScheduler {
     @Autowired
     private ThreadPoolTaskScheduler threadPoolTaskScheduler;
     @Autowired private TaskManageService taskManageService;
+    @Autowired
+    ResponseHelper responseHelper;
+    @Autowired
+    TasksMapper tasksMapper;
 //    private ScheduledFuture<?> future;
     private List<FutureTask> futureTaskList;
 
     @Bean
     public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
         return new ThreadPoolTaskScheduler();
+    }
+
+    @Bean
+    public boolean restartScheduler() {
+        // 初始化：计划
+        if (!initScheduler())
+            return false;
+
+        // 读取任务的计划相关数据
+        List<TaskSchedulerDto> schedulerDtoList = tasksMapper.getAllTaskScheduler();
+        if (schedulerDtoList == null)
+            return false;
+
+        for (TaskSchedulerDto schedulerDto : schedulerDtoList) {
+            // 检查定时器参数是否有效
+            String timerConfig = schedulerDto.getTimer_config();
+            if ((timerConfig == null) || (timerConfig.isEmpty()))
+                continue;
+
+            JSONObject jsonTimerConfig = JSONObject.parseObject(timerConfig);
+            int mode = jsonTimerConfig.getIntValue("mode");
+            if (mode == ScheduleModeEnum.NONE.getMode()) {
+                continue;
+            } else {
+                startTask(schedulerDto.getTask_uuid(),
+                        Const.DEFAULT_PROJ_UUID,
+                        schedulerDto.getUser_uuid(),
+                        jsonTimerConfig.getString("runtime")
+                );
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -53,7 +98,19 @@ public class TaskExecuteScheduler {
 //        return date.getSeconds()
     }
 
-    public String startTask(String taskUuid, String projectUuid, String userUuid, String runTime) {
+    public boolean isSchedulerStartUp() {
+        return (futureTaskList != null);
+    }
+
+    public boolean initScheduler() {
+        if (futureTaskList == null)
+            futureTaskList = new ArrayList<>();
+        else
+            futureTaskList.clear();
+        return isSchedulerStartUp();
+    }
+
+    public ResponseBean startTask(String taskUuid, String projectUuid, String userUuid, String runTime) {
         // 创建一个 Runnable ，设置：任务和项目的 UUID
         MyRunnable runnable = new MyRunnable();
         runnable.setTaskUuid(taskUuid);
@@ -67,7 +124,7 @@ public class TaskExecuteScheduler {
         ScheduledFuture<?> future = threadPoolTaskScheduler.schedule(runnable, new CronTrigger(cronExpr));
 //        ScheduledFuture<?> future = threadPoolTaskScheduler.schedule(runnable, new CronTrigger("0/5 * * * * *"));
         if (future == null)
-            return "Scheduled task start failed";
+            return responseHelper.error(ErrorCodeEnum.ERROR_SCHEDULER_FAILED);
 
         if (futureTaskList == null)
             futureTaskList = new ArrayList<>();
@@ -80,16 +137,16 @@ public class TaskExecuteScheduler {
         futureTask.setFuture(future);
         futureTaskList.add(futureTask);
 
-        return "start: Task: " + taskUuid + "\tProject: " + projectUuid;
+        return responseHelper.success("start: Task: " + taskUuid + "\tProject: " + projectUuid);
     }
 
-    public String setTask(String taskUuid, String projectUuid, String userUuid, String runTime) {
+    public ResponseBean setTask(String taskUuid, String projectUuid, String userUuid, String runTime) {
         stopTask(taskUuid, projectUuid);
 
         return startTask(taskUuid, projectUuid, userUuid, runTime);
     }
 
-    public String stopTask(String taskUuid, String projectUuid) {
+    public ResponseBean stopTask(String taskUuid, String projectUuid) {
         if (this.futureTaskList == null)
             futureTaskList = new ArrayList<>();
 
@@ -102,11 +159,11 @@ public class TaskExecuteScheduler {
                     future.cancel(true);
                 // 移除任务计划
                 futureTaskList.remove(futureTask);
-                return "stop: Task: " + taskUuid + "\tProject: " + projectUuid;
+                return responseHelper.success("stop: Task: " + taskUuid + "\tProject: " + projectUuid);
             }
         }
 
-        return "Scheduled task not found";
+        return responseHelper.error(ErrorCodeEnum.ERROR_SCHEDULE_TASK_NOT_FOUND);
     }
 
     private class MyRunnable implements Runnable {

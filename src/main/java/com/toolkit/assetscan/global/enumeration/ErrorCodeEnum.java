@@ -62,6 +62,9 @@ public enum ErrorCodeEnum {
     ERROR_TIME_AFTER_CURRENT(2038, "指定时间晚于当前时间"),
     ERROR_NO_RESULT_HISTORY(2039, "没有找到扫描历史记录"),
     ERROR_NO_EXEC_ACTIONS(2040, "没有找到操作日志"),
+    ERROR_SCHEDULER_FAILED(2041, "定时计划任务启动失败"),
+    ERROR_SCHEDULE_TASK_NOT_FOUND(2042, "未找到指定的计划任务"),
+    ERROR_SCHEDULER_NOT_START(2043, "计划任务尚未启动"),
     ;
 
     private Integer code;
