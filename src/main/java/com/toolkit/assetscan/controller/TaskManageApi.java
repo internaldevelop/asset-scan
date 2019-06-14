@@ -238,4 +238,14 @@ public class TaskManageApi {
         return taskExecuteScheduler.stopTask(taskUuid, projectUuid);
     }
 
+    /**
+     * 3.14 根据指定的 UUID 获取一条任务详细参数
+     * @param taskUuid 任务的 UUID
+     * @return payload: 任务详细参数
+     */
+    @RequestMapping(value = "/get-taskinfo", method = RequestMethod.GET)
+    public @ResponseBody
+    Object getTaskInfo(@RequestParam("uuid") String taskUuid) {
+        return taskManageService.getTaskInfoByUuid(taskUuid);
+    }
 }

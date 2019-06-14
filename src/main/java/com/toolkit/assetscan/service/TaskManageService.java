@@ -126,6 +126,11 @@ public class TaskManageService {
         return responseHelper.success(taskPo);
     }
 
+    public ResponseBean getTaskInfoByUuid(String taskUuid) {
+        TaskInfosDto taskInfosDto = tasksMapper.getTaskDtoByUuid(taskUuid);
+        return responseHelper.success(taskInfosDto);
+    }
+
     public ResponseBean updateTask(TaskPo taskPo) {
         // 检查参数
         if (!iCheckParams(taskPo))
