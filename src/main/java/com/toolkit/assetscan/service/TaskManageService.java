@@ -130,6 +130,8 @@ public class TaskManageService {
 
     public ResponseBean getTaskInfoByUuid(String taskUuid) {
         TaskInfosDto taskInfosDto = tasksMapper.getTaskDtoByUuid(taskUuid);
+        if (taskInfosDto == null)
+            return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND);
         return responseHelper.success(taskInfosDto);
     }
 

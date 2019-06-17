@@ -248,8 +248,9 @@ public class TaskManageApi {
     Object getTaskInfo(@RequestParam("uuid") String taskUuid) {
         return taskManageService.getTaskInfoByUuid(taskUuid);
     }
+
     /**
-     * 3.14 任务名称是否唯一
+     * 3.15 任务名称是否唯一
      * @param taskName
      * @param taskUuid  参数为空，表示全局检查名称唯一性；否则检查除自己外，其他任务是否使用该名称
      * @return
