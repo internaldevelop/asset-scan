@@ -28,7 +28,7 @@ public class AssetManageService {
     public ResponseBean getAllAssets() {
         List<AssetPo> assetsList = mAssetsMapper.getAllAssets();
         if ( (assetsList == null) || (assetsList.size() == 0) )
-            return mResponseHelper.error(ErrorCodeEnum.ERROR_USER_NOT_FOUND);
+            return mResponseHelper.error(ErrorCodeEnum.ERROR_ASSET_EMPTY);
 
         return mResponseHelper.success(assetsList);
     }
@@ -39,6 +39,10 @@ public class AssetManageService {
      * @return
      */
     public ResponseBean addAsset(AssetPo assetPo) {
+        // 添加资产时，不允许使用系统内已存在的资产名称
+        if (mAssetsMapper.getAssetNameCount(assetPo.getName()) > 0)
+            return mResponseHelper.error(ErrorCodeEnum.ERROR_ASSET_NAME_EXIST);
+
         // 分配资产UUID
         assetPo.setUuid(MyUtils.generateUuid());
 
@@ -55,6 +59,10 @@ public class AssetManageService {
      * @return
      */
     public ResponseBean updateAssetByUuid(AssetPo assetPo) {
+        // 更新资产时，不允许使用其他资产已采用的名称
+        if (mAssetsMapper.checkNameInOtherAssets(assetPo.getName(), assetPo.getUuid()) > 0)
+            return mResponseHelper.error(ErrorCodeEnum.ERROR_ASSET_NAME_EXIST);
+
         if (mAssetsMapper.updateAsset(assetPo) <= 0)
             return mResponseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
 
@@ -67,7 +75,7 @@ public class AssetManageService {
     public ResponseBean deleteAsset(String assetUuid) {
         AssetPo assetPo = mAssetsMapper.getAssetByUuid(assetUuid);
         if (assetPo == null) {
-            return mResponseHelper.error(ErrorCodeEnum.ERROR_POLICY_NOT_FOUND);
+            return mResponseHelper.error(ErrorCodeEnum.ERROR_ASSET_NOT_FOUND);
         }
 
         if (mAssetsMapper.deleteAsset(assetPo) <= 0) {
@@ -83,4 +91,19 @@ public class AssetManageService {
         jsonData.put("asset_uuid", uuid);
         return mResponseHelper.success(jsonData);
     }
+
+    public ResponseBean checkAssetNameExist(String assetName, String assetUuid) {
+        int count;
+        if ((assetUuid == null) || (assetUuid.isEmpty()))
+            count = mAssetsMapper.getAssetNameCount(assetName);
+        else
+            count = mAssetsMapper.checkNameInOtherAssets(assetName, assetUuid);
+
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("asset_name", assetName);
+        jsonData.put("count", count);
+        jsonData.put("exist", (count > 0) ? 1 : 0);
+        return mResponseHelper.success(jsonData);
+    }
+
 }

@@ -128,4 +128,19 @@ public interface TasksMapper {
             " WHERE\n" +
             "   t.status>=0")
     List<TaskSchedulerDto> getAllTaskScheduler();
+
+    /**
+     * 获取指定名称的任务数
+     * SQL 复核：
+     * SELECT count(*) AS name_count, t.name
+     * FROM tasks t GROUP BY t.name HAVING count(*) > 0;
+     * @param taskName
+     * @return
+     */
+    @Select("SELECT count(*) FROM tasks t WHERE t.name=#{task_name}")
+    int getTaskNameCount(@Param("task_name") String taskName);
+
+    @Select("SELECT count(*) FROM tasks t WHERE t.name=#{task_name} AND t.uuid<>#{task_uuid}")
+    int checkNameInOtherTasks(@Param("task_name") String taskName, @Param("task_uuid") String taskUuid);
+
 }

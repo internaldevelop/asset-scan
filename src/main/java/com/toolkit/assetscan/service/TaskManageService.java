@@ -86,7 +86,9 @@ public class TaskManageService {
         if (!iCheckParams(taskPo))
             return responseBean;
 
-        // TODO: 暂不检查任务重名，以后待定
+        // 检查任务重名
+        if (tasksMapper.getTaskNameCount(taskPo.getName()) > 0)
+            return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NAME_EXIST);
 
         // 设置新任务的创建时间
         java.sql.Timestamp currentTime = MyUtils.getCurrentSystemTimestamp();
@@ -131,6 +133,10 @@ public class TaskManageService {
         if (!iCheckParams(taskPo))
             return responseBean;
 
+        // 检查任务重名
+        if (tasksMapper.getTaskNameCount(taskPo.getName()) > 0)
+            return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NAME_EXIST);
+
         // 设置任务的更新时间
         java.sql.Timestamp currentTime = MyUtils.getCurrentSystemTimestamp();
         taskPo.setUpdate_time(currentTime);
@@ -163,6 +169,9 @@ public class TaskManageService {
      *                  false: 失败
      */
     private boolean iAddAsset(TaskInfosDto taskInfosDto) {
+        if (assetsMapper.getAssetNameCount(taskInfosDto.getAsset_name()) > 0)
+            return false;
+
         // 创建资产PO对象，并设置其属性
         AssetPo assetPo = new AssetPo();
         assetPo.setName(taskInfosDto.getAsset_name());
@@ -311,5 +320,21 @@ public class TaskManageService {
         // 向节点发送请求，并返回节点的响应结果
         ResponseEntity<ResponseBean> responseEntity = restTemplate.getForEntity(url, ResponseBean.class, map);
         return responseEntity.getBody();
+    }
+
+    public ResponseBean checkTaskNameExist(String taskName, String taskUuid) {
+        int count;
+
+        if ((taskUuid == null) || (taskUuid.isEmpty()))
+            count = tasksMapper.getTaskNameCount(taskName);
+        else
+            count = tasksMapper.checkNameInOtherTasks(taskName, taskUuid);
+
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("task_name", taskName);
+        jsonData.put("count", count);
+        jsonData.put("exist", (count > 0) ? 1 : 0);
+
+        return responseHelper.success(jsonData);
     }
 }

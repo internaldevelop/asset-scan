@@ -61,4 +61,18 @@ public interface AssetsMapper {
      */
     @Select("SELECT * FROM assets a WHERE a.uuid=#{uuid}")
     AssetPo getAssetByUuid(@Param("uuid") String assetUuid);
+
+    /**
+     * 检查资产名称是否唯一
+     * SQL 复核：
+     * SELECT count(*) AS name_count, a.name
+     * FROM assets a GROUP BY a.name HAVING count(*) > 0;
+     * @param assetName
+     * @return
+     */
+    @Select("SELECT count(*) FROM assets a WHERE a.name=#{asset_name}")
+    int getAssetNameCount(@Param("asset_name") String assetName);
+
+    @Select("SELECT count(*) FROM assets a WHERE a.name=#{asset_name} AND a.uuid<>#{asset_uuid}")
+    int checkNameInOtherAssets(@Param("asset_name") String assetName, @Param("asset_uuid") String assetUuid);
 }

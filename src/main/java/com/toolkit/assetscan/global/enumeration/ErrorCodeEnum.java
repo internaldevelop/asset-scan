@@ -50,7 +50,7 @@ public enum ErrorCodeEnum {
     ERROR_ADMIT_CLEAR_AUTH_FAIL_COUNT(2001, "允许清除验证失败次数"),
     ERROR_NEED_APP_CALLBACK_URL(2002, "需要应用回调的URL链接"),
     ERROR_FAIL_CALLBACK(2003, "回调失败"),
-    ERROR_EXIST_APP_NAME(2004, "应用名称已存在"),
+    ERROR_TASK_NAME_EXIST(2004, "任务名称已存在"),
     ERROR_INTERFACE_NOT_FOUND(2005, "请求接口不存在"),
     ERROR_TASK_NOT_FOUND(2030, "任务未找到"),
     ERROR_TASK_INFO_NOT_FOUND(2031, "任务信息未找到"),
@@ -65,6 +65,9 @@ public enum ErrorCodeEnum {
     ERROR_SCHEDULER_FAILED(2041, "定时计划任务启动失败"),
     ERROR_SCHEDULE_TASK_NOT_FOUND(2042, "未找到指定的计划任务"),
     ERROR_SCHEDULER_NOT_START(2043, "计划任务尚未启动"),
+    ERROR_ASSET_EMPTY(2044, "资产列表为空"),
+    ERROR_ASSET_NOT_FOUND(2045, "资产未找到"),
+    ERROR_ASSET_NAME_EXIST(2046, "资产名已存在"),
     ;
 
     private Integer code;

@@ -125,7 +125,7 @@ public class TaskManageApi {
      * @param bindingResult 表单信息绑定结果
      * @return payload: 任务名和任务的 UUID
      */
-    @RequestMapping(value = "add-task-details", method = RequestMethod.POST)
+    @RequestMapping(value = "/add-task-details", method = RequestMethod.POST)
     public @ResponseBody
     Object addTaskDetails(@ModelAttribute TaskInfosDto taskInfosDto, BindingResult bindingResult) {
         return taskManageService.addTaskDetails(taskInfosDto);
@@ -137,7 +137,7 @@ public class TaskManageApi {
      * @param bindingResult 表单信息绑定结果
      * @return payload: 任务名和任务的 UUID
      */
-    @RequestMapping(value = "update-task-details", method = RequestMethod.POST)
+    @RequestMapping(value = "/update-task-details", method = RequestMethod.POST)
     public @ResponseBody
     Object updateTaskDetails(@ModelAttribute TaskInfosDto taskInfosDto, BindingResult bindingResult) {
         return taskManageService.updateTaskDetails(taskInfosDto);
@@ -151,7 +151,7 @@ public class TaskManageApi {
      * @param tasksUuidList 多个任务 UUID 的集合，用逗号 ',' 分隔的 UUID 字符串
      * @return
      */
-    @RequestMapping(value = "run-status", method = RequestMethod.GET)
+    @RequestMapping(value = "/run-status", method = RequestMethod.GET)
     public @ResponseBody
     Object queryTaskRunStatus(@RequestParam(value = "project_uuid", required = false) String projectUuid,
                               @RequestParam(value = "uuid", required = false) String taskUuid,
@@ -228,7 +228,7 @@ public class TaskManageApi {
      * @param projectUuid
      * @return
      */
-    @RequestMapping(value = "stop-scheduler", method = RequestMethod.GET)
+    @RequestMapping(value = "/stop-scheduler", method = RequestMethod.GET)
     public @ResponseBody
     Object stopTaskScheduler(@RequestParam("task_uuid") String taskUuid,
                              @RequestParam(value = "project_uuid", required = false) String projectUuid) {
@@ -236,6 +236,19 @@ public class TaskManageApi {
         if (projectUuid == null || projectUuid.isEmpty())
             projectUuid = Const.DEFAULT_PROJ_UUID;
         return taskExecuteScheduler.stopTask(taskUuid, projectUuid);
+    }
+
+    /**
+     * 3.14 任务名称是否唯一
+     * @param taskName
+     * @param taskUuid  参数为空，表示全局检查名称唯一性；否则检查除自己外，其他任务是否使用该名称
+     * @return
+     */
+    @RequestMapping(value = "/check-unique-name", method = RequestMethod.GET)
+    public @ResponseBody
+    Object isTaskNameExist(@RequestParam("task_name") String taskName,
+                           @RequestParam(value = "task_uuid", required = false) String taskUuid) {
+        return taskManageService.checkTaskNameExist(taskName, taskUuid);
     }
 
 }
