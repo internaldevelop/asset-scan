@@ -125,7 +125,7 @@ public class TaskManageApi {
      * @param bindingResult 表单信息绑定结果
      * @return payload: 任务名和任务的 UUID
      */
-    @RequestMapping(value = "/add-task-details", method = RequestMethod.POST)
+    @RequestMapping(value = "add-task-details", method = RequestMethod.POST)
     public @ResponseBody
     Object addTaskDetails(@ModelAttribute TaskInfosDto taskInfosDto, BindingResult bindingResult) {
         return taskManageService.addTaskDetails(taskInfosDto);
@@ -137,7 +137,7 @@ public class TaskManageApi {
      * @param bindingResult 表单信息绑定结果
      * @return payload: 任务名和任务的 UUID
      */
-    @RequestMapping(value = "/update-task-details", method = RequestMethod.POST)
+    @RequestMapping(value = "update-task-details", method = RequestMethod.POST)
     public @ResponseBody
     Object updateTaskDetails(@ModelAttribute TaskInfosDto taskInfosDto, BindingResult bindingResult) {
         return taskManageService.updateTaskDetails(taskInfosDto);
@@ -151,7 +151,7 @@ public class TaskManageApi {
      * @param tasksUuidList 多个任务 UUID 的集合，用逗号 ',' 分隔的 UUID 字符串
      * @return
      */
-    @RequestMapping(value = "/run-status", method = RequestMethod.GET)
+    @RequestMapping(value = "run-status", method = RequestMethod.GET)
     public @ResponseBody
     Object queryTaskRunStatus(@RequestParam(value = "project_uuid", required = false) String projectUuid,
                               @RequestParam(value = "uuid", required = false) String taskUuid,
@@ -228,7 +228,7 @@ public class TaskManageApi {
      * @param projectUuid
      * @return
      */
-    @RequestMapping(value = "/stop-scheduler", method = RequestMethod.GET)
+    @RequestMapping(value = "stop-scheduler", method = RequestMethod.GET)
     public @ResponseBody
     Object stopTaskScheduler(@RequestParam("task_uuid") String taskUuid,
                              @RequestParam(value = "project_uuid", required = false) String projectUuid) {
@@ -238,6 +238,16 @@ public class TaskManageApi {
         return taskExecuteScheduler.stopTask(taskUuid, projectUuid);
     }
 
+    /**
+     * 3.14 根据指定的 UUID 获取一条任务详细参数
+     * @param taskUuid 任务的 UUID
+     * @return payload: 任务详细参数
+     */
+    @RequestMapping(value = "/get-taskinfo", method = RequestMethod.GET)
+    public @ResponseBody
+    Object getTaskInfo(@RequestParam("uuid") String taskUuid) {
+        return taskManageService.getTaskInfoByUuid(taskUuid);
+    }
     /**
      * 3.14 任务名称是否唯一
      * @param taskName
