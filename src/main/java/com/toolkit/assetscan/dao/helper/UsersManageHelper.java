@@ -20,11 +20,6 @@ public class UsersManageHelper {
         return ( (count > 0) ? true : false);
     }
 
-    public boolean isUserNameExist(String userName) {
-        int count = usersMapper.getExistUserNameCount(userName);
-        return ( (count > 0) ? true : false);
-    }
-
     public boolean addUser(UserPo userPo) {
         int rv = usersMapper.addUser(userPo);
         return (rv > 0);

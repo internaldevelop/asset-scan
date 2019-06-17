@@ -152,4 +152,19 @@ public class PolicyManageApi {
     Object getAllPoliciesBrief() {
         return policyManageService.getAllPolicies(true);
     }
+
+    /**
+     * 4.13 策略名称是否唯一
+     * @param policyName
+     * @param policyUuid  没有提供此参数，或参数为空，表示全局检查名称唯一性；否则检查除自己外，
+     *                  其他策略是否使用该名称
+     * @return
+     */
+    @RequestMapping(value = "/check-unique-name", method = RequestMethod.GET)
+    @ResponseBody
+    public Object isPolicyNameExist(@RequestParam("policy_name") String policyName,
+                                   @RequestParam(value = "policy_uuid", required = false) String policyUuid) {
+        return policyManageService.checkPolicyNameExist(policyName, policyUuid);
+    }
+
 }

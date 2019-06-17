@@ -73,8 +73,10 @@ public class UserManageService {
         // 检查新建账户名是否已存在
         if (usersManageHelper.isAccountExist(userPo.getAccount()))
             return responseHelper.error(ErrorCodeEnum.ERROR_USER_REGISTERED);
-//        if (usersManageHelper.isUserNameExist(userPo.getName()))
-//            return responseHelper.error(ErrorCodeEnum.ERROR_USERNAME_USED);
+
+        // 检查用户名是否已存在
+        if (usersMapper.getExistAccountCount(userPo.getName()) > 0)
+            return responseHelper.error(ErrorCodeEnum.ERROR_USERNAME_USED);
 
         // 设置新用户的创建时间和失效时间
         java.sql.Timestamp currentTime = MyUtils.getCurrentSystemTimestamp();
@@ -138,6 +140,10 @@ public class UserManageService {
     public ResponseBean updateUserByUuid(UserPo userPo) {
         if (!iCheckParams(userPo))
             return responseBean;
+
+        // 检查用户名是否已被其他账户占用
+        if (usersMapper.checkNameInOtherUsers(userPo.getName(), userPo.getUuid()) > 0)
+            return responseHelper.error(ErrorCodeEnum.ERROR_USERNAME_USED);
 
         if ( !usersManageHelper.updateUserByUuid(userPo) )
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
@@ -264,6 +270,20 @@ public class UserManageService {
         JSONObject jsonData = new JSONObject();
         jsonData.put("user_uuid", userUuid);
         jsonData.put("user_group", userGroup);
+        return responseHelper.success(jsonData);
+    }
+
+    public ResponseBean checkUserNameExist(String userName, String userUuid) {
+        int count;
+        if ((userUuid == null) || (userUuid.isEmpty()))
+            count = usersMapper.getUserNameCount(userName);
+        else
+            count = usersMapper.checkNameInOtherUsers(userName, userUuid);
+
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("user_name", userName);
+        jsonData.put("count", count);
+        jsonData.put("exist", (count > 0) ? 1 : 0);
         return responseHelper.success(jsonData);
     }
 }

@@ -53,6 +53,10 @@ public class PolicyManageService {
         if (!iCheckParams(policyPo))
             return responseBean;
 
+        // 策略名是否已被占用
+        if (policiesMapper.getPolicyNameCount(policyPo.getName()) > 0)
+            return responseHelper.error(ErrorCodeEnum.ERROR_POLICY_NAME_EXIST);
+
         // 为新策略随机分配一个UUID
         policyPo.setUuid(MyUtils.generateUuid());
 
@@ -125,6 +129,10 @@ public class PolicyManageService {
     }
 
     public ResponseBean updatePolicy(PolicyPo policyPo) {
+        // 检查策略名是否已被其他策略使用
+        if (policiesMapper.checkNameInOtherPolicies(policyPo.getName(), policyPo.getUuid()) > 0)
+            return responseHelper.error(ErrorCodeEnum.ERROR_POLICY_NAME_EXIST);
+
         policyPo.setStatus(GeneralStatusEnum.VALID.getStatus());
         // 目前OS类型和基线保持一致
         policyPo.setBaseline(policyPo.getOs_type());
@@ -171,6 +179,20 @@ public class PolicyManageService {
 //        List<PolicyPo> policiesList = policiesMapper.getPoliciesByGroup(policyGroupUuid);
 //        return responseHelper.success(policiesList);
         return null;
+    }
+
+    public ResponseBean checkPolicyNameExist(String policyName, String policyUuid) {
+        int count;
+        if ((policyUuid == null) || (policyUuid.isEmpty()))
+            count = policiesMapper.getPolicyNameCount(policyName);
+        else
+            count = policiesMapper.checkNameInOtherPolicies(policyName, policyUuid);
+
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("policy_name", policyName);
+        jsonData.put("count", count);
+        jsonData.put("exist", (count > 0) ? 1 : 0);
+        return responseHelper.success(jsonData);
     }
 
 

@@ -67,7 +67,7 @@ public class TaskManageService {
 
     public ResponseBean getAllTasks() {
         List<TaskPo> taskPoList = tasksMapper.allTasks();
-        if ( (taskPoList == null) || (taskPoList.size() == 0))
+        if ((taskPoList == null) || (taskPoList.size() == 0))
             responseHelper.error(ErrorCodeEnum.ERROR_TASK_NOT_FOUND);
 
         return responseHelper.success(taskPoList);
@@ -75,7 +75,7 @@ public class TaskManageService {
 
     public ResponseBean getAllTaskDetails() {
         List<TaskInfosDto> taskInfosList = tasksMapper.getAllTaskDto();
-        if ( (taskInfosList == null) || (taskInfosList.size() == 0))
+        if ((taskInfosList == null) || (taskInfosList.size() == 0))
             responseHelper.error(ErrorCodeEnum.ERROR_TASK_INFO_NOT_FOUND);
 
         return responseHelper.success(taskInfosList);
@@ -101,7 +101,7 @@ public class TaskManageService {
         taskPo.setStatus(TaskStatusEnum.TASK_ACTIVE.getStatus());
 
         // 添加新用户的记录
-        if ( !tasksManageHelper.addTask(taskPo) )
+        if (!tasksManageHelper.addTask(taskPo))
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
 
         return successReturnTaskInfo(taskPo.getName(), taskPo.getUuid());
@@ -141,7 +141,7 @@ public class TaskManageService {
             return responseBean;
 
         // 检查任务重名
-        if (tasksMapper.getTaskNameCount(taskPo.getName()) > 0)
+        if (tasksMapper.checkNameInOtherTasks(taskPo.getName(), taskPo.getUuid()) > 0)
             return responseHelper.error(ErrorCodeEnum.ERROR_TASK_NAME_EXIST);
 
         // 设置任务的更新时间
@@ -171,13 +171,21 @@ public class TaskManageService {
 
     /**
      * 增加一条新资产，并返回该资产的UUID
+     *
      * @param taskInfosDto 任务 dto 对象，从中提取资产信息
      * @return boolean true: 成功，并设置 taskInfosDto.asset_uuid
-     *                  false: 失败
+     * false: 失败
      */
-    private boolean iAddAsset(TaskInfosDto taskInfosDto) {
-        if (assetsMapper.getAssetNameCount(taskInfosDto.getAsset_name()) > 0)
-            return false;
+    private ErrorCodeEnum iAddOrUpdateAsset(TaskInfosDto taskInfosDto) {
+        String assetUuid = taskInfosDto.getAsset_uuid();
+        // 检查资产名称是否可用
+        if (assetUuid == null || assetUuid.length() == 0) {
+            if (assetsMapper.getAssetNameCount(taskInfosDto.getAsset_name()) > 0)
+                return ErrorCodeEnum.ERROR_ASSET_NAME_EXIST;
+        } else {
+            if (assetsMapper.checkNameInOtherAssets(taskInfosDto.getAsset_name(), assetUuid) > 0)
+                return ErrorCodeEnum.ERROR_ASSET_NAME_EXIST;
+        }
 
         // 创建资产PO对象，并设置其属性
         AssetPo assetPo = new AssetPo();
@@ -188,18 +196,28 @@ public class TaskManageService {
         assetPo.setOs_ver(taskInfosDto.getAsset_os_ver());
         assetPo.setUser(taskInfosDto.getAsset_login_user());
         assetPo.setPassword(taskInfosDto.getAsset_login_pwd());
-        // 分配资产UUID
-        String asset_uuid = MyUtils.generateUuid();
-        assetPo.setUuid(asset_uuid);
 
-        // 添加新资产的记录
-        if (assetsMapper.addAsset(assetPo) <= 0) {
-            return false;
+        if (assetUuid == null || assetUuid.length() == 0) {
+            // 新资产，分配资产UUID
+            assetUuid = MyUtils.generateUuid();
+            assetPo.setUuid(assetUuid);
+            // 添加新资产的记录
+            if (assetsMapper.addAsset(assetPo) <= 0) {
+                return ErrorCodeEnum.ERROR_FAILED_ADD_ASSET;
+            } else {
+                taskInfosDto.setAsset_uuid(assetUuid);
+            }
         } else {
-            taskInfosDto.setAsset_uuid(asset_uuid);
-            return true;
+            // 已有资产，更新资产信息
+            assetPo.setUuid(assetUuid);
+            if (assetsMapper.updateAsset(assetPo) <= 0) {
+                return ErrorCodeEnum.ERROR_FAILED_UPDATE_ASSET;
+            }
         }
+
+        return ErrorCodeEnum.ERROR_OK;
     }
+
 
     public ResponseBean addTaskDetails(TaskInfosDto taskInfosDto) {
         // 检查DTO信息是否完备
@@ -207,15 +225,13 @@ public class TaskManageService {
             return responseHelper.error(ErrorCodeEnum.ERROR_NEED_PARAMETER);
         }
 
-        // asset_uuid 为空时，需要新建资产记录
-        String assetUuid = taskInfosDto.getAsset_uuid();
-        if (assetUuid == null || assetUuid.length() == 0) {
-            if (!iAddAsset(taskInfosDto))
-                return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
-        }
+        // 新建或更新资产记录
+        ErrorCodeEnum errorCode = iAddOrUpdateAsset(taskInfosDto);
+        if (errorCode != ErrorCodeEnum.ERROR_OK)
+            return responseHelper.error(errorCode);
 
         // 新建任务的记录
-        return addTask((TaskPo)taskInfosDto);
+        return addTask((TaskPo) taskInfosDto);
     }
 
     public ResponseBean updateTaskDetails(TaskInfosDto taskInfosDto) {
@@ -224,12 +240,10 @@ public class TaskManageService {
             return responseHelper.error(ErrorCodeEnum.ERROR_NEED_PARAMETER);
         }
 
-        // asset_uuid 为空时，需要新建资产记录
-        String assetUuid = taskInfosDto.getAsset_uuid();
-        if (assetUuid == null || assetUuid.length() == 0) {
-            if (!iAddAsset(taskInfosDto))
-                return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
-        }
+        // 新建或更新资产记录
+        ErrorCodeEnum errorCode = iAddOrUpdateAsset(taskInfosDto);
+        if (errorCode != ErrorCodeEnum.ERROR_OK)
+            return responseHelper.error(errorCode);
 
         // 更新任务记录
         return updateTask((TaskPo) taskInfosDto);
@@ -274,7 +288,7 @@ public class TaskManageService {
                 String taskUuid = object.getString("uuid");
                 if (ProjectRunTimeModeEnum.MODE_NOW.getRunTimeMode() == timeMode) {
                     responseBean = executeSingleTask(projectPo.getUuid(), taskUuid,
-                            (String)httpServletRequest.getSession().getAttribute(Const.USER_UUID));
+                            (String) httpServletRequest.getSession().getAttribute(Const.USER_UUID));
                 } else {
                     int delayTime = 0;
                     if (ProjectRunTimeModeEnum.MODE_30MINS_LATER.getRunTimeMode() == timeMode) {

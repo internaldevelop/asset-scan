@@ -221,4 +221,17 @@ public interface PoliciesMapper {
             "FROM policies p  \n" +
             "WHERE p.status>=0  \n")
     List<PolicyPo> allPoliciesBrief();
+
+    /**
+     * 检查策略名称是否唯一
+     * SQL 复核：参考 AssetsMapper
+     * @param policyName
+     * @return
+     */
+    @Select("SELECT count(*) FROM policies p WHERE p.name=#{policy_name} AND p.status>=0 ")
+    int getPolicyNameCount(@Param("policy_name") String policyName);
+
+    @Select("SELECT count(*) FROM policies p WHERE p.name=#{policy_name} AND p.uuid<>#{policy_uuid} AND p.status>=0 ")
+    int checkNameInOtherPolicies(@Param("policy_name") String policyName, @Param("policy_uuid") String policyUuid);
+
 }

@@ -195,4 +195,17 @@ public class UserManageApi {
         return (byte[]) objs[1];
     }
 
+    /**
+     * 2.11 用户名称是否唯一
+     * @param userName
+     * @param userUuid  参数为空，表示全局检查名称唯一性；否则检查除自己外，其他用户是否使用该名称
+     * @return
+     */
+    @RequestMapping(value = "/check-unique-name", method = RequestMethod.GET)
+    public @ResponseBody
+    Object isUserNameExist(@RequestParam("user_name") String userName,
+                           @RequestParam(value = "user_uuid", required = false) String userUuid) {
+        return userManageService.checkUserNameExist(userName, userUuid);
+    }
+
 }
