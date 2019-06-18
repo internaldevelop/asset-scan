@@ -155,13 +155,13 @@ public class UserManageApi {
         systemLogs.logEvent(resp, "登录", "用户登录系统（账号：" + userAccount + "）");
         if (resp.getCode() == ErrorCodeEnum.ERROR_INVALID_PASSWORD.getCode()) {
             JSONObject jsonData = (JSONObject)resp.getPayload();
-            String contents = String.format("%1$s，最大密码尝试次数：%2$d，剩余次数：%3$d", resp.getError(),
-                    jsonData.getIntValue("mat"), jsonData.getIntValue("rat"));
+            String contents = String.format("账号：%4$s，%1$s，最大密码尝试次数：%2$d，剩余次数：%3$d", resp.getError(),
+                    jsonData.getIntValue("mat"), jsonData.getIntValue("rat"), userAccount);
             systemLogs.exception("登录", contents);
         } else if (resp.getCode() == ErrorCodeEnum.ERROR_USER_PASSWORD_LOCKED.getCode()) {
             JSONObject jsonData = (JSONObject)resp.getPayload();
-            String contents = String.format("%1$s，最大密码尝试次数：%2$d，剩余次数：%3$d", resp.getError(),
-                    jsonData.getIntValue("mat"), jsonData.getIntValue("rat"));
+            String contents = String.format("账号：%4$s，%1$s，最大密码尝试次数：%2$d，剩余次数：%3$d", resp.getError(),
+                    jsonData.getIntValue("mat"), jsonData.getIntValue("rat"), userAccount);
             systemLogs.exception("登录", contents);
         }
         return resp;
