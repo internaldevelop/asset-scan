@@ -69,4 +69,17 @@ public interface ProjectsMapper {
      */
     @Select("SELECT * FROM projects p WHERE p.uuid=#{uuid} AND p.status>=0 ")
     ProjectPo getProjectByUuid(@Param("uuid") String projectUuid);
+
+    /**
+     * 检查项目名称是否唯一
+     * SQL 复核：参考 AssetsMapper
+     * @param projectName
+     * @return
+     */
+    @Select("SELECT count(*) FROM projects p WHERE p.name=#{project_name} AND p.status>=0 ")
+    int getProjectNameCount(@Param("project_name") String projectName);
+
+    @Select("SELECT count(*) FROM projects p WHERE p.name=#{project_name} AND p.uuid<>#{project_uuid} AND p.status>=0 ")
+    int checkNameInOtherProjects(@Param("project_name") String projectName, @Param("project_uuid") String projectUuid);
+
 }

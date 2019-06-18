@@ -27,7 +27,7 @@ public class ProjectManageApi {
     }
 
     /**
-     * 6.1 添加一个新的项目
+     * 8.1 添加一个新的项目
      * @param projectPo 项目参数
      * @param bindingResult 绑定数据的判定结果
      * @return payload: 项目名和项目的UUID
@@ -39,7 +39,7 @@ public class ProjectManageApi {
     }
 
     /**
-     * 6.2 移除一个项目
+     * 8.2 移除一个项目
      * @param projectUuid 项目的 UUID
      * @return payload: 无
      */
@@ -50,7 +50,7 @@ public class ProjectManageApi {
     }
 
     /**
-     * 6.3 获取所有的项目
+     * 8.3 获取所有的项目
      * @return payload: 所有项目的数组 （JSON 格式）
      */
     @RequestMapping(value = "/all", method = RequestMethod.GET)
@@ -60,7 +60,7 @@ public class ProjectManageApi {
     }
 
     /**
-     * 6.4 根据指定的 UUID 获取一条项目参数
+     * 8.4 根据指定的 UUID 获取一条项目参数
      * @param projectUuid 项目的 UUID
      * @return payload: 项目参数（项目记录及外键字段的含义）
      */
@@ -71,7 +71,7 @@ public class ProjectManageApi {
     }
 
     /**
-     * 6.5 更新一条项目
+     * 8.5 更新一条项目
      * @param projectPo 项目参数
      * @return payload: 项目名和项目的 UUID
      */
@@ -80,4 +80,19 @@ public class ProjectManageApi {
     Object updateProject(@ModelAttribute ProjectPo projectPo) {
         return projectManageService.updateProject(projectPo);
     }
+
+    /**
+     * 8.6 检查项目名称是否唯一
+     * @param projectName
+     * @param projectUuid
+     *          如果没有提供此参数，或参数为空，表示全局检查名称唯一性；否则检查除自己外，其他资产是否使用该名称
+     * @return
+     */
+    @RequestMapping(value = "/check-unique-name", method = RequestMethod.GET)
+    @ResponseBody
+    public Object isProjectNameExist(@RequestParam("project_name") String projectName,
+                                     @RequestParam(value = "project_uuid", required = false) String projectUuid) {
+        return projectManageService.checkProjectNameExist(projectName, projectUuid);
+    }
+
 }

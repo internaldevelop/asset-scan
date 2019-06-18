@@ -32,9 +32,9 @@ public class ProjectManageService {
         return true;
     }
 
-    private ResponseBean successReturnInfo(String policyName, String code, String policyUuid) {
+    private ResponseBean successReturnInfo(String projectName, String code, String policyUuid) {
         JSONObject jsonData = new JSONObject();
-        jsonData.put("name", policyName);
+        jsonData.put("name", projectName);
         jsonData.put("code", code);
         jsonData.put("uuid", policyUuid);
         return responseHelper.success(jsonData);
@@ -44,6 +44,10 @@ public class ProjectManageService {
         // 检查参数
         if (!iCheckParams(projectPo))
             return responseBean;
+
+        // 检查项目名称是否已被占用
+        if (projectsMapper.getProjectNameCount(projectPo.getName()) > 0)
+            return responseHelper.error(ErrorCodeEnum.ERROR_PROJECT_NAME_EXIST);
 
         // 为新任务随机分配一个UUID
         projectPo.setUuid(MyUtils.generateUuid());
@@ -93,8 +97,27 @@ public class ProjectManageService {
     }
 
     public ResponseBean updateProject(ProjectPo projectPo) {
+        // 检查项目名称是否已被其他项目占用
+        if (projectsMapper.checkNameInOtherProjects(projectPo.getName(), projectPo.getUuid()) > 0)
+            return responseHelper.error(ErrorCodeEnum.ERROR_PROJECT_NAME_EXIST);
+
         if (!projectsManageHelper.updateProject(projectPo))
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
         return successReturnInfo( projectPo.getName(), projectPo.getCode(), projectPo.getUuid() );
     }
+
+    public ResponseBean checkProjectNameExist(String projectName, String projectUuid) {
+        int count;
+        if ((projectUuid == null) || (projectUuid.isEmpty()))
+            count = projectsMapper.getProjectNameCount(projectName);
+        else
+            count = projectsMapper.checkNameInOtherProjects(projectName, projectUuid);
+
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("project_name", projectName);
+        jsonData.put("count", count);
+        jsonData.put("exist", (count > 0) ? 1 : 0);
+        return responseHelper.success(jsonData);
+    }
+
 }

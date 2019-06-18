@@ -71,6 +71,7 @@ public enum ErrorCodeEnum {
     ERROR_FAILED_ADD_ASSET(2047, "添加资产失败"),
     ERROR_FAILED_UPDATE_ASSET(2047, "更新资产信息失败"),
     ERROR_POLICY_NAME_EXIST(2048, "策略名已存在"),
+    ERROR_PROJECT_NAME_EXIST(2049, "项目名称已存在"),
     ;
 
     private Integer code;
