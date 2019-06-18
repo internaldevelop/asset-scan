@@ -1,9 +1,11 @@
 package com.toolkit.assetscan.controller;
 
+import com.toolkit.assetscan.Helper.SystemLogsHelper;
 import com.toolkit.assetscan.bean.dto.TaskInfosDto;
 import com.toolkit.assetscan.bean.dto.TaskRunStatusDto;
 import com.toolkit.assetscan.bean.po.ProjectPo;
 import com.toolkit.assetscan.bean.po.TaskPo;
+import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.params.Const;
 import com.toolkit.assetscan.global.response.ResponseHelper;
@@ -34,6 +36,8 @@ public class TaskManageApi {
     private TaskRunStatusService taskRunStatusService;
     @Autowired
     private HttpServletRequest httpServletRequest;
+    @Autowired
+    private SystemLogsHelper systemLogs;
 
 
     @Autowired
@@ -51,7 +55,10 @@ public class TaskManageApi {
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public @ResponseBody
     Object addTask(@ModelAttribute TaskPo task, BindingResult bindingResult) {
-        return taskManageService.addTask(task);
+        ResponseBean response = taskManageService.addTask(task);
+        // 系统日志
+        systemLogs.logEvent(response, "新增任务", "添加新任务");
+        return response;
     }
 
     /**
@@ -62,7 +69,10 @@ public class TaskManageApi {
     @RequestMapping(value = "/remove", method = RequestMethod.POST)
     public @ResponseBody
     Object removeTask(@RequestParam("uuid") String taskUuid) {
-        return taskManageService.deleteTask(taskUuid);
+        ResponseBean response = taskManageService.deleteTask(taskUuid);
+        // 系统日志
+        systemLogs.logEvent(response, "删除任务", "移除任务数据（ID：" + taskUuid + "）");
+        return response;
     }
 
     /**
@@ -94,7 +104,11 @@ public class TaskManageApi {
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public @ResponseBody
     Object  updateTask(@ModelAttribute TaskPo task) {
-        return taskManageService.updateTask(task);
+        ResponseBean response = taskManageService.updateTask(task);
+        // 系统日志
+        systemLogs.logEvent(response, "更新任务", "更新任务数据（ID：" + task.getUuid() + "）");
+
+        return response;
     }
 
     /**
@@ -105,8 +119,11 @@ public class TaskManageApi {
     @RequestMapping(value = "/execute", method = RequestMethod.POST)
     public @ResponseBody
     Object  executeTask(@RequestParam("uuid") String taskUuid) {
-        return taskManageService.executeSingleTask(Const.DEFAULT_PROJ_UUID, taskUuid,
+        ResponseBean response = taskManageService.executeSingleTask(Const.DEFAULT_PROJ_UUID, taskUuid,
                 (String)httpServletRequest.getSession().getAttribute(Const.USER_UUID));
+        // 系统日志
+        systemLogs.logEvent(response, "执行任务", "提交任务执行（ID：" + taskUuid + "）");
+        return response;
     }
 
     /**
@@ -128,7 +145,10 @@ public class TaskManageApi {
     @RequestMapping(value = "add-task-details", method = RequestMethod.POST)
     public @ResponseBody
     Object addTaskDetails(@ModelAttribute TaskInfosDto taskInfosDto, BindingResult bindingResult) {
-        return taskManageService.addTaskDetails(taskInfosDto);
+        ResponseBean response = taskManageService.addTaskDetails(taskInfosDto);
+        // 系统日志
+        systemLogs.logEvent(response, "新增任务", "添加新任务");
+        return response;
     }
 
     /**
@@ -140,7 +160,10 @@ public class TaskManageApi {
     @RequestMapping(value = "update-task-details", method = RequestMethod.POST)
     public @ResponseBody
     Object updateTaskDetails(@ModelAttribute TaskInfosDto taskInfosDto, BindingResult bindingResult) {
-        return taskManageService.updateTaskDetails(taskInfosDto);
+        ResponseBean response = taskManageService.updateTaskDetails(taskInfosDto);
+        // 系统日志
+        systemLogs.logEvent(response, "更新任务", "更新任务数据（ID：" + taskInfosDto.getUuid() + "）");
+        return response;
     }
 
     /**
@@ -196,7 +219,11 @@ public class TaskManageApi {
     @RequestMapping(value = "/execute-project-task", method = RequestMethod.POST)
     public @ResponseBody
     Object  executeTask(@ModelAttribute ProjectPo projectPo) {
-        return taskManageService.runProjectTask(projectPo);
+        ResponseBean response = taskManageService.runProjectTask(projectPo);
+        // 系统日志
+        systemLogs.logEvent(response, "执行任务", "提交项目任务执行（项目ID：" + projectPo.getUuid() + "）");
+
+        return response;
     }
 
     @Autowired

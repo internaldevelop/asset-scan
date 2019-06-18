@@ -1,11 +1,14 @@
 package com.toolkit.assetscan.controller;
 
+import com.toolkit.assetscan.Helper.SystemLogsHelper;
 import com.toolkit.assetscan.bean.po.PolicyPo;
+import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.service.PolicyGroupService;
 import com.toolkit.assetscan.service.PolicyManageService;
 import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +20,8 @@ public class PolicyManageApi {
     private Logger logger = LoggerFactory.getLogger(PolicyManageApi.class);
     private final PolicyManageService policyManageService;
     private final PolicyGroupService policyGroupService;
+    @Autowired
+    private SystemLogsHelper systemLogs;
 
     public PolicyManageApi(PolicyManageService policyManageService, PolicyGroupService policyGroupService) {
         this.policyManageService = policyManageService;
@@ -32,7 +37,11 @@ public class PolicyManageApi {
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public @ResponseBody
     Object addPolicy(@ModelAttribute PolicyPo policy, BindingResult bindingResult) {
-        return policyManageService.addPolicy(policy);
+        ResponseBean response = policyManageService.addPolicy(policy);
+        // 系统日志
+        systemLogs.logEvent(response, "新增策略", "添加新策略");
+
+        return response;
     }
 
     /**
@@ -43,7 +52,10 @@ public class PolicyManageApi {
     @RequestMapping(value = "/remove", method = RequestMethod.POST)
     public @ResponseBody
     Object removePolicy(@RequestParam("uuid") String policyUuid) {
-        return policyManageService.removePolicy(policyUuid);
+        ResponseBean response = policyManageService.removePolicy(policyUuid);
+        // 系统日志
+        systemLogs.logEvent(response, "删除策略", "删除策略（ID：" + policyUuid + "）");
+        return response;
     }
 
     /**
@@ -75,7 +87,10 @@ public class PolicyManageApi {
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public @ResponseBody
     Object  updatePolicy(@ModelAttribute PolicyPo policy) {
-        return policyManageService.updatePolicy(policy);
+        ResponseBean response = policyManageService.updatePolicy(policy);
+        // 系统日志
+        systemLogs.logEvent(response, "更新策略", "更新策略（ID：" + policy.getUuid() + "）");
+        return response;
     }
 
     /**

@@ -1,5 +1,7 @@
 package com.toolkit.assetscan.controller;
 
+import com.alibaba.fastjson.JSONObject;
+import com.toolkit.assetscan.Helper.SystemLogsHelper;
 import com.toolkit.assetscan.bean.po.UserPo;
 import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.common.VerifyUtil;
@@ -28,6 +30,8 @@ public class UserManageApi {
     private final ResponseHelper responseHelper;
     @Autowired
     private IRedisClient redisClient;
+    @Autowired
+    private SystemLogsHelper systemLogs;
 
     @Autowired
     public UserManageApi(UserManageService userManageService, ResponseHelper responseHelper) {
@@ -44,7 +48,11 @@ public class UserManageApi {
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public @ResponseBody
     Object addUser(@ModelAttribute UserPo user, BindingResult bindingResult) {
-        return userManageService.addUser(user);
+        ResponseBean response = userManageService.addUser(user);
+        // 系统日志
+        systemLogs.logEvent(response, "用户注册", "新增用户（账号：" + user.getAccount() + "）");
+
+        return response;
     }
 
     /**
@@ -65,7 +73,6 @@ public class UserManageApi {
     @RequestMapping(value = "/user-by-account", method = RequestMethod.GET)
     public @ResponseBody
     Object getUserUuidByAccount(@RequestParam("account") String account) {
-        logger.info("---> getUserUuidByAccount: " + account);
         return userManageService.getUserUuidByAccount( account );
     }
 
@@ -77,7 +84,10 @@ public class UserManageApi {
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public @ResponseBody
     Object updateUser(@ModelAttribute UserPo userPo) {
-        return userManageService. updateUserByUuid(userPo);
+        ResponseBean response = userManageService.updateUserByUuid(userPo);
+        // 系统日志
+        systemLogs.logEvent(response, "更新用户", "更新用户数据（账号：" + userPo.getAccount() + "）");
+        return response;
     }
 
     /**
@@ -94,7 +104,12 @@ public class UserManageApi {
             @RequestParam("old_pwd") String oldPwd,
             @RequestParam("new_pwd") String newPwd
             ) {
-        return userManageService.changePassword(userUuid, oldPwd, newPwd);
+        ResponseBean response = userManageService.changePassword(userUuid, oldPwd, newPwd);
+
+        // 系统日志
+        systemLogs.logEvent(response, "修改密码", "用户修改密码");
+
+        return response;
     }
 
     /**
@@ -111,31 +126,45 @@ public class UserManageApi {
             @RequestParam(value = "account", required = false) String account,
             @RequestParam("password") String password,
             HttpServletRequest request) {
+        ResponseBean resp;
+        String userAccount = "";
         if ( StringUtils.isValid(userUuid) ) {
-            ResponseBean resp = userManageService.verifyPasswordByUuid(userUuid, password);
-            if (resp.getCode() != ErrorCodeEnum.ERROR_OK.getCode()) {
-                request.getSession().setAttribute(Const.ACCOUNT, "");
-                request.getSession().setAttribute(Const.USER_UUID, "");
-            } else {
+            resp = userManageService.verifyPasswordByUuid(userUuid, password);
+            if (resp.getCode() == ErrorCodeEnum.ERROR_OK.getCode()) {
                 ResponseBean userResp = userManageService.getUserByUuid(userUuid);
-                request.getSession().setAttribute(Const.ACCOUNT, ((UserPo)userResp.getPayload()).getAccount());
-                request.getSession().setAttribute(Const.USER_UUID, userUuid);
+                userAccount = ((UserPo)userResp.getPayload()).getAccount();
             }
-            return resp;
         } else if ( StringUtils.isValid(account) ) {
-            ResponseBean resp = userManageService.verifyPasswordByAccount(account, password);
-            if (resp.getCode() != ErrorCodeEnum.ERROR_OK.getCode()) {
-                request.getSession().setAttribute(Const.ACCOUNT, "");
-                request.getSession().setAttribute(Const.USER_UUID, "");
-            } else {
-                String uuid = userManageService.accountToUuid(account);
-                request.getSession().setAttribute(Const.ACCOUNT, account);
-                request.getSession().setAttribute(Const.USER_UUID, uuid);
-            }
-            return resp;
+            resp = userManageService.verifyPasswordByAccount(account, password);
+            userAccount = account;
         } else {
             return responseHelper.error(ErrorCodeEnum.ERROR_NEED_PARAMETER);
         }
+
+        // 在 Session 中保存用户UUID和账号
+        if (resp.getCode() != ErrorCodeEnum.ERROR_OK.getCode()) {
+            request.getSession().setAttribute(Const.ACCOUNT, "");
+            request.getSession().setAttribute(Const.USER_UUID, "");
+        } else {
+            String uuid = userManageService.accountToUuid(userAccount);
+            request.getSession().setAttribute(Const.ACCOUNT, userAccount);
+            request.getSession().setAttribute(Const.USER_UUID, uuid);
+        }
+
+        // 系统日志
+        systemLogs.logEvent(resp, "登录", "用户登录系统（账号：" + userAccount + "）");
+        if (resp.getCode() == ErrorCodeEnum.ERROR_INVALID_PASSWORD.getCode()) {
+            JSONObject jsonData = (JSONObject)resp.getPayload();
+            String contents = String.format("%1$s，最大密码尝试次数：%2$d，剩余次数：%3$d", resp.getError(),
+                    jsonData.getIntValue("mat"), jsonData.getIntValue("rat"));
+            systemLogs.exception("登录", contents);
+        } else if (resp.getCode() == ErrorCodeEnum.ERROR_USER_PASSWORD_LOCKED.getCode()) {
+            JSONObject jsonData = (JSONObject)resp.getPayload();
+            String contents = String.format("%1$s，最大密码尝试次数：%2$d，剩余次数：%3$d", resp.getError(),
+                    jsonData.getIntValue("mat"), jsonData.getIntValue("rat"));
+            systemLogs.exception("登录", contents);
+        }
+        return resp;
     }
 
     /**
@@ -160,12 +189,17 @@ public class UserManageApi {
     Object activateUser(
             @RequestParam(value = "uuid", required = false) String userUuid,
             @RequestParam(value = "account", required = false) String account) {
+        ResponseBean response;
         if ( StringUtils.isValid(userUuid) )
-            return userManageService.activateUserByUuid( userUuid );
+            response = userManageService.activateUserByUuid( userUuid );
         else if ( StringUtils.isValid(account) )
-            return userManageService.activateUserByAccount( account );
+            response = userManageService.activateUserByAccount( account );
         else
             return responseHelper.error(ErrorCodeEnum.ERROR_NEED_PARAMETER);
+
+        // 系统日志
+        systemLogs.logEvent(response, "账号激活", "激活账号：" + account + "。");
+        return response;
     }
 
     /**
@@ -179,7 +213,12 @@ public class UserManageApi {
     Object changeUserGroup(
             @RequestParam(value = "uuid") String userUuid,
             @RequestParam(value = "user_group") int userGroup) {
-        return userManageService.changeUserGroup( userUuid, userGroup );
+        ResponseBean response = userManageService.changeUserGroup( userUuid, userGroup );
+
+        // 系统日志
+        systemLogs.logEvent(response, "用户组", "切换用户组（用户ID：" + userUuid + "）");
+
+        return response;
     }
 
     /**
@@ -206,6 +245,19 @@ public class UserManageApi {
     Object isUserNameExist(@RequestParam("user_name") String userName,
                            @RequestParam(value = "user_uuid", required = false) String userUuid) {
         return userManageService.checkUserNameExist(userName, userUuid);
+    }
+
+    @RequestMapping(value = "/logout", method = RequestMethod.GET)
+    public @ResponseBody
+    Object logout(@RequestParam(value = "user_uuid") String userUuid,
+                  HttpServletRequest request) {
+        // 系统日志
+        systemLogs.success("登出", "用户已退出系统");
+
+        request.getSession().setAttribute(Const.ACCOUNT, "");
+        request.getSession().setAttribute(Const.USER_UUID, "");
+
+        return responseHelper.success();
     }
 
 }

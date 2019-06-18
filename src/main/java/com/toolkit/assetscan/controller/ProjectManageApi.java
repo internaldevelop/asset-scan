@@ -1,6 +1,8 @@
 package com.toolkit.assetscan.controller;
 
+import com.toolkit.assetscan.Helper.SystemLogsHelper;
 import com.toolkit.assetscan.bean.po.ProjectPo;
+import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.service.ProjectManageService;
 import io.swagger.annotations.Api;
@@ -13,12 +15,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @CrossOrigin(origins = "*",maxAge = 3600)
 @RequestMapping(value = "/api/projects")
-@Api(value = "06. 项目管理接口", tags = "06-Projects Manager API")
+@Api(value = "08. 项目管理接口", tags = "08-Projects Manager API")
 public class ProjectManageApi {
     private Logger logger = LoggerFactory.getLogger(ProjectManageApi.class);
 
     private final ProjectManageService projectManageService;
     private final ResponseHelper responseHelper;
+    @Autowired
+    private SystemLogsHelper systemLogs;
 
     @Autowired
     public ProjectManageApi(ProjectManageService projectManageService, ResponseHelper responseHelper) {
@@ -35,7 +39,10 @@ public class ProjectManageApi {
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public @ResponseBody
     Object addProject(@ModelAttribute ProjectPo projectPo, BindingResult bindingResult) {
-        return projectManageService.addProject(projectPo);
+        ResponseBean response = projectManageService.addProject(projectPo);
+        // 系统日志
+        systemLogs.logEvent(response, "新增项目", "添加新项目");
+        return response;
     }
 
     /**
@@ -46,7 +53,10 @@ public class ProjectManageApi {
     @RequestMapping(value = "/remove", method = RequestMethod.POST)
     public @ResponseBody
     Object removeProject(@RequestParam("uuid") String projectUuid) {
-        return projectManageService.removeProject(projectUuid);
+        ResponseBean response = projectManageService.removeProject(projectUuid);
+        // 系统日志
+        systemLogs.logEvent(response, "移除项目", "删除项目（ID：" + projectUuid + "）");
+        return response;
     }
 
     /**
@@ -78,7 +88,10 @@ public class ProjectManageApi {
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public @ResponseBody
     Object updateProject(@ModelAttribute ProjectPo projectPo) {
-        return projectManageService.updateProject(projectPo);
+        ResponseBean response = projectManageService.updateProject(projectPo);
+        // 系统日志
+        systemLogs.logEvent(response, "更新项目", "更新项目（ID：" + projectPo.getUuid() + "）数据");
+        return response;
     }
 
     /**

@@ -24,12 +24,12 @@ public class ControllerInterceptor implements HandlerInterceptor {
             String methodName = ((HandlerMethod) handler).getMethod().getName();
             // 会话id和用户名
             String sessionId = request.getSession().getId();
-            String userName = (String)request.getSession().getAttribute(Const.ACCOUNT);
+            String userAccount = (String)request.getSession().getAttribute(Const.ACCOUNT);
             //
 //            logger.info("---PreHandle---:" + "\tClass: " + className + "\tMethod: " + methodName +
 //                    "\tsessionId: " + sessionId + "\tuserName: " + userName);
             logger.info("---PreHandle---:" + "\tMethod: " + methodName +
-                    "\tsessionId: " + sessionId + "\tuserName: " + userName);
+                    "\tsessionId: " + sessionId + "\tuserAccount: " + userAccount);
 
             String exceptionName = ((HandlerMethod) handler).getMethod().getExceptionTypes().getClass().getName();
             logger.info(exceptionName);

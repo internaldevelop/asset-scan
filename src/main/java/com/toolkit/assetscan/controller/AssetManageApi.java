@@ -1,7 +1,9 @@
 package com.toolkit.assetscan.controller;
 
+import com.toolkit.assetscan.Helper.SystemLogsHelper;
 import com.toolkit.assetscan.bean.po.AssetPo;
 import com.toolkit.assetscan.dao.mybatis.AssetsMapper;
+import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.service.AssetManageService;
 import io.swagger.annotations.Api;
@@ -20,6 +22,9 @@ public class AssetManageApi {
     private final ResponseHelper mResponseHelper;
     @Autowired
     AssetsMapper assetsMapper;
+    @Autowired
+    private SystemLogsHelper systemLogs;
+
 
     @Autowired
     public AssetManageApi(AssetManageService assetManageService, ResponseHelper responseHelper) {
@@ -35,7 +40,10 @@ public class AssetManageApi {
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     @ResponseBody
     public Object addUser(@ModelAttribute AssetPo assetPo) {
-        return mAssetManageService.addAsset(assetPo);
+        ResponseBean response = mAssetManageService.addAsset(assetPo);
+        // 系统日志
+        systemLogs.logEvent(response, "新增资产", "添加新资产");
+        return response;
     }
 
     /**
@@ -45,7 +53,8 @@ public class AssetManageApi {
     @RequestMapping(value = "/all", method = RequestMethod.GET)
     @ResponseBody
     public Object getAllAssets() {
-        return mAssetManageService.getAllAssets();
+        ResponseBean response = mAssetManageService.getAllAssets();
+        return response;
     }
 
     /**
@@ -56,7 +65,10 @@ public class AssetManageApi {
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @ResponseBody
     public Object updateUser(@ModelAttribute AssetPo assetPo) {
-        return mAssetManageService.updateAssetByUuid(assetPo);
+        ResponseBean response = mAssetManageService.updateAssetByUuid(assetPo);
+        // 系统日志
+        systemLogs.logEvent(response, "更新资产", "修改资产数据（ID：" + assetPo.getUuid() + "）");
+        return response;
     }
 
     /**
@@ -67,7 +79,10 @@ public class AssetManageApi {
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
     @ResponseBody
     public Object deleteAsset(@RequestParam("uuid") String assetUuid) {
-        return mAssetManageService.deleteAsset(assetUuid);
+        ResponseBean response = mAssetManageService.deleteAsset(assetUuid);
+        // 系统日志
+        systemLogs.logEvent(response, "删除资产", "删除资产数据（ID：" + assetUuid + "）");
+        return response;
     }
 
     /**
