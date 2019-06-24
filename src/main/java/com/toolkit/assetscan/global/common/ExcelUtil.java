@@ -186,7 +186,7 @@ public class ExcelUtil {
             sheet.autoSizeColumn(i, true);
             int newWidth = (int) (sheet.getColumnWidth(i) + 100);
             if (newWidth > orgWidth) {
-                sheet.setColumnWidth(i, newWidth);
+                sheet.setColumnWidth(i, newWidth < 255 ? newWidth : 150);
             } else {
                 sheet.setColumnWidth(i, orgWidth);
             }

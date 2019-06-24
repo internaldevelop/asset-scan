@@ -1,9 +1,6 @@
 package com.toolkit.assetscan.global.common;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.toolkit.assetscan.bean.dto.ExcelDataDto;
 
@@ -33,11 +30,12 @@ public class PdfUtil {
 
     private static void exportPdf(ExcelDataDto data, ServletOutputStream out, String fileName) throws Exception {
 
-        BaseFont baseFont = BaseFont.createFont("STSong-Light", "UniGB-UCS2-H", BaseFont.NOT_EMBEDDED);
+//        BaseFont baseFont = BaseFont.createFont("STSong-Light", "UniGB-UCS2-H", BaseFont.NOT_EMBEDDED);
+        BaseFont baseFont = BaseFont.createFont("STSong-Light", "UniGB-UCS2-H", BaseFont.EMBEDDED);
         Font font = new Font(baseFont, 14, Font.NORMAL);
 
         //创建文件
-        Document doc = new Document();
+        Document doc = new Document(new RectangleReadOnly(842F,595F));
         //建立一个书写器
         PdfWriter writer = PdfWriter.getInstance(doc, out);
         //打开文件
@@ -62,10 +60,11 @@ public class PdfUtil {
         table.setSpacingAfter(10f); // 后间距
 
         List<PdfPRow> listRow = table.getRows();
-//        //设置列宽
-//        float[] columnWidths = { 1f, 2f, 3f };
-//        table.setWidths(columnWidths);
-
+        //设置列宽
+        if (8 == colNum) {
+            float[] columnWidths = { 1f, 1f, 1f, 2f, 1f, 1f, 2f, 4f };
+            table.setWidths(columnWidths);
+        }
 
         // 表头
         PdfPCell cells1[]= new PdfPCell[colNum];

@@ -172,26 +172,28 @@ public class TaskExecuteResultsManageApi {
         ExcelDataDto data = new ExcelDataDto();
         data.setName("任务检测结果");
         List<String> titles = new ArrayList();
-        titles.add("任务号");
+//        titles.add("任务号");
         titles.add("任务名称");
         titles.add("检测目标");
         titles.add("目标IP");
         titles.add("问题类型");
         titles.add("危害等级");
         titles.add("问题描述");
+        titles.add("检测时间");
         titles.add("建议方案");
         data.setTitles(titles);
 
         List<List<Object>> rows = new ArrayList();
         for (TaskResultsDto trDto : list) {
             List<Object> row = new ArrayList();
-            row.add(trDto.getTask_id());  // 任务号
+//            row.add(trDto.getTask_id());  // 任务号
             row.add(trDto.getTask_name());  // 任务名称
             row.add(trDto.getAssets_name());  // 检测目标
             row.add(trDto.getAssets_ip());  // 目标IP
             row.add(trDto.getPolicy_name());  // 问题类型
             row.add(trDto.getRisk_level());  // 危害等级
             row.add(trDto.getDescription());  // 问题描述
+            row.add(trDto.getStart_time());  // 检测时间
             row.add(trDto.getSolutions());  // 建议方案
             rows.add(row);
         }

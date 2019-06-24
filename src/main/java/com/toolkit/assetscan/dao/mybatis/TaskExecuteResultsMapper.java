@@ -58,6 +58,7 @@ public interface TaskExecuteResultsMapper {
             "	ter.risk_level,\n" +
             "   ter.risk_desc,\n" +
             "	ter.solutions,\n" +
+            "	ter.start_time,\n" +
 //            "	ter.policy_uuid,\n" +
 //            "	ter.create_time,\n" +
 //            "	ter.exec_action_uuid,\n",

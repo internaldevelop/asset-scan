@@ -2,10 +2,13 @@ package com.toolkit.assetscan.global.common;
 
 import com.toolkit.assetscan.bean.dto.ExcelDataDto;
 import org.apache.poi.xwpf.usermodel.*;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.impl.STTblWidthImpl;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.util.List;
 
@@ -32,6 +35,13 @@ public class WordUtil {
         XWPFParagraph titleName = doc.createParagraph(); // 创建段落
         titleName.setAlignment(ParagraphAlignment.CENTER);
 
+        CTSectPr sectPr = doc.getDocument().getBody().addNewSectPr();
+        CTPageSz pgSz = sectPr.addNewPgSz();
+        //设置横板
+        pgSz.setW(BigInteger.valueOf(15840));
+        pgSz.setH(BigInteger.valueOf(11907));
+        pgSz.setOrient(STPageOrientation.LANDSCAPE);
+
         XWPFRun r1 = titleName.createRun(); // 创建段落文本
         r1.setFontSize(16);
         r1.setText(fileName); // 设置文本
@@ -43,7 +53,12 @@ public class WordUtil {
             int colNum = titles.size();
             XWPFTable table = doc.createTable(rowNum + 1, colNum);
 //            XWPFTable table = doc.createTable();
-            table.setWidthType(TableWidthType.AUTO);
+//            table.setWidthType(TableWidthType.AUTO);
+
+            CTTblPr tblPr = table.getCTTbl().getTblPr() == null ? table.getCTTbl().addNewTblPr() : table.getCTTbl().getTblPr();
+            CTTblLayoutType t = tblPr.isSetTblLayout()?tblPr.getTblLayout():tblPr.addNewTblLayout();
+            t.setType(STTblLayoutType.FIXED);//使布局固定，不随内容改变宽度
+
 
             // 表头
             XWPFTableRow row0 = table.getRow(0);
@@ -51,6 +66,11 @@ public class WordUtil {
             for (String field : titles) {
                 // 设置单元格内容
                 row0.getCell(colIndex).setText(field);
+                if (colIndex < 7) {
+                    row0.getCell(colIndex).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1200));
+                } else {
+                    row0.getCell(colIndex).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(4000));
+                }
                 colIndex++;
             }
 
