@@ -40,6 +40,7 @@ public interface AssetsMapper {
     @Update("UPDATE assets a SET " +
             "name=#{name}, code=#{code}, " +
             "ip=#{ip}, port=#{port}, " +
+            "os_type=#{os_type}, os_ver=#{os_ver}, " +
             "user=#{user}, password=#{password}, " +
             "create_user_uuid=#{create_user_uuid}, os_ver=#{os_ver} " +
             "WHERE " +
