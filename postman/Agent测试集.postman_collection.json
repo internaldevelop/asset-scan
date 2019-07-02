@@ -1,0 +1,134 @@
+{
+	"info": {
+		"_postman_id": "40e94762-c664-4d4c-a6ad-a4ef6da83aa0",
+		"name": "Agent测试集",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. 资产信息",
+			"item": [
+				{
+					"name": "1.1 获取资产信息",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{asset_url}}/asset-info/acquire?types=",
+							"host": [
+								"{{asset_url}}"
+							],
+							"path": [
+								"asset-info",
+								"acquire"
+							],
+							"query": [
+								{
+									"key": "types",
+									"value": "",
+									"description": "空串表示所有信息；否则以半角逗号分隔，比如：“CPU, Mem, CPU usage”"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.2 获取系统属性",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{asset_url}}/asset-info/system-prop?prop=java.library.path",
+							"host": [
+								"{{asset_url}}"
+							],
+							"path": [
+								"asset-info",
+								"system-prop"
+							],
+							"query": [
+								{
+									"key": "prop",
+									"value": "java.library.path"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. 资产安全配置信息",
+			"item": [
+				{
+					"name": "2.1 获取资产安全配置信息",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{asset_url}}/asset-sec-cfg/acquire?types=",
+							"host": [
+								"{{asset_url}}"
+							],
+							"path": [
+								"asset-sec-cfg",
+								"acquire"
+							],
+							"query": [
+								{
+									"key": "types",
+									"value": "",
+									"description": "空串表示所有信息；否则以半角逗号分隔，比如：“CPU, Mem, CPU usage”"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "A. 测试指令",
+			"item": [
+				{
+					"name": "A.1 获取操作系统信息",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/test/os",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"test",
+								"os"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A.2 获取所有系统环境参数",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/test/all-sys-props",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"test",
+								"all-sys-props"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

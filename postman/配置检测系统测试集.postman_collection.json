@@ -427,6 +427,98 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "2.9 修改用户组",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "uuid",
+									"value": "177f3e92-a88f-4faf-8c2e-f91900275c74",
+									"type": "text"
+								},
+								{
+									"key": "user_group",
+									"value": "99",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/users/change-user-group",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"change-user-group"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.11 用户名称是否唯一",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/check-unique-name?user_name=user1&user_uuid=b61a6467-bb69-4548-9256-f9a908c1c3f1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"check-unique-name"
+							],
+							"query": [
+								{
+									"key": "user_name",
+									"value": "user1"
+								},
+								{
+									"key": "user_uuid",
+									"value": "b61a6467-bb69-4548-9256-f9a908c1c3f1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.12 账号登出",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/logout?user_uuid={{user_uuid}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"logout"
+							],
+							"query": [
+								{
+									"key": "user_uuid",
+									"value": "{{user_uuid}}"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -1043,7 +1135,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/tasks/run-status?uuid_list={{uuid_list}}",
+							"raw": "{{base_url}}/tasks/run-status?project_uuid",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1059,7 +1151,172 @@
 								},
 								{
 									"key": "uuid_list",
-									"value": "{{uuid_list}}"
+									"value": "{{uuid_list}}",
+									"disabled": true
+								},
+								{
+									"key": "project_uuid",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.12 设置任务的定时计划",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "6f4f3c18-0e68-4f88-8a63-26fdcfd0df43",
+								"exec": [
+									"var uuidList=[];",
+									"var uuid = pm.environment.get(\"task_uuid\");",
+									"uuidList.push(uuid);",
+									"// uuidList.push(uuid);",
+									"// uuidList.push(uuid);",
+									"// uuidList.push(uuid);",
+									"var uuids;",
+									"uuids = uuid + \",\";",
+									"uuids += uuid + \",\";",
+									"uuids += uuid + \",\";",
+									"uuids += uuid;",
+									"pm.environment.set(\"uuid_list\", uuids);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tasks/set-task-schedule?task_uuid={{task_uuid}}&run_time",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"set-task-schedule"
+							],
+							"query": [
+								{
+									"key": "task_uuid",
+									"value": "{{task_uuid}}"
+								},
+								{
+									"key": "project_uuid",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "run_time",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.13 停止任务的定时计划",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "6f4f3c18-0e68-4f88-8a63-26fdcfd0df43",
+								"exec": [
+									"var uuidList=[];",
+									"var uuid = pm.environment.get(\"task_uuid\");",
+									"uuidList.push(uuid);",
+									"// uuidList.push(uuid);",
+									"// uuidList.push(uuid);",
+									"// uuidList.push(uuid);",
+									"var uuids;",
+									"uuids = uuid + \",\";",
+									"uuids += uuid + \",\";",
+									"uuids += uuid + \",\";",
+									"uuids += uuid;",
+									"pm.environment.set(\"uuid_list\", uuids);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tasks/stop-scheduler?task_uuid={{task_uuid}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"stop-scheduler"
+							],
+							"query": [
+								{
+									"key": "task_uuid",
+									"value": "{{task_uuid}}"
+								},
+								{
+									"key": "project_uuid",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.15 任务名称是否唯一",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "6f4f3c18-0e68-4f88-8a63-26fdcfd0df43",
+								"exec": [
+									"var uuidList=[];",
+									"var uuid = pm.environment.get(\"task_uuid\");",
+									"uuidList.push(uuid);",
+									"// uuidList.push(uuid);",
+									"// uuidList.push(uuid);",
+									"// uuidList.push(uuid);",
+									"var uuids;",
+									"uuids = uuid + \",\";",
+									"uuids += uuid + \",\";",
+									"uuids += uuid + \",\";",
+									"uuids += uuid;",
+									"pm.environment.set(\"uuid_list\", uuids);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tasks/check-unique-name?task_name=新建任务&task_uuid=175cc32c-5a33-4f6f-8e37-1a288171c043",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"check-unique-name"
+							],
+							"query": [
+								{
+									"key": "task_name",
+									"value": "新建任务"
+								},
+								{
+									"key": "task_uuid",
+									"value": "175cc32c-5a33-4f6f-8e37-1a288171c043",
+									"description": "参数为空，表示全局检查名称唯一性；否则检查除自己外，其他任务是否使用该名称"
 								}
 							]
 						}
@@ -1504,6 +1761,51 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "4.13 策略名称是否唯一",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4f03d584-0050-4232-99b5-5867aa484743",
+								"exec": [
+									"pm.test(\"get all policies\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/policies/check-unique-name?policy_name=Windows系统补丁检查&policy_uuid",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"policies",
+								"check-unique-name"
+							],
+							"query": [
+								{
+									"key": "policy_name",
+									"value": "Windows系统补丁检查"
+								},
+								{
+									"key": "policy_uuid",
+									"value": null,
+									"description": "参数为空，表示全局检查名称唯一性；否则检查除自己外，其他策略是否使用该名称"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -1554,7 +1856,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/tasks/results/brief?task_uuid={{task_uuid}}",
+							"raw": "{{base_url}}/tasks/results/brief?task_uuid={{task_uuid}}&project_uuid=",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1567,6 +1869,10 @@
 								{
 									"key": "task_uuid",
 									"value": "{{task_uuid}}"
+								},
+								{
+									"key": "project_uuid",
+									"value": ""
 								}
 							]
 						}
@@ -1960,11 +2266,40 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "6.5 资产名称是否唯一",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/assets/check-unique-name?asset_name=asset_74491&asset_uuid",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"assets",
+								"check-unique-name"
+							],
+							"query": [
+								{
+									"key": "asset_name",
+									"value": "asset_74491"
+								},
+								{
+									"key": "asset_uuid",
+									"value": null,
+									"description": "参数为空，表示全局检查名称唯一性；否则检查除自己外，其他资产是否使用该名称"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
 		{
-			"name": "7. 操作日志",
+			"name": "7. 任务执行统计",
 			"item": [
 				{
 					"name": "7.1 查询所有的操作日志",
@@ -2051,6 +2386,402 @@
 							"path": [
 								"actions",
 								"count-by-asset"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "8. 项目",
+			"item": [
+				{
+					"name": "8.1 添加一个新的项目",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+								"exec": [
+									"// var num = Math.ceil(Math.random() * 10000);",
+									"// pm.environment.set(\"asset_name\", \"asset_\" + num);",
+									"// pm.environment.set(\"asset_code\", \"C_\" + num);",
+									"",
+									"// var ip1 = Math.ceil(Math.random() * 255) + \".\";",
+									"// var ip2 = Math.ceil(Math.random() * 255) + \".\";",
+									"// var ip3 = Math.ceil(Math.random() * 255) + \".\";",
+									"// var ip4 = Math.ceil(Math.random() * 255);",
+									"// pm.environment.set(\"asset_ip\", ip1 + ip2 + ip3 + ip4);",
+									"// pm.environment.set(\"asset_port\", Math.ceil(Math.random() * 100000));",
+									"",
+									"// pm.environment.set(\"default_asset_user\", \"root\");",
+									"// pm.environment.set(\"default_asset_pwd\", \"root\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+								"exec": [
+									"pm.test(\"add project\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"    ",
+									"    pm.environment.set(\"project_uuid\", jsonData.payload.uuid);",
+									"    pm.environment.set(\"project_name\", jsonData.payload.name);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "name",
+									"value": "111",
+									"type": "text"
+								},
+								{
+									"key": "code",
+									"value": "p111",
+									"type": "text"
+								},
+								{
+									"key": "tasks",
+									"value": "[{\"uuid\":\"cb8c39e4-f666-4c1d-be73-9d039b398f1f\",\"code\":\"C_2715\",\"name\":\"task_2715\"},{\"uuid\":\"0022f9d3-a2b6-4e73-b128-8b883c76bdf3\",\"code\":\"TODO\",\"name\":\"task_2551\"},{\"uuid\":\"0b34cc5a-d99e-4ae5-aec5-ca3fbadc0dfb\",\"code\":\"C_4351\",\"name\":\"task_4351\"}]",
+									"type": "text"
+								},
+								{
+									"key": "output_mode",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "create_user_uuid",
+									"value": "{{user_uuid}}",
+									"type": "text"
+								},
+								{
+									"key": "task_number",
+									"value": "3",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/projects/add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"projects",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8.2 移除一个项目",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "uuid",
+									"value": "{{project_uuid}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/projects/remove",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"projects",
+								"remove"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8.3 获取所有的项目",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/projects/all",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"projects",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8.4 根据UUID 获取项目",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/projects/get-project?uuid={{project_uuid}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"projects",
+								"get-project"
+							],
+							"query": [
+								{
+									"key": "uuid",
+									"value": "{{project_uuid}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8.5 更新项目",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+								"exec": [
+									"// var num = Math.ceil(Math.random() * 10000);",
+									"// pm.environment.set(\"asset_name\", \"asset_\" + num);",
+									"// pm.environment.set(\"asset_code\", \"C_\" + num);",
+									"",
+									"// var ip1 = Math.ceil(Math.random() * 255) + \".\";",
+									"// var ip2 = Math.ceil(Math.random() * 255) + \".\";",
+									"// var ip3 = Math.ceil(Math.random() * 255) + \".\";",
+									"// var ip4 = Math.ceil(Math.random() * 255);",
+									"// pm.environment.set(\"asset_ip\", ip1 + ip2 + ip3 + ip4);",
+									"// pm.environment.set(\"asset_port\", Math.ceil(Math.random() * 100000));",
+									"",
+									"// pm.environment.set(\"default_asset_user\", \"root\");",
+									"// pm.environment.set(\"default_asset_pwd\", \"root\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+								"exec": [
+									"pm.test(\"add project\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(0);",
+									"    ",
+									"    pm.environment.set(\"project_uuid\", jsonData.payload.uuid);",
+									"    pm.environment.set(\"project_name\", jsonData.payload.name);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "uuid",
+									"value": "{{project_uuid}}",
+									"type": "text"
+								},
+								{
+									"key": "name",
+									"value": "111",
+									"type": "text"
+								},
+								{
+									"key": "code",
+									"value": "p111",
+									"type": "text"
+								},
+								{
+									"key": "tasks",
+									"value": "[{\"uuid\":\"cb8c39e4-f666-4c1d-be73-9d039b398f1f\",\"code\":\"C_2715\",\"name\":\"task_2715\"},{\"uuid\":\"0022f9d3-a2b6-4e73-b128-8b883c76bdf3\",\"code\":\"TODO\",\"name\":\"task_2551\"},{\"uuid\":\"0b34cc5a-d99e-4ae5-aec5-ca3fbadc0dfb\",\"code\":\"C_4351\",\"name\":\"task_4351\"}]",
+									"type": "text"
+								},
+								{
+									"key": "output_mode",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "create_user_uuid",
+									"value": "{{user_uuid}}",
+									"type": "text"
+								},
+								{
+									"key": "task_number",
+									"value": "3",
+									"type": "text"
+								},
+								{
+									"key": "process_flag",
+									"value": "2",
+									"type": "text"
+								},
+								{
+									"key": "run_time_mode",
+									"value": "1",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/projects/update",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"projects",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8.6 检查项目名称是否唯一",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/projects/check-unique-name?project_name=project1&project_uuid={{project_uuid}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"projects",
+								"check-unique-name"
+							],
+							"query": [
+								{
+									"key": "project_name",
+									"value": "project1"
+								},
+								{
+									"key": "project_uuid",
+									"value": "{{project_uuid}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "9. 系统日志",
+			"item": [
+				{
+					"name": "9.1 添加新的系统日志",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "type",
+									"value": "4",
+									"description": "日志记录的类型：\n1：成功操作；\n2：失败操作；\n3：系统错误（严重错误）；\n4：一般信息；\n5：异常信息（一般异常）；\n6：警告信息",
+									"type": "text"
+								},
+								{
+									"key": "title",
+									"value": "登录",
+									"type": "text"
+								},
+								{
+									"key": "contents",
+									"value": "登录成功",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/system-logs/add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"system-logs",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "9.2 获取所有系统日志",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/system-logs/all",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"system-logs",
+								"all"
 							]
 						}
 					},
@@ -5845,7 +6576,7 @@
 										{
 											"key": "run_contents",
 											"value": "import os\nimport platform\nimport json\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n    # os_json = json.dumps(os_info)\n    # print(os_info)\n    # print(os_json)\n\n    # 获取所有用户\n    os.system(\"cat /etc/passwd > passwd.txt\")\n    all_users = open(\"passwd.txt\", \"r\").readlines()\n\n    # 获取所有有效用户 (每行结尾不是 nologin)\n    os.system(\"grep -v nologin$ /etc/passwd > passwd.txt\")\n    active_users = open(\"passwd.txt\", \"r\").readlines()\n\n    all_users_count = len(all_users)\n    active_users_count = len(active_users)\n    info['Active Users'] = active_users\n\n    # 活跃用户大于5时，需检查确认是否有多余账户\n    if active_users_count > 5:\n        result['risk_level'] = 1\n        result['risk_desc'] = '系统账户过多，共计{}个账户，其中{}个活跃账户。'.format(all_users_count, active_users_count)\n        result['solution'] = '请联系系统管理员，使用超级用户登录系统，锁定与设备或系统运行、维护等工作无关的帐号\\npasswd -l <username>'\n    else:\n        result['risk_level'] = 0\n        result['risk_desc'] = '系统用户数量处于正常状态。'\n        result['solution'] = '无'\n\n    os.remove(\"passwd.txt\")\n    return os_info\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
-											"description": "windows/unused_user.py",
+											"description": "linux/unused_user.py",
 											"type": "text"
 										},
 										{
@@ -5967,8 +6698,8 @@
 										},
 										{
 											"key": "run_contents",
-											"value": "import os\nimport platform\nimport json\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n\n    # 获取root账户SSH远程登录限制的配置\n    os.system(\"grep '^PermitRootLogin' /etc/ssh/sshd_config > root.txt\")\n    permit = open(\"root.txt\", \"r\").readlines()\n\n    # 如果读取不到 PermitRootLogin 开头的行，说明配置文件中这行被注释了\n    # 按照 PermitRootLogin yes 做错误处理\n    if len(permit) == 0:\n        permit = [].push(\"PermitRootLogin yes\")\n\n    info['PermitRootLogin'] = permit[0]\n\n    # 分割\n    split_permit = permit[0].split()\n\n    # 判断是否允许root远程登录\n    if split_permit[1] == \"yes\":\n        result['risk_level'] = 2\n        result['risk_desc'] = '系统未限制root账户远程登录。'\n        result['solution'] = '修改/etc/ssh/sshd_config文件，将PermitRootLogin yes改为PermitRootLogin no，重启sshd服务。'\n    else:\n        result['risk_level'] = 0\n        result['risk_desc'] = '系统已限制root账户远程登录。'\n        result['solution'] = '无'\n\n    os.remove(\"root.txt\")\n    return os_info\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
-											"description": "windows/root_remote_login.py",
+											"value": "#!/usr/bin/python3\n# coding=utf-8\nimport os\nimport platform\nimport json\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n\n    # 获取root账户SSH远程登录限制的配置\n    os.system(\"grep '^PermitRootLogin' /etc/ssh/sshd_config > root.txt\")\n    permit = open(\"root.txt\", \"r\").readlines()\n\n    # 如果读取不到 PermitRootLogin 开头的行，说明配置文件中这行被注释了\n    # 按照 PermitRootLogin yes 做错误处理\n    if len(permit) == 0:\n        info['PermitRootLogin'] = \"Not configured\"\n        split_permit = [\"PermitRootLogin\", \"yes\"]\n    else:\n        info['PermitRootLogin'] = permit[0]\n        # 分割\n        split_permit = permit[0].split()\n\n    # 判断是否允许root远程登录\n    if split_permit[1] == \"yes\":\n        result['risk_level'] = 2\n        result['risk_desc'] = '系统未限制root账户远程登录。'\n        result['solution'] = '修改/etc/ssh/sshd_config文件，将PermitRootLogin yes改为PermitRootLogin no，重启sshd服务。'\n    else:\n        result['risk_level'] = 0\n        result['risk_desc'] = '系统已限制root账户远程登录。'\n        result['solution'] = '无'\n\n    os.remove(\"root.txt\")\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
+											"description": "linux/root_remote_login.py",
 											"type": "text"
 										},
 										{
