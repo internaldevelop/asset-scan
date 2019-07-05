@@ -12,4 +12,5 @@ public class PasswordPo {
     private int pwd_rat;
     private int user_status;
     private int user_group;
+    private String email;
 }

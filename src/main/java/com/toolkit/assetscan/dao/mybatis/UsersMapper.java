@@ -109,6 +109,7 @@ public interface UsersMapper {
             "    password, \n" +
             "    pwd_mat, \n" +
             "    pwd_rat, \n" +
+            "    email, \n" +
             "    u.status AS user_status, \n" +
             "    user_group \n" +
             "FROM users u \n" +

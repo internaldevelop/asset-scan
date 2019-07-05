@@ -1,12 +1,11 @@
 package com.toolkit.assetscan.global.common;
 
 import com.toolkit.assetscan.bean.dto.ExcelDataDto;
+import org.apache.poi.hssf.usermodel.HSSFPrintSetup;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFColor;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.*;
 import org.apache.poi.xssf.usermodel.extensions.XSSFCellBorder.BorderSide;
 
 import javax.servlet.http.HttpServletResponse;
@@ -50,6 +49,9 @@ public class ExcelUtil {
             }
             XSSFSheet sheet = wb.createSheet(sheetName);
             rowIndex = writeExcel(wb, sheet, data);
+            heng(sheet);
+
+
             wb.write(out);
         } catch (Exception e) {
             e.printStackTrace();
@@ -58,6 +60,22 @@ public class ExcelUtil {
             out.close();
         }
         return rowIndex;
+    }
+
+    /**
+     * 横向打印设置
+     * @param sheet
+     */
+    public static void heng (Sheet sheet) {
+        PrintSetup ps = sheet.getPrintSetup();
+        ps.setLandscape(true); // 打印方向，true：横向，false：纵向
+        ps.setPaperSize(HSSFPrintSetup.A4_PAPERSIZE); //纸张
+        sheet.setMargin(HSSFSheet.BottomMargin,( double ) 0.3 );// 页边距（下）
+        sheet.setMargin(HSSFSheet.LeftMargin,( double ) 0.1 );// 页边距（左）
+        sheet.setMargin(HSSFSheet.RightMargin,( double ) 0.1 );// 页边距（右）
+        sheet.setMargin(HSSFSheet.TopMargin,( double ) 0.3 );// 页边距（上）
+        sheet.setHorizontallyCenter(true);//设置打印页面为水平居中
+        sheet.setVerticallyCenter(true);//设置打印页面为垂直居中使用POI输出Excel时打印页面的设置 - TOUGHGUYNEU - @EXPLORER使用POI输出Excel时打印页面的设置 - TOUGHGUYNEU - @EXPLORER
     }
 
     /**
@@ -86,7 +104,7 @@ public class ExcelUtil {
         int rowIndex = 0;
         rowIndex = writeTitlesToExcel(wb, sheet, data.getTitles());
         rowIndex = writeRowsToExcel(wb, sheet, data.getRows(), rowIndex);
-        autoSizeColumns(sheet, data.getTitles().size() + 1);
+        autoSizeColumns(sheet, data.getTitles().size());
         return rowIndex;
     }
     /**
@@ -125,6 +143,7 @@ public class ExcelUtil {
         colIndex = 0;
         for (String field : titles) {
             Cell cell = titleRow.createCell(colIndex);
+            titleRow.setHeightInPoints(25);
             cell.setCellValue(field);
             cell.setCellStyle(titleStyle);
             colIndex++;
@@ -150,6 +169,7 @@ public class ExcelUtil {
         dataFont.setColor(IndexedColors.BLACK.index);
 
         XSSFCellStyle dataStyle = wb.createCellStyle();
+        dataStyle.setWrapText(true); //设置换行
 
 //        dataStyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);
 //        dataStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);
@@ -157,10 +177,11 @@ public class ExcelUtil {
         setBorder(dataStyle, BorderStyle.THIN, new XSSFColor(new Color(0, 0, 0), null));
         for (List<Object> rowData : rows) {
             Row dataRow = sheet.createRow(rowIndex);
-            dataRow.setHeightInPoints(25);
+            dataRow.setHeightInPoints(60);
             colIndex = 0;
             for (Object cellData : rowData) {
                 Cell cell = dataRow.createCell(colIndex);
+                cell.setCellStyle(dataStyle);
                 if (cellData != null) {
                     cell.setCellValue(cellData.toString());
                 } else {
@@ -184,12 +205,13 @@ public class ExcelUtil {
         for (int i = 0; i < columnNumber; i++) {
             int orgWidth = sheet.getColumnWidth(i);
             sheet.autoSizeColumn(i, true);
-            int newWidth = (int) (sheet.getColumnWidth(i) + 100);
-            if (newWidth > orgWidth) {
-                sheet.setColumnWidth(i, newWidth < 255 ? newWidth : 150);
+            if (i + 1 == columnNumber) {
+                sheet.setColumnWidth(i, (orgWidth * 5));
             } else {
-                sheet.setColumnWidth(i, orgWidth);
+                sheet.setColumnWidth(i, (int) (orgWidth * 1.7));
             }
+
+
         }
     }
 
