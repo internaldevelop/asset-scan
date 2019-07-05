@@ -39,10 +39,10 @@ public class MailManageService {
     public boolean sendSimpleTextMail(String subject, String content, String toWho,/*String[] ccPeoples,String[] bccPeoples,*/ String attachment) {
         //检验参数：邮件主题、收件人、邮件内容必须不为空才能够保证基本的逻辑执行
         if (subject == null || toWho == null || content == null) {
-            logger.error("邮件-> {} 无法继续执行，因为缺少基本的参数：邮件主题、收件人、邮件内容", subject);
+            logger.error("邮件无法发送，因为缺少基本的参数：邮件主题、收件人或者邮件内容。", subject);
             throw new RuntimeException("邮件无法发送，因为缺少必要的参数！");
         }
-        logger.info("开始发送文本邮件：主题->{}，收件人->{}，附件->{}", subject, toWho,/*ccPeoples,bccPeoples,*/ attachment);
+        logger.info("开始发送文本邮件：", subject, toWho,/*ccPeoples,bccPeoples,*/ attachment);
 
         //附件处理，需要处理附件时，需要使用二进制信息，使用 MimeMessage 类来进行处理
         if (attachment != null) {
@@ -55,7 +55,7 @@ public class MailManageService {
                 boolean continueProcess = handleBasicInfo(helper, subject, content, toWho, /*ccPeoples, bccPeoples, */false);
                 //如果处理基本信息出现错误
                 if (!continueProcess) {
-                    logger.error("邮件基本信息出错: 主题->{}", subject);
+                    logger.error("邮件基本信息出错：", subject);
                     return false;
                 }
                 //处理附件
@@ -64,10 +64,10 @@ public class MailManageService {
                 //发送该邮件
                 mMailSender.send(mimeMessage);
 
-                logger.info("发送邮件成功: 主题->{}", subject);
+                logger.info("发送邮件成功：", subject);
             } catch (MessagingException e) {
                 e.printStackTrace();
-                logger.error("发送邮件失败: 主题->{}", subject);
+                logger.error("发送邮件失败：", subject);
             }
         } else {
             //创建一个简单邮件信息对象
@@ -76,7 +76,7 @@ public class MailManageService {
             handleBasicInfo(simpleMailMessage, subject, content, toWho/*, ccPeoples, bccPeoples*/);
             //发送邮件
             mMailSender.send(simpleMailMessage);
-            logger.info("发送邮件成功: 主题->{}", subject, toWho, /*ccPeoples, bccPeoples, */attachment);
+            logger.info("发送邮件成功：", subject, toWho, /*ccPeoples, bccPeoples, */attachment);
         }
         return true;
     }
@@ -116,7 +116,7 @@ public class MailManageService {
                 mimeMessageHelper.setBcc(bccPeoples);*/
         } catch (MessagingException e) {
             e.printStackTrace();
-            logger.error("邮件基本信息出错->{}", subject);
+            logger.error("邮件基本信息出错：", subject);
         }
         return true;
     }
@@ -164,7 +164,7 @@ public class MailManageService {
             //判断该资源是否存在，当不存在时仅仅会打印一条警告日志，不会中断处理程序。
             // 也就是说在附件出现异常的情况下，邮件是可以正常发送的，所以请确定你发送的邮件附件在本机存在
             if (!resource.exists()) {
-                logger.warn("邮件->{} 的附件->{} 不存在！", subject, attachmentFilePath);
+                logger.warn("邮件的附件不存在：", subject, attachmentFilePath);
                 return false;
             }
             //获取资源的名称
@@ -174,7 +174,7 @@ public class MailManageService {
                 mimeMessageHelper.addAttachment(fileName, resource);
             } catch (MessagingException e) {
                 e.printStackTrace();
-                logger.error("邮件->{} 添加附件->{} 出现异常->{}", subject, attachmentFilePath, e.getMessage());
+                logger.error("邮件添加附件出现异常：", subject, attachmentFilePath, e.getMessage());
             }
         }
         return true;

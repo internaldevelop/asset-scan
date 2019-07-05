@@ -30,9 +30,9 @@ public class EmailManageApi {
     @RequestMapping(value = "/send", method = RequestMethod.GET)
     public @ResponseBody
     Object sendSimpleTextMail(@RequestParam("subject") String subject,
-                              @RequestParam(value = "content") String content,
-                              @RequestParam(value = "toWho") String toWho,
-                              @RequestParam(value = "attachment") String attachmentPath) throws InterruptedException{
+                              @RequestParam("content") String content,
+                              @RequestParam("toWho") String toWho,
+                              @RequestParam(value = "attachment", required = false) String attachmentPath) throws InterruptedException{
         boolean success = mMailManageService.sendSimpleTextMail(subject,content,toWho, attachmentPath);
         if (success) {
             // 系统日志
