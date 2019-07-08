@@ -17,4 +17,8 @@ public class TaskRunStatusDto implements Serializable {
     int remain_time;            // 预计剩余执行时间（单位：ms）
     int total_time;             // 预计总计执行时间（单位：ms）
     double   done_rate;         // 完成比例（单位：%，按执行时间计算）
+    // exception
+    String fail_policy_uuid;    // policy failed to execute
+    String fail_policy_name;    // policy failed to execute
+    String fail_policy_group_uuid;  // failed policy group
 }
