@@ -262,7 +262,9 @@ public class TaskManageApi {
         // 未指定 project_uuid ，则使用缺省项目 UUID
         if (projectUuid == null || projectUuid.isEmpty())
             projectUuid = Const.DEFAULT_PROJ_UUID;
-        return taskExecuteScheduler.stopTask(taskUuid, projectUuid);
+        taskExecuteScheduler.stopTask(taskUuid, projectUuid);
+
+        return responseHelper.success();
     }
 
     /**

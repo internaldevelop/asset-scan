@@ -77,3 +77,20 @@ logging.level.root=INFO
 logging.level.org.springframework.web=INFO
 logging.file=./logs/api.log
 
+# 发送方的邮件，如果是qq密码smtp.qq.com
+spring.mail.host=smtp.163.com
+# 如果我们使用的是TLS协议则25是默认端口，可省略
+#spring.mail.host.port=25
+spring.mail.default-encoding=UTF-8
+spring.mail.protocol=smtp
+spring.mail.username=woaiwojia8212@163.com
+#邮箱账号密码或者三方登录授权码，对于qq邮箱而言，密码指的就是发送方的授权码
+spring.mail.password=821210Tq!
+spring.mail.properties.mail.smtp.auth=true
+#是否用启用加密传送的协议验证项
+spring.mail.properties.mail.smtp.starttls.enable=true
+#如果是是SSL协议
+#spring.mail.properties.mail.smtp.ssl.required=true
+#是否用启用加密传送的协议验证项
+spring.mail.properties.mail.smtp.starttls.required=true
+#注意：在spring.mail.password处的值是需要在邮箱设置里面生成的授权码，这个不是真实的密码。
