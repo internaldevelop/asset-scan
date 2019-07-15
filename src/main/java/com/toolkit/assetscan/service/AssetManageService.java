@@ -7,6 +7,7 @@ import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -15,6 +16,8 @@ import java.util.List;
 public class AssetManageService {
     private final AssetsMapper mAssetsMapper;
     private final ResponseHelper mResponseHelper;
+    @Autowired
+    AssetCollectScheduler assetCollectScheduler;
 
     public AssetManageService(AssetsMapper assetsMapper, ResponseHelper responseHelper) {
         mAssetsMapper = assetsMapper;
@@ -104,6 +107,22 @@ public class AssetManageService {
         jsonData.put("count", count);
         jsonData.put("exist", (count > 0) ? 1 : 0);
         return mResponseHelper.success(jsonData);
+    }
+
+    public ResponseBean colletcRealTimeInfo(String assetUuid, String infoTypes) {
+        AssetPo assetPo = mAssetsMapper.getAssetByUuid(assetUuid);
+        if (assetPo == null)
+            return mResponseHelper.error(ErrorCodeEnum.ERROR_ASSET_NOT_FOUND);
+
+        if (assetCollectScheduler.setTask(assetUuid, assetPo.getIp(), infoTypes)){
+            return mResponseHelper.success();
+        }
+        return mResponseHelper.error(ErrorCodeEnum.ERROR_FAILED_ASSET_RTINFO);
+    }
+
+    public ResponseBean stopRealTimeInfo(String assetUuid) {
+        assetCollectScheduler.stopTask(assetUuid);
+        return mResponseHelper.success();
     }
 
 }

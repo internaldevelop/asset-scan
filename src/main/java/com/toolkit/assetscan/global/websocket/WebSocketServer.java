@@ -112,18 +112,33 @@ public class WebSocketServer {
         sendMessage(message);
     }
 
-
-    /**
-     * 群发自定义消息
-     */
     public static void sendInfo(SockMsgTypeEnum msgType, Object object, String sid) {
         for (WebSocketServer item : webSocketSet) {
-            //这里可以设定只推送给这个sid的，为null则全部推送
-            if (sid == null) {
-                item.sendMessage(msgType, object);
-            } else if (item.sid.equals(sid)) {
+            if (item.sid.equals(sid)) {
                 item.sendMessage(msgType, object);
             }
+        }
+    }
+
+    /**
+     * 群发任务运行状态的自定义消息
+     */
+    public static void broadcastTaskInfo(SockMsgTypeEnum msgType, Object object) {
+        for (WebSocketServer item : webSocketSet) {
+                if (item.sid.startsWith("task_run_info") || item.sid.startsWith("accept_all"))
+                    item.sendMessage(msgType, object);
+        }
+    }
+
+    /**
+     * 群发资产实时系统信息
+     * @param msgType
+     * @param object
+     */
+    public static void broadcastAssetInfo(SockMsgTypeEnum msgType, Object object) {
+        for (WebSocketServer item : webSocketSet) {
+                if (item.sid.startsWith("asset_info") || item.sid.startsWith("accept_all"))
+                    item.sendMessage(msgType, object);
         }
     }
 

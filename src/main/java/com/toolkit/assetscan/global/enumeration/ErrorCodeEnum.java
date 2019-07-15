@@ -73,6 +73,7 @@ public enum ErrorCodeEnum {
     ERROR_POLICY_NAME_EXIST(2048, "策略名已存在"),
     ERROR_PROJECT_NAME_EXIST(2049, "项目名称已存在"),
     ERROR_SEND_MAIL(2050, "发送邮件失败"),
+    ERROR_FAILED_ASSET_RTINFO(2051, "资产实时信息收集失败"),
     ;
 
     private Integer code;

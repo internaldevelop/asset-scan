@@ -4,6 +4,7 @@ import com.toolkit.assetscan.Helper.SystemLogsHelper;
 import com.toolkit.assetscan.bean.po.AssetPo;
 import com.toolkit.assetscan.dao.mybatis.AssetsMapper;
 import com.toolkit.assetscan.global.bean.ResponseBean;
+import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.service.AssetManageService;
 import io.swagger.annotations.Api;
@@ -24,6 +25,7 @@ public class AssetManageApi {
     AssetsMapper assetsMapper;
     @Autowired
     private SystemLogsHelper systemLogs;
+
 
 
     @Autowired
@@ -97,6 +99,26 @@ public class AssetManageApi {
     public Object isAssetNameExist(@RequestParam("asset_name") String assetName,
                                    @RequestParam(value = "asset_uuid", required = false) String assetUuid) {
         return mAssetManageService.checkAssetNameExist(assetName, assetUuid);
+    }
+
+    /**
+     * 6.6 启动定时任务，采集资产的实时信息，通过websocket发送到客户端
+     * @param assetUuid 资产的UUID
+     * @param action  0: 停止采集；1: 开始采集
+     * @param infoTypes 资产信息类别
+     * @return
+     */
+    @RequestMapping(value = "/real-time-info", method = RequestMethod.GET)
+    @ResponseBody
+    public Object startRealTimeInfo(@RequestParam(value = "asset_uuid") String assetUuid,
+                                    @RequestParam(value = "action") int action,
+                                    @RequestParam(value = "info_types", required = false) String infoTypes) {
+        if (action == 1) {
+            return mAssetManageService.colletcRealTimeInfo(assetUuid, infoTypes);
+        } else if (action == 0) {
+            return mAssetManageService.stopRealTimeInfo(assetUuid);
+        }
+        return mResponseHelper.error(ErrorCodeEnum.ERROR_PARAMETER);
     }
 
 }

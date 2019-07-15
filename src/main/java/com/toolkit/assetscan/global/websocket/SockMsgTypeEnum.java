@@ -4,6 +4,7 @@ public enum SockMsgTypeEnum {
     GENERAL_INFO(0, "一般信息"),        // payload为字符串
     SINGLE_TASK_RUN_INFO(1, "单个任务运行状态"),    // payload为单个任务的状态数据对象
     MULTIPLE_TASK_RUN_INFO(2, "多个任务运行状态"),  // payload为多个任务的状态数据对象的集合（JSON数组）
+    ASSET_REAL_TIME_INFO(3, "资产实时系统状态数据"),  // payload为System + CPU实时数据 + Mem实时数据
     ;
 
     private int type;
