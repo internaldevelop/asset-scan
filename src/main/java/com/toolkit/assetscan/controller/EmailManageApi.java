@@ -36,10 +36,10 @@ public class EmailManageApi {
         boolean success = mMailManageService.sendSimpleTextMail(subject,content,toWho, attachmentPath);
         if (success) {
             // 系统日志
-            systemLogs.logEvent(responseHelper.success(), "给" + toWho + "发送邮件成功", content);
+            systemLogs.logEvent(responseHelper.success(), "发送邮件", content);
             return responseHelper.success();
         } else {
-            systemLogs.logEvent(responseHelper.error(ErrorCodeEnum.ERROR_SEND_MAIL), "给" + toWho + "发送邮件失败", content);
+            systemLogs.logEvent(responseHelper.error(ErrorCodeEnum.ERROR_SEND_MAIL), "发送邮件", content);
             return responseHelper.error(ErrorCodeEnum.ERROR_SEND_MAIL);
         }
     }
