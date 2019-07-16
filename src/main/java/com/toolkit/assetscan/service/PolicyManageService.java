@@ -14,10 +14,12 @@ import com.toolkit.assetscan.global.enumeration.GeneralStatusEnum;
 import com.toolkit.assetscan.global.enumeration.ReportEnum;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
+import com.toolkit.assetscan.global.utils.SystemUtils;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +50,58 @@ public class PolicyManageService {
         return responseHelper.success(jsonData);
     }
 
+    private BufferedReader getProcReader(Process proc) throws IOException {
+        return new BufferedReader(new InputStreamReader(proc.getInputStream(), SystemUtils.getEnvEncoding()));
+    }
+
+    private BufferedReader getExecOutput(String[] args) throws IOException {
+        Process proc = Runtime.getRuntime().exec(args);
+        return getProcReader(proc);
+    }
+
+    private boolean checkSyntaxError(String[] args) {
+        try {
+            BufferedReader output = getExecOutput(args);
+            String line = null;
+            while ((line = output.readLine()) != null) {
+                if (line.contains("undefined") || line.contains("SyntaxError")) {
+                    output.close();
+                    return true;
+                }
+            }
+            output.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private String saveContent(String contents) {
+        FileWriter writer;
+        try {
+            File directory = new File("test.py");
+            writer = new FileWriter(directory);
+            writer.write(contents);
+            writer.flush();
+            writer.close();
+            return directory.getAbsolutePath();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private boolean checkScriptContentError(String contents) {
+        if (contents != null) {
+            String filePath = saveContent(contents);
+            if (filePath != null) {
+                String[] args = new String[] { "flake8", filePath};
+                return checkSyntaxError(args);
+            }
+        }
+        return false;
+    }
+
     public ResponseBean addPolicy(PolicyPo policyPo) {
         // 检查参数
         if (!iCheckParams(policyPo))
@@ -56,6 +110,11 @@ public class PolicyManageService {
         // 策略名是否已被占用
         if (policiesMapper.getPolicyNameCount(policyPo.getName()) > 0)
             return responseHelper.error(ErrorCodeEnum.ERROR_POLICY_NAME_EXIST);
+
+        // 检查脚本内容是否有错误
+        if (checkScriptContentError(policyPo.getRun_contents())) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_SCRIPT_SYNTAX_ERROR);
+        }
 
         // 为新策略随机分配一个UUID
         policyPo.setUuid(MyUtils.generateUuid());
@@ -132,6 +191,11 @@ public class PolicyManageService {
         // 检查策略名是否已被其他策略使用
         if (policiesMapper.checkNameInOtherPolicies(policyPo.getName(), policyPo.getUuid()) > 0)
             return responseHelper.error(ErrorCodeEnum.ERROR_POLICY_NAME_EXIST);
+
+        // 检查脚本内容是否有错误
+        if (checkScriptContentError(policyPo.getRun_contents())) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_SCRIPT_SYNTAX_ERROR);
+        }
 
         policyPo.setStatus(GeneralStatusEnum.VALID.getStatus());
         // 目前OS类型和基线保持一致
