@@ -78,6 +78,8 @@ public enum ErrorCodeEnum {
     ERROR_BASE_LINE_NOT_FOUND(2053, "找不到指定的基线"),
     ERROR_SCAN_NOT_FOUND(2054, "找不到指定的资产扫描信息"),
     ERROR_CHECK_RESULT_NOT_FOUND(2055, "找不到指定的资产核查结果"),
+    ERROR_INVALID_SCAN_INFO(2056, "资产扫描信息格式无效"),
+    ERROR_FAIL_CHECK_SCAN_INFO(2057, "资产配置信息核查异常"),
     ;
 
     private Integer code;

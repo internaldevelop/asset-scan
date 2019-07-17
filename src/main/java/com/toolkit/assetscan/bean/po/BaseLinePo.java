@@ -8,5 +8,5 @@ import org.springframework.stereotype.Component;
 public class BaseLinePo {
     private int id;
     private int level;
-    private String params;
+    private String templates;
 }

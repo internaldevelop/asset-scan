@@ -4,15 +4,19 @@ import com.alibaba.fastjson.JSONObject;
 import com.toolkit.assetscan.bean.dto.AssetScanRecordDto;
 import com.toolkit.assetscan.bean.po.AssetPo;
 import com.toolkit.assetscan.bean.po.AssetScanDataPo;
+import com.toolkit.assetscan.bean.po.BaseLinePo;
 import com.toolkit.assetscan.bean.po.ConfigCheckResultPo;
 import com.toolkit.assetscan.dao.mybatis.AssetScanDataMapper;
 import com.toolkit.assetscan.dao.mybatis.AssetsMapper;
+import com.toolkit.assetscan.dao.mybatis.BaseLineMapper;
 import com.toolkit.assetscan.dao.mybatis.ConfigCheckMapper;
 import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.params.Const;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
+import com.toolkit.assetscan.service.analyze.AnalyzeSubject;
+import com.toolkit.assetscan.service.analyze.StartupConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -36,6 +40,15 @@ public class AssetScanDataService {
     AssetsMapper assetsMapper;
     @Autowired
     RestTemplate restTemplate;
+    @Autowired
+    BaseLineMapper baseLineMapper;
+
+    // 保存参数用于新建核查结果记录
+    @Autowired
+    AnalyzeSubject resultOper;
+
+    @Autowired
+    StartupConfig startupConfig;
 
     public ResponseBean addScanRecord(AssetScanDataPo scanDataPo) {
         // 设置扫描记录的 UUID 和创建时间
@@ -110,7 +123,7 @@ public class AssetScanDataService {
         }
     }
 
-    public ResponseBean runAssetScanCheck(String assetUuid) {
+    public ResponseBean runAssetScanCheck(String assetUuid, int baseLine) {
         AssetPo assetPo = assetsMapper.getAssetByUuid(assetUuid);
         // 构造URL
         String ip = "http://" + assetPo.getIp() + ":8191";
@@ -138,6 +151,73 @@ public class AssetScanDataService {
         }
 
         // 分析扫描信息，并保存核查结果
+        resultOper.setBaseLine(baseLine);
+        resultOper.setAssetUuid(assetUuid);
+        resultOper.setScanUuid(scanDataPo.getUuid());
+        return checkScanData("", scanDataPo.getScan_info(), baseLine);
+    }
+
+    public ResponseBean checkScanData(String scanUuid, String scanInfo, int baseLine) {
+        // 优先从scanUuid查询scanInfo
+        AssetScanDataPo scanDataPo;
+        if (scanUuid != null && !scanUuid.isEmpty()) {
+            scanDataPo = assetScanDataMapper.getScanInfo(scanUuid);
+            if (scanDataPo == null) {
+                return responseHelper.error(ErrorCodeEnum.ERROR_SCAN_NOT_FOUND);
+            }
+            scanInfo = scanDataPo.getScan_info();
+        }
+
+        // 检查 scanInfo
+        JSONObject jsonScanInfo;
+        if (scanInfo == null || scanInfo.isEmpty()) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_INVALID_SCAN_INFO);
+        } else {
+            jsonScanInfo = JSONObject.parseObject(scanInfo);
+            if (jsonScanInfo == null) {
+                return responseHelper.error(ErrorCodeEnum.ERROR_INVALID_SCAN_INFO);
+            }
+        }
+
+        // 获取基线参数
+        BaseLinePo baseLinePo = baseLineMapper.getBaseLine(baseLine);
+        if (baseLinePo == null) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_BASE_LINE_NOT_FOUND);
+        }
+        JSONObject jsonBaseline = JSONObject.parseObject(baseLinePo.getTemplates());
+        if (jsonBaseline == null) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_BASE_LINE_NOT_FOUND);
+        }
+
+        return checkScanInfo(jsonScanInfo, jsonBaseline);
+    }
+
+
+    /**
+     * baseline 格式如下：
+     * {
+     *     startup: {
+     *         SELinux_status: "检查SELinux是否开启",
+     *         SELinux_mode: "检查SELinux模式是否为enforcing",
+     *         SELinux_policy: "检查SELinux策略是否为strict",
+     *         ......
+     *     }
+     * }
+     * @param scanInfo
+     * @param baseLine
+     * @return
+     */
+    private ResponseBean checkScanInfo(JSONObject scanInfo, JSONObject baseLine) {
+        // 检查 SELinux
+        if (!startupConfig.checkSELinux(scanInfo.getJSONObject("SELinux"), baseLine.getJSONObject("startup"))) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_FAIL_CHECK_SCAN_INFO);
+        }
+
+        // 检查自启动服务
+        if (!startupConfig.checkSelfRunServices(scanInfo.getJSONArray("selfRunServices"), baseLine.getJSONObject("startup"))) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_FAIL_CHECK_SCAN_INFO);
+        }
+
         return responseHelper.success();
     }
 }

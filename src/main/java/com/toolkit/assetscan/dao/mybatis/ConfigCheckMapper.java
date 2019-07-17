@@ -12,12 +12,14 @@ import java.util.List;
 public interface ConfigCheckMapper {
     @Insert("INSERT INTO config_check_results (\n" +
             "    uuid, base_line, asset_uuid, \n" +
-            "\t\tscan_uuid, config_info, creator_uuid, \n" +
+            "\t\tscan_uuid, config_type, config_info, \n" +
+            "\t\tcheck_item, creator_uuid, \n" +
             "\t\trisk_level, risk_desc, solution, \n" +
             "\t\tcreate_time)\n" +
             "VALUES (\n" +
             "    #{uuid}, #{base_line}, #{asset_uuid}, \n" +
-            "\t\t#{scan_uuid}, #{config_info}, #{creator_uuid}, \n" +
+            "\t\t#{scan_uuid}, #{config_type}, #{config_info}, \n" +
+            "\t\t#{check_item}, #{creator_uuid}, \n" +
             "\t\t#{risk_level}, #{risk_desc}, #{solution}, \n" +
             "\t\t#{create_time, jdbcType=TIMESTAMP}\n" +
             "\t\t)")
@@ -25,7 +27,8 @@ public interface ConfigCheckMapper {
 
     @Select("SELECT " +
             "    id, uuid, base_line, asset_uuid, \n" +
-            "    scan_uuid, config_info, creator_uuid, \n" +
+            "    scan_uuid, config_type, config_info, \n" +
+            "    check_item, creator_uuid, \n" +
             "    risk_level, risk_desc, solution, \n" +
             "    create_time\n" +
             "FROM config_check_results cs \n" +
@@ -34,7 +37,8 @@ public interface ConfigCheckMapper {
 
     @Select("SELECT " +
             "    id, uuid, base_line, asset_uuid, \n" +
-            "    scan_uuid, config_info, creator_uuid, \n" +
+            "    scan_uuid, config_type, config_info, \n" +
+            "    check_item, creator_uuid, \n" +
             "    risk_level, risk_desc, solution, \n" +
             "    create_time\n" +
             "FROM config_check_results cs \n" +

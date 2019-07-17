@@ -113,8 +113,9 @@ public class BaseLinesApi {
      */
     @RequestMapping(value = "/run-asset-check", method = RequestMethod.GET)
     @ResponseBody
-    Object getCheckResult(@RequestParam(value = "asset_uuid", defaultValue = "") String assetUuid) {
-        return scanDataService.runAssetScanCheck(assetUuid);
+    Object runScanCheck(@RequestParam(value = "asset_uuid", defaultValue = "") String assetUuid,
+                          @RequestParam(value = "base_line") int baseLine) {
+        return scanDataService.runAssetScanCheck(assetUuid, baseLine);
     }
 
 }

@@ -12,7 +12,9 @@ public class ConfigCheckResultPo {
     private int base_line;
     private String asset_uuid;
     private String scan_uuid;
+    private String config_type;
     private String config_info;
+    private String check_item;
     private int risk_level;
     private String risk_desc;
     private String solution;
