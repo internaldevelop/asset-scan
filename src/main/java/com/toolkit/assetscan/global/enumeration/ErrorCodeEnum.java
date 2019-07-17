@@ -75,6 +75,9 @@ public enum ErrorCodeEnum {
     ERROR_SEND_MAIL(2050, "发送邮件失败"),
     ERROR_FAILED_ASSET_RTINFO(2051, "资产实时信息收集失败"),
     ERROR_SCRIPT_SYNTAX_ERROR(2052, "脚本存在语法错误"),
+    ERROR_BASE_LINE_NOT_FOUND(2053, "找不到指定的基线"),
+    ERROR_SCAN_NOT_FOUND(2054, "找不到指定的资产扫描信息"),
+    ERROR_CHECK_RESULT_NOT_FOUND(2055, "找不到指定的资产核查结果"),
     ;
 
     private Integer code;
