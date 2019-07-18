@@ -118,4 +118,18 @@ public class BaseLinesApi {
         return scanDataService.runAssetScanCheck(assetUuid, baseLine);
     }
 
+    /**
+     * 10.8 资产扫描记录
+     * @param beginTime
+     * @param endTime
+     * @param assetUuidList
+     * @return
+     */
+    @RequestMapping(value = "/get-scan_records", method = RequestMethod.POST)
+    public @ResponseBody
+    Object getResultHistory(@RequestParam(value = "begin_time", required = false) java.sql.Timestamp beginTime,
+                            @RequestParam(value = "end_time", required = false) java.sql.Timestamp endTime,
+                            @RequestParam(value = "asset_uuid_list", required = false) String assetUuidList) {
+        return scanDataService.queryScanRecords(beginTime, endTime, assetUuidList);
+    }
 }
