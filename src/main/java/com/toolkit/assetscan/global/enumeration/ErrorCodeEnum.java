@@ -74,6 +74,12 @@ public enum ErrorCodeEnum {
     ERROR_PROJECT_NAME_EXIST(2049, "项目名称已存在"),
     ERROR_SEND_MAIL(2050, "发送邮件失败"),
     ERROR_FAILED_ASSET_RTINFO(2051, "资产实时信息收集失败"),
+    ERROR_SCRIPT_SYNTAX_ERROR(2052, "脚本存在语法错误"),
+    ERROR_BASE_LINE_NOT_FOUND(2053, "找不到指定的基线"),
+    ERROR_SCAN_NOT_FOUND(2054, "找不到指定的资产扫描信息"),
+    ERROR_CHECK_RESULT_NOT_FOUND(2055, "找不到指定的资产核查结果"),
+    ERROR_INVALID_SCAN_INFO(2056, "资产扫描信息格式无效"),
+    ERROR_FAIL_CHECK_SCAN_INFO(2057, "资产配置信息核查异常"),
     ;
 
     private Integer code;

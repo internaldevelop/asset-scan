@@ -3,8 +3,10 @@ package com.toolkit.assetscan.global.utils;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
+import java.util.Properties;
 
 public class SystemUtils {
+    public static Properties sysProps = System.getProperties();
     public static InetAddress getLocalHostLANAddress() {
         try {
             InetAddress candidateAddress = null;
@@ -35,5 +37,9 @@ public class SystemUtils {
             e.printStackTrace();
         }
         return null;
+    }
+
+    static public String getEnvEncoding() {
+        return sysProps.getProperty("sun.jnu.encoding");
     }
 }

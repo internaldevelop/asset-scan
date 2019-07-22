@@ -15,13 +15,20 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/sysinfo/version",
+							"raw": "{{base_url}}/sysinfo/version?sys_type=1",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"sysinfo",
 								"version"
+							],
+							"query": [
+								{
+									"key": "sys_type",
+									"value": "1",
+									"description": "1: 主站；2: 终端"
+								}
 							]
 						}
 					},
@@ -2295,6 +2302,39 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "6.6 定时采集资产信息",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/assets/real-time-info?asset_uuid=506df28c-2ece-4fe3-8472-ff2ad25c88ba&action=1&info_types=CPU Usage,Mem Usage",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"assets",
+								"real-time-info"
+							],
+							"query": [
+								{
+									"key": "asset_uuid",
+									"value": "506df28c-2ece-4fe3-8472-ff2ad25c88ba"
+								},
+								{
+									"key": "action",
+									"value": "1",
+									"description": "0: 停止采集；1: 开始采集"
+								},
+								{
+									"key": "info_types",
+									"value": "CPU Usage,Mem Usage"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -2782,6 +2822,256 @@
 							"path": [
 								"system-logs",
 								"all"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "10. 基线核查",
+			"item": [
+				{
+					"name": "10.1 查询基线",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/baseline-check/query-baselines?level=4",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"baseline-check",
+								"query-baselines"
+							],
+							"query": [
+								{
+									"key": "level",
+									"value": "4",
+									"description": "<= 0时，表示查询所有基线，>0时，查询指定等级的基线"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "10.2 添加扫描记录",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "asset_uuid",
+									"value": "{{asset_uuid}}",
+									"description": "日志记录的类型：\n1：成功操作；\n2：失败操作；\n3：系统错误（严重错误）；\n4：一般信息；\n5：异常信息（一般异常）；\n6：警告信息",
+									"type": "text"
+								},
+								{
+									"key": "scan_info",
+									"value": "{}",
+									"type": "text"
+								},
+								{
+									"key": "creator_uuid",
+									"value": "{{user_uuid}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/baseline-check/add-scan-data",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"baseline-check",
+								"add-scan-data"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "10.3 查询所有扫描记录",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/baseline-check/all-scan-records?detail_level=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"baseline-check",
+								"all-scan-records"
+							],
+							"query": [
+								{
+									"key": "detail_level",
+									"value": "1",
+									"description": "0: 基本记录信息；1: 联合\"资产名称\" 和 \"IP用户姓名/账号\""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "10.4 查询资产扫描信息",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/baseline-check/scan-info?scan_uuid=b0619854-d2aa-455b-93c0-b8a9cbb52f72",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"baseline-check",
+								"scan-info"
+							],
+							"query": [
+								{
+									"key": "scan_uuid",
+									"value": "b0619854-d2aa-455b-93c0-b8a9cbb52f72"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "10.5 新建核查结果记录",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "base_line",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "asset_uuid",
+									"value": "{{asset_uuid}}",
+									"description": "日志记录的类型：\n1：成功操作；\n2：失败操作；\n3：系统错误（严重错误）；\n4：一般信息；\n5：异常信息（一般异常）；\n6：警告信息",
+									"type": "text"
+								},
+								{
+									"key": "scan_uuid",
+									"value": "1111",
+									"type": "text"
+								},
+								{
+									"key": "config_info",
+									"value": "444",
+									"type": "text"
+								},
+								{
+									"key": "risk_level",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "risk_desc",
+									"value": "aa",
+									"type": "text"
+								},
+								{
+									"key": "solution",
+									"value": "aa",
+									"type": "text"
+								},
+								{
+									"key": "creator_uuid",
+									"value": "{{user_uuid}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/baseline-check/add-check-result",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"baseline-check",
+								"add-check-result"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "10.6 查询核查结果",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/baseline-check/check-result?scan_uuid=b0619854-d2aa-455b-93c0-b8a9cbb52f72&result_uuid=3694bb72-0322-43fc-9d38-f3fb481bf7a4",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"baseline-check",
+								"check-result"
+							],
+							"query": [
+								{
+									"key": "scan_uuid",
+									"value": "b0619854-d2aa-455b-93c0-b8a9cbb52f72",
+									"description": "scanUuid 和 resultUuid 二选一，不能都为空"
+								},
+								{
+									"key": "result_uuid",
+									"value": "3694bb72-0322-43fc-9d38-f3fb481bf7a4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "10.7 运行资产核查",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/baseline-check/run-asset-check?asset_uuid=a6ad16c4-05b1-4def-96f3-ed4d498e9f2d",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"baseline-check",
+								"run-asset-check"
+							],
+							"query": [
+								{
+									"key": "asset_uuid",
+									"value": "a6ad16c4-05b1-4def-96f3-ed4d498e9f2d",
+									"description": "scanUuid 和 resultUuid 二选一，不能都为空"
+								}
 							]
 						}
 					},
@@ -6828,7 +7118,7 @@
 										{
 											"key": "run_contents",
 											"value": "import os\nimport platform\nimport json\nimport re\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n\n    # 获取密码要求的配置\n    os.system(\"grep '^password\\t*requisite' /etc/pam.d/common-password > passwd_req.txt\")\n    passwd_req = open(\"passwd_req.txt\", \"r\").readlines()\n\n    # password requisite pam_deny.so minlen=6\n    # 参数说明如下：\n    # 1、retry=N，确定用户创建密码时允许重试的次数；\n    # 2、minlen=N，确定密码最小长度要求，事实上，在默认配置下，此参数代表密码最小长度为N-1；\n    # 3、dcredit=N，当N小于0时，代表新密码中数字字符数量不得少于（-N）个。例如，dcredit=-2代表密码中要至少包含两个数字字符；\n    # 4、ucredit=N，当N小于0时，代表则新密码中大写字符数量不得少于（-N）个；\n    # 5、lcredit=N，当N小于0时，代表则新密码中小写字符数量不得少于（-N）个；\n    # 6、ocredit=N，当N小于0时，代表则新密码中特殊字符数量不得少于（-N）个；\n    if len(passwd_req) == 0:\n        # 如果读取不到 password requisite 参数，按没有密码要求处理\n        info['Password requisite'] = \"没有找到口令要求的配置。\"\n        result['risk_level'] = 2\n        result['risk_desc'] = '系统没有对用户口令做任何限制要求，用户口令可能过于简单，对系统造成威胁。'\n        result['solution'] = '修改/etc/pam.d/common-password文件，设置password requisite minlen = 12。'\n    else:\n        # passwd_req = 'password    requisite     minlen = 8'\n        passwd_req = passwd_req[0]\n        info['Password requisite'] = passwd_req\n        pos = passwd_req.find('minlen')\n        if pos < 0:\n            result['risk_level'] = 1\n            result['risk_desc'] = '未设置口令最小长度，系统安全要求最少12位。'\n            result['solution'] = 'vi /etc/pam.d/common-password，找到password模块接口的配置部分，设置password requisite minlen = 12。'\n        else:\n            min_len = passwd_req[pos:].strip().replace(' ', '')\n            min_len = int(min_len[7:])\n            if min_len < 12:\n                result['risk_level'] = 1\n                result['risk_desc'] = '当前口令最小长度设置为{}位，系统安全要求最少12位。'.format(min_len)\n                result['solution'] = 'vi /etc/pam.d/common-password，找到password模块接口的配置部分，设置password requisite minlen = ' \\\n                                     '12。 '\n            else:\n                result['risk_level'] = 0\n                result['risk_desc'] = '用户口令设置符合要求。'\n                result['solution'] = '无'\n\n    os.remove(\"passwd_req.txt\")\n    return os_info\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
-											"description": "windows/passwd_requisite.py",
+											"description": "linux/passwd_requisite.py",
 											"type": "text"
 										},
 										{
@@ -6951,7 +7241,7 @@
 										{
 											"key": "run_contents",
 											"value": "import os\nimport platform\nimport json\nimport re\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n\n    # 获取密码要求的配置\n    os.system(\"grep '^PASS_MAX_DAYS' /etc/login.defs > pass_maxd.txt\")\n    pass_max_days_list = open(\"pass_maxd.txt\", \"r\").readlines()\n\n    # cat /etc/login.defs文件中指定配置项，其中：\n    # 要求操作系统的账户口令的最长生存期不长于90天\n    # PASS_MAX_DAYS配置项决定密码最长使用期限；\n    # PASS_MIN_DAYS配置项决定密码最短使用期限；\n    # PASS_WARN_AGE配置项决定密码到期提醒时间。\n    # vi /etc/login.defs文件，修改PASS_MAX_DAYS值为小于等于90\n    if len(pass_max_days_list) == 0:\n        # 如果读取不到 PASS_MAX_DAYS 配置，按没有该配置处理\n        info['PASS_MAX_DAYS'] = \"没有设置口令的最长使用期限。\"\n        result['risk_level'] = 2\n        result['risk_desc'] = '没有设置口令的最长使用期限。'\n        result['solution'] = '配置方法：vi /etc/login.defs文件，修改PASS_MAX_DAYS值为小于等于90。'\n    else:\n        # PASS_MAX_DAYS\t99999\n        pass_max_days = pass_max_days_list[0]\n        info['PASS_MAX_DAYS'] = pass_max_days\n        pass_max_days = re.sub(' +', ' ', pass_max_days)\n        pass_max_days = int(pass_max_days.split()[1])\n        if pass_max_days > 90:\n            result['risk_level'] = 1\n            result['risk_desc'] = '账户口令的最长生存期的当前设置为{}天,违背了不长于90天的原则。'.format(pass_max_days)\n            result['solution'] = '配置方法：vi /etc/login.defs文件，修改PASS_MAX_DAYS值为小于等于90。'\n        else:\n            result['risk_level'] = 0\n            result['risk_desc'] = '账户口令的最长生存期的当前设置为{}天，符合不长于90天的要求。'.format(pass_max_days)\n            result['solution'] = '无'\n\n    os.remove(\"pass_maxd.txt\")\n    return os_info\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
-											"description": "windows/passwd_max_days.py",
+											"description": "linux/passwd_max_days.py",
 											"type": "text"
 										},
 										{
@@ -7080,7 +7370,7 @@
 										{
 											"key": "run_contents",
 											"value": "import os\nimport platform\nimport json\nimport re\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n\n    result['risk_level'] = 0\n    result['risk_desc'] = ''\n    result['solution'] = ''\n\n    # /etc/passwd 所有用户都可读，root用户可写\n    # -rw-r--r--\n    os.system(\"ls -l /etc/passwd > passwd.txt\")\n    passwd = open(\"passwd.txt\", \"r\").readlines()\n    if len(passwd) != 0:\n        info['passwd file'] = passwd[0]\n        if passwd[0][0:10] != '-rw-r--r--':\n            result['risk_level'] = 2\n            result['risk_desc'] += '/etc/passwd 的文件权限不符合\"所有用户都可读，root用户可写\"的要求。\\n'\n            result['solution'] += '配置命令：chmod 644 /etc/passwd 。\\n'\n    os.remove('passwd.txt')\n\n    # /etc/shadow 只有root可读\n    # -r--------\n    os.system(\"ls -l /etc/shadow > shadow.txt\")\n    shadow = open(\"shadow.txt\", \"r\").readlines()\n    if len(shadow) != 0:\n        info['shadow file'] = shadow[0]\n        if shadow[0][0:10] != '-r--------':\n            result['risk_level'] = 2\n            result['risk_desc'] += '/etc/shadow 的文件权限不符合\"只有root可读\"的要求。\\n'\n            result['solution'] += '配置命令：chmod 600 /etc/shadow 。\\n'\n    os.remove('shadow.txt')\n\n    # /etc/group 必须所有用户都可读，root用户可写\n    # -rw-r--r--\n    os.system(\"ls -l /etc/group > group.txt\")\n    group = open(\"group.txt\", \"r\").readlines()\n    if len(group) != 0:\n        info['group file'] = group[0]\n        if group[0][0:10] != '-rw-r--r--':\n            result['risk_level'] = 2\n            result['risk_desc'] += '/etc/group 的文件权限不符合\"所有用户都可读，root用户可写\"的要求。\\n'\n            result['solution'] += '配置命令：chmod 644 /etc/group 。\\n'\n    os.remove('group.txt')\n\n    if result['risk_level'] == 0:\n        result['risk_desc'] = '关键目录权限符合要求。'\n        result['solution'] = '无'\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
-											"description": "windows/critical_files_right.py",
+											"description": "linux/critical_files_right.py",
 											"type": "text"
 										},
 										{
@@ -7209,7 +7499,7 @@
 										{
 											"key": "run_contents",
 											"value": "import os\nimport platform\nimport json\nimport re\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n\n    # 安全日志完备性要求\n    # 系统应配置完备日志记录，记录对与系统相关的安全事件。\n    os.system(\"grep authpriv.* /etc/rsyslog.conf > rsyslog.txt\")\n    rsyslog = open(\"rsyslog.txt\", \"r\").readlines()\n    if len(rsyslog) == 0:\n        info['rsyslog authpriv'] = '没有相应的日志配置'\n        result['risk_level'] = 2\n        result['risk_desc'] = '系统应配置完备日志记录，记录对与系统相关的安全事件。'\n        result['solution'] = '修改配置文件vi /etc/rsyslog.conf，配置如下类似语句：\\nauthpriv.*            /var/log/auth.log'\n    else:\n        info['rsyslog authpriv'] = rsyslog\n        result['risk_level'] = 0\n        result['risk_desc'] = '系统已配置完备日志记录'\n        result['solution'] = '无'\n\n    os.remove('rsyslog.txt')\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
-											"description": "windows/secure_log.py",
+											"description": "linux/secure_log.py",
 											"type": "text"
 										},
 										{
@@ -7332,7 +7622,7 @@
 										{
 											"key": "run_contents",
 											"value": "import os\nimport platform\nimport json\nimport re\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n\n    # 设置history时间戳，便于审计。\n    # 系统应配置完备日志记录，记录对与系统相关的安全事件。\n    os.system(\"grep HISTTIMEFORMAT /etc/profile > history.txt\")\n    history = open(\"history.txt\", \"r\").readlines()\n    if len(history) == 0:\n        info['History timestamp'] = '没有配置 history 时间戳。'\n        result['risk_level'] = 1\n        result['risk_desc'] = '系统应配置 history 时间戳，便于审计。'\n        result['solution'] = '在/etc/profile 文件中增加如下行：\\nexport HISTTIMEFORMAT=\"%F %T `whoami` \"'\n    else:\n        info['History timestamp'] = history[0]\n        result['risk_level'] = 0\n        result['risk_desc'] = '系统已配置 history 时间戳。'\n        result['solution'] = '无'\n\n    os.remove('history.txt')\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
-											"description": "windows/history_timestamp.py",
+											"description": "linux/history_timestamp.py",
 											"type": "text"
 										},
 										{
@@ -7461,7 +7751,7 @@
 										{
 											"key": "run_contents",
 											"value": "import os\nimport platform\nimport json\nimport re\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef check_config(cfg_list, cfg, value):\n    if len(cfg_list) > 0:\n        for info in cfg_list:\n            if info.find(cfg) == 0 and info.find(value) > len(cfg):\n                return True\n    return False\n\n\ndef get_line(info_list, key):\n    if len(info_list) > 0:\n        for info in info_list:\n            if info.find(key) >= 0:\n                return info\n    return ''\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n\n    result['risk_level'] = 0\n    result['risk_desc'] = ''\n    result['solution'] = ''\n\n    # SSH登录配置\n    # 系统应配置使用SSH等加密协议进行远程登录维护，并安全配置SSHD的设置。不使用TELENT进行远程登录维护。\n\n    # 检查 ssh 服务\n    os.system(\"ps -elf | grep sshd > ps.txt\")\n    ps_result = open(\"ps.txt\", \"r\").readlines()\n    line_info = get_line(ps_result, '/usr/sbin/sshd')\n    if len(line_info) == 0:\n        info['SSH Service'] = '没有启动 SSH 服务。'\n        result['risk_level'] = 2\n        result['risk_desc'] += '没有启动SSH服务。\\n'\n        result['solution'] += '命令：systemctl start sshd 启动服务\\n'\n    else:\n        info['SSH Service'] = line_info\n\n    # 检查 telnet 服务\n    os.system(\"ps -elf | grep xinetd > ps.txt\")\n    ps_result = open(\"ps.txt\", \"r\").readlines()\n    line_info = get_line(ps_result, '/etc/rc.d/init.d/xinetd')\n    if len(line_info) > 0:\n        info['Telnet Service'] = line_info\n        result['risk_level'] = 2\n        result['risk_desc'] += '系统启动了 Telnet 服务，采用这种远程维护是不安全的。\\n'\n        result['solution'] += '关闭 Telnet 服务，且将其设置成开机不自动启动。\\n'\n    else:\n        info['Telnet Service'] = '没有启动 Telnet 服务。'\n\n    os.remove('ps.txt')\n\n    # 读取 SSH 配置\n    os.system(\"cat /etc/ssh/sshd_config > sshd_config.txt\")\n    sshd_config = open(\"sshd_config.txt\", \"r\").readlines()\n    info['SSH Config'] = sshd_config\n\n    # 窗口图形传输使用ssh加密\n    if not check_config(sshd_config, 'X11Forwarding', 'yes'):\n        result['risk_level'] = 2\n        result['risk_desc'] += '未允许窗口图形传输使用 SSH 加密。\\n'\n        result['solution'] += 'sshd_config 增加配置：X11Forwarding yes。\\n'\n\n    # 完全禁止SSHD使用.rhosts文件\n    if not check_config(sshd_config, 'IgnoreRhosts', 'yes'):\n        result['risk_level'] = 2\n        result['risk_desc'] += '未禁止SSHD使用.rhosts文件。\\n'\n        result['solution'] += 'sshd_config 增加配置：IgnoreRhosts yes。\\n'\n\n    # 不设置使用基于rhosts的安全验证\n    if not check_config(sshd_config, 'RhostsAuthentication', 'no'):\n        result['risk_level'] = 2\n        result['risk_desc'] += '未禁止基于rhosts的安全验证。\\n'\n        result['solution'] += 'sshd_config 增加配置：RhostsAuthentication no。\\n'\n\n    # 不设置使用RSA算法的基于rhosts的安全验证\n    if not check_config(sshd_config, 'RhostsRSAAuthentication', 'no'):\n        result['risk_level'] = 2\n        result['risk_desc'] += '未禁止使用RSA算法的基于rhosts的安全验证。\\n'\n        result['solution'] += 'sshd_config 增加配置：RhostsRSAAuthentication no。\\n'\n\n    # 不允许基于主机白名单方式认证\n    if not check_config(sshd_config, 'HostbasedAuthentication', 'no'):\n        result['risk_level'] = 2\n        result['risk_desc'] += '未禁止基于主机白名单方式认证。\\n'\n        result['solution'] += 'sshd_config 增加配置：HostbasedAuthentication no。\\n'\n\n    # 不允许root登录\n    if not check_config(sshd_config, 'PermitRootLogin', 'no'):\n        result['risk_level'] = 2\n        result['risk_desc'] += '未禁止root登录。\\n'\n        result['solution'] += 'sshd_config 增加配置：PermitRootLogin no。\\n'\n\n    # 不允许空密码\n    if not check_config(sshd_config, 'PermitEmptyPasswords', 'no'):\n        result['risk_level'] = 2\n        result['risk_desc'] += '未禁止空密码。\\n'\n        result['solution'] += 'sshd_config 增加配置：PermitEmptyPasswords no。\\n'\n\n    # 设置ssh登录时显示的banner\n    if not check_config(sshd_config, 'Banner', '/etc/motd'):\n        result['risk_level'] = 2\n        result['risk_desc'] += '未设置ssh登录时显示的banner。\\n'\n        result['solution'] += 'sshd_config 增加配置：Banner /etc/motd。\\n'\n\n    os.remove('sshd_config.txt')\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
-											"description": "windows/sshd_config.py",
+											"description": "linux/sshd_config.py",
 											"type": "text"
 										},
 										{
@@ -7584,7 +7874,7 @@
 										{
 											"key": "run_contents",
 											"value": "import os\nimport platform\nimport json\nimport re\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef is_service_running(info_list, service):\n    if len(info_list) > 0:\n        for info in info_list:\n            if info.find(service) >= 0:\n                return True\n    return False\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n\n    result['risk_level'] = 0\n    result['risk_desc'] = ''\n    result['solution'] = ''\n\n    # 获取所有系统服务\n    os.system(\"systemctl list-units > services.txt\")\n    services = open(\"services.txt\", \"r\").readlines()\n    info['Running Services'] = services\n\n    # Linux/Unix系统服务中，部分服务存在较高安全风险，应当禁用，包括：\n    # “lpd”，此服务为行式打印机后台程序，用于假脱机打印工作的UNIX后台程序，此服务通常情况下不用，建议禁用；\n    # “telnet”，此服务采用明文传输数据，登陆信息容易被窃取，建议用ssh代替；\n    # “routed”，此服务为路由守候进程，使用动态RIP路由选择协议，建议禁用；\n    # “sendmail”，此服务为邮件服务守护进程，非邮件服务器应将其关闭；\n    # “Bluetooth”，此服务为蓝牙服务，如果不需要蓝牙服务时应关闭；\n    # “identd”，此服务为AUTH服务，在提供用户信息方面与finger类似，一般情况下该服务不是必须的，建议关闭；\n    # “xfs”，此服务为Linux中X Window的字体服务，关于该服务历史上出现过信息泄露和拒绝服务等漏洞，应以减少系统风险；\n    # R服务（“rlogin”、“rwho”、“rsh”、“rexec”），R服务设计上存在严重的安全缺陷，仅适用于封闭环境中信任主机之间便捷访问，其他场合下均必须禁用；\n    # 基于inetd/xinetd的服务（daytime、chargen、echo等），此类服务建议禁用。\n    check_list = ['lpd', 'telnet', 'routed', 'sendmail', 'Bluetooth', 'identd', 'xfs',\n                  'rlogin', 'rwho', 'rsh', 'rexec', 'inetd', 'xinetd']\n    for service in check_list:\n        if is_service_running(services, service):\n            result['risk_level'] = 2\n            result['risk_desc'] += '系统启动了 {} 服务，该服务有安全风险。\\n'.format(service)\n            result['solution'] += '关闭 {} 服务，且将其设置成开机不自动启动。\\n'.format(service)\n\n    if result['risk_level'] == 0:\n        result['risk_desc'] = '未发现有安全风险的系统服务。'\n        result['solution'] = '无'\n\n    os.remove('services.txt')\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
-											"description": "windows/system_service.py",
+											"description": "linux/system_service.py",
 											"type": "text"
 										},
 										{
@@ -7713,12 +8003,399 @@
 										{
 											"key": "run_contents",
 											"value": "import os\nimport platform\nimport json\nimport re\n\n\ndef get_os_info():\n    os_info = platform.uname()._asdict()\n    return os_info\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    os_info = get_os_info()\n\n    is_fw_run = False\n\n    # 查看 iptables 服务\n    os.system(\"systemctl list-units | grep iptables > firewall.txt\")\n    fw_service = open(\"firewall.txt\", \"r\").readlines()\n    info['Service iptables'] = fw_service\n    if len(fw_service) > 0:\n        is_fw_run = True\n\n    # 查看 firewalld 服务\n    os.system(\"systemctl list-units | grep firewalld > firewall.txt\")\n    fw_service = open(\"firewall.txt\", \"r\").readlines()\n    info['Service firewalld'] = fw_service\n    if len(fw_service) > 0:\n        is_fw_run = True\n\n    if is_fw_run:\n        result['risk_level'] = 0\n        result['risk_desc'] = '系统防火墙正在运行中，可有效防范一些网络攻击。'\n        result['solution'] = '无'\n    else:\n        result['risk_level'] = 3\n        result['risk_desc'] = '系统防火墙未开启，有较大的安全风险。'\n        result['solution'] = '请检查 firewalld 服务是否正常运行，如果没有安装防火墙，请先安装并启动防火墙；同时设置 firewalld 服务为开机启动。'\n\n    os.remove('firewall.txt')\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
-											"description": "windows/firewall.py",
+											"description": "linux/firewall.py",
 											"type": "text"
 										},
 										{
 											"key": "consume_time",
 											"value": "2000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "C15. Linux网络配置",
+					"item": [
+						{
+							"name": "C.15.1 端口检查",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Linux网络端口检查",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "LinuxNetPortCheck",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "061278e0-95c8-4f18-9104-1fa3b3815a08",
+											"description": "分组：Linux网络配置",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3\n# -*- coding: utf-8 -*-\nfrom socket import *\n\n\ndef process(result):\n    info = []\n    result['info'] = info\n    result['risk_level'] = 0\n    result['risk_desc'] = '未发现网络端口问题。'\n    result['solution'] = '无'\n\n    openportcount = 0\n    ip = '127.0.0.1'\n\n    setdefaulttimeout(1)\n    for p in range(1, 65536):\n        try:\n            s = socket(AF_INET, SOCK_STREAM)\n            s.connect(('127.0.0.1', p))\n            print('[+] %d open' % p)\n            s.close()\n\n            openportcount += 1\n            port_info = {\n                # 'local_ip': ip,\n                'port': p,\n                'status': 'open',\n            }\n            info.append(port_info)\n\n        except:\n            pass\n\n\n    # 开放端口大于3时，需检查确认是否有多余端口\n    if openportcount > 3:\n        result['risk_level'] = 1\n        result['risk_desc'] = '系统开放了太多端口，存在安全风险 共计开放{}个端口。'.format(openportcount)\n        result['solution'] = '请联系系统管理员，维护与工作无关的端口'\n    else:\n        result['risk_level'] = 0\n        result['risk_desc'] = '开放端口数量处于正常范围'\n        result['solution'] = '无'\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
+											"description": "linux/scan_port.py",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "2000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "C16. Linux系统补丁",
+					"item": [
+						{
+							"name": "C.16.1 Linux系统内核版本检查",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Linux内核版本检查",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "LinuxKernelVerCheck",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "95567fd3-9ca5-4871-8c71-e202e361644e",
+											"description": "分组：Linux系统补丁",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "import os\nimport platform\n# import json\nimport re\n\n\n# 判断两个字符串版本号大小 例如：1.9 < 1.10<1.10.1\ndef compare(a, b):\n    la = a.split('.')\n    lb = b.split('.')\n    f = 0\n    if len(la) > len(lb):\n        f = len(la)\n    else:\n        f = len(lb)\n    for i in range(f):\n        try:\n            if int(la[i]) > int(lb[i]):\n                print(a + '>' + b)\n                return 1\n            elif int(la[i]) == int(lb[i]):\n                continue\n            else:\n                print(a + '<' + b)\n                return 0\n        except IndexError as e:\n            if len(la) > len(lb):\n                print(a + '>' + b)\n                return 1\n            else:\n                print(a + '<' + b)\n                return 0\n    print(a + '=' + b)\n\n\n# 获取操作系统版本信息\ndef show_os_all_info():\n    '''打印os的全部信息'''\n    print('获取操作系统名称及版本号 : [{}]'.format(platform.platform()))\n    print('获取操作系统名称及版本号 : [{}]'.format(platform.platform(aliased=True)))\n    print('获取操作系统名称及版本号 : [{}]'.format(platform.platform(terse=True)))\n    print('获取操作系统版本号 : [{}]'.format(platform.version()))\n    print('获取操作系统的位数 : [{}]'.format(platform.architecture()))\n    print('计算机类型 : [{}]'.format(platform.machine()))\n    print('计算机的网络名称 : [{}]'.format(platform.node()))\n    print('计算机处理器信息 : [{}]'.format(platform.processor()))\n    print('获取操作系统类型 : [{}]'.format(platform.system()))\n    print('汇总信息 : [{}]'.format(platform.uname()))\n    print('汇总信息 : [{}]'.format(platform.uname()._asdict()))\n\n\ndef process(result):\n    info = {}\n    result['info'] = info\n\n    # show_os_all_info()\n\n    version = platform.platform()\n    print('version:',version)\n\n    # re.sub(pattern, repl, string, count=0)\n    # 参数说明：\n    # pattern：正则重的模式字符串\n    # repl：被拿来替换的字符串\n    # string：要被用于替换的原始字符串\n    # count：模式匹配后替换的最大次数，省略则默认为0，表示替换所有的匹配\n    version = re.sub(\"[A-Za-z-_\\!\\%\\[\\]\\,\\。]\", \"\", version)\n    print('version:',version)\n\n    #对比基准版本，根据版本号判断系统是否有安全更新\n    iret = compare(version,\"2.26\")\n    print('iret:',iret)\n    if iret > 0:\n        info['version'] = platform.platform()\n        result['risk_level'] = 0\n        result['risk_desc'] = '当前系统补丁包较新，无安全风险'\n        result['solution'] = '无'\n\n    else:\n        info['version'] = platform.platform()\n        result['risk_level'] = 1\n        result['risk_desc'] = '当前系统补丁包版本过低，存在安全风险'\n        result['solution'] = '联系管理员升级您的操作系统 参考命令：yum clean all & yum update'\n\n\nif __name__ == '__main__':\n    _result = {}\n    process(_result)\n\n    print(_result)\n",
+											"description": "linux/system_safety_check.py",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
+											"type": "text"
+										},
+										{
+											"key": "asset_uuid",
+											"value": "{{asset_uuid}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/add",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"add"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "C.25 TEST",
+					"item": [
+						{
+							"name": "C.14.2 Linux防火墙状态检查",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55ac45bc-e4c8-4c19-8093-4848165ce338",
+										"exec": [
+											"// var num = Math.ceil(Math.random() * 10000);",
+											"// pm.environment.set(\"policy_name\", \"policy-\" + num);",
+											"// pm.environment.set(\"policy_code\", \"code-\" + num);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "4725d9ea-59a8-4fd4-9fdd-ff51bbf4bcdf",
+										"exec": [
+											"pm.test(\"add policy\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.code).to.eql(0);",
+											"    ",
+											"    // pm.environment.set(\"policy_uuid\", jsonData.payload.uuid);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Linux防火墙状态检查",
+											"type": "text"
+										},
+										{
+											"key": "code",
+											"value": "LinuxFirewalldStatus",
+											"type": "text"
+										},
+										{
+											"key": "group_uuid",
+											"value": "c111a6ad-5b51-48b0-88c1-76a34c42f3d1",
+											"description": "分组：Linux防火墙安全",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "create_user_uuid",
+											"value": "{{user_uuid}}",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "os_type",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "baseline",
+											"value": "2",
+											"type": "text"
+										},
+										{
+											"key": "run_mode",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "run_contents",
+											"value": "#!/usr/bin/python3.7\n# coding=utf-8\nimport os\nimport json\n\n\n# def ping_ip(ip):  # 1、ping指定IP判断主机是否存活\n#     output = os.popen('ping -c 1 %s' % ip).readlines()  # 注：若在Linux系统下-n 改为 -c\n#     for w in output:\n#         if str(w).upper().find('TTL') >= 0:\n#             # IPList.append(ip)\n#             print(ip)\n\n\ndef getValue(t):\n    return t.split(\"=\")[-1].strip()\n\n\n# def process(info):\ndef process(result):\n    info = {}\n    result['info'] = info\n    result['risk_level'] = 0\n    result['risk_desc'] = ''\n    result['solution'] = '无'\n\n    # ping_ip(\"127.0.0.1\")\n\n    # print(getValue(\"v= 100\"))\n\n    output = os.popen('systemctl status firewalld.service').readlines()  # 注：若在Linux系统下-n 改为 -c\n    print(output)\n    for w in output:\n        if str(w).upper().find('ACTIVE: ACTIVE') >= 0: #Active: active (running)\n            info['Firewall Operational mode'] = '启用'\n            result['risk_level'] = 0\n            result['risk_desc'] = '防火墙已正确开启'\n            result['solution'] = '无'\n        else:\n            info['Firewall Operational mode'] = '未启用'\n            result['risk_level'] = 3\n            result['risk_desc'] = '防火墙未开启，系统不能有效保障网络安全，也不能对网络存取和访问进行有效的监控审计，系统和用户的信息资料有较大的外泄风险。'\n            result['solution'] = '请使用命令开启防火墙：\\n\\tsystemctl start firewalld.service'\n\n\n\n    return\n\n\n\nif __name__ == '__main__':\n    info = {}\n    process(info)\n    print(info)\n\n    result = {'info': info}\n    # analyze(result)\n    # print(result)\n\n    # result = oscoreversion()\n    # print(result)\n",
+											"description": "linux/firewall_security.py",
+											"type": "text"
+										},
+										{
+											"key": "consume_time",
+											"value": "1000",
 											"type": "text"
 										},
 										{

@@ -1,5 +1,6 @@
 package com.toolkit.assetscan.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.websocket.SockMsgTypeEnum;
@@ -119,7 +120,9 @@ public class AssetCollectScheduler {
 
             // 将节点的资产实时信息通过 websocket 广播到客户端
             if (responseBean.getCode() == ErrorCodeEnum.ERROR_OK.getCode()) {
-                WebSocketServer.broadcastAssetInfo(SockMsgTypeEnum.ASSET_REAL_TIME_INFO, responseBean.getPayload());
+                JSONObject jsonMsg = (JSONObject)JSONObject.toJSON(responseBean.getPayload());
+                jsonMsg.put("asset_uuid", this.assetUuid);
+                WebSocketServer.broadcastAssetInfo(SockMsgTypeEnum.ASSET_REAL_TIME_INFO, jsonMsg);
             }
         }
 
