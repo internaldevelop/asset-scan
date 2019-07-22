@@ -5,8 +5,8 @@ import com.toolkit.assetscan.bean.po.ConfigCheckResultPo;
 import com.toolkit.assetscan.dao.mybatis.ConfigCheckMapper;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.response.ResponseHelper;
-import com.toolkit.assetscan.service.analyze.AssetScanDataService;
-import com.toolkit.assetscan.service.analyze.BaseLineTemplatesService;
+import com.toolkit.assetscan.service.AssetScanDataService;
+import com.toolkit.assetscan.service.BaseLineTemplatesService;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -119,7 +119,22 @@ public class BaseLinesApi {
     }
 
     /**
-     * 10.8 初始化基线模板数据
+     * 10.8 资产扫描记录
+     * @param beginTime
+     * @param endTime
+     * @param assetUuidList
+     * @return
+     */
+    @RequestMapping(value = "/get-scan_records", method = RequestMethod.POST)
+    public @ResponseBody
+    Object getResultHistory(@RequestParam(value = "begin_time", required = false) java.sql.Timestamp beginTime,
+                            @RequestParam(value = "end_time", required = false) java.sql.Timestamp endTime,
+                            @RequestParam(value = "asset_uuid_list", required = false) String assetUuidList) {
+        return scanDataService.queryScanRecords(beginTime, endTime, assetUuidList);
+    }
+
+    /**
+     * 10.9 初始化基线模板数据
      * @return
      */
     @RequestMapping(value = "/init-baselines", method = RequestMethod.GET)

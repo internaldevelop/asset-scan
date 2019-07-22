@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -91,6 +92,45 @@ public class AssetScanDataService {
             } else {
                 return responseHelper.success(scanDataPos);
             }
+        }
+    }
+
+    public ResponseBean queryScanRecords(java.sql.Timestamp beginTime,
+                                         java.sql.Timestamp endTime,
+                                         String assetUuidList) {
+        List<AssetScanRecordDto> recordDtos = assetScanDataMapper.getAllScanRecordData();
+        if (recordDtos == null) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_SCAN_NOT_FOUND);
+        } else {
+            java.sql.Timestamp currentTime = MyUtils.getCurrentSystemTimestamp();
+            // 未提供起始时间，按1970年时间算起
+            if (beginTime == null) {
+                beginTime = new java.sql.Timestamp(0);
+            }
+            // 未提供结束时间，用当前时间处理
+            if (endTime == null) {
+                endTime = currentTime;
+            }
+            // 检验起止时间是否历史时间
+            if ( beginTime.after(currentTime)|| endTime.after(currentTime) )
+                return responseHelper.error(ErrorCodeEnum.ERROR_TIME_AFTER_CURRENT);
+
+            // 起始时间不能晚于结束时间
+            if ( beginTime.after(endTime))
+                return responseHelper.error(ErrorCodeEnum.ERROR_TIME_INCORRECT);
+
+            // 如果策略 uuid 列表未提供，则用空字符串表示全部资产
+            if (assetUuidList == null)
+                assetUuidList = "";
+
+            List<AssetScanRecordDto> results = new ArrayList<>();
+            for(AssetScanRecordDto scanRecord: recordDtos) {
+                if ((assetUuidList.contains(scanRecord.getAsset_uuid()) || assetUuidList.equals(""))
+                    && (scanRecord.getCreate_time().after(beginTime) && scanRecord.getCreate_time().before(endTime))) {
+                    results.add(scanRecord);
+                }
+            }
+            return responseHelper.success(results);
         }
     }
 
