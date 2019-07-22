@@ -1,7 +1,9 @@
 package com.toolkit.assetscan.dao.mybatis;
 
 import com.toolkit.assetscan.bean.po.BaseLinePo;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -32,4 +34,15 @@ public interface BaseLineMapper {
             "FROM base_lines\n" +
             "WHERE level=#{level}\n")
     BaseLinePo getBaseLine(int level);
+
+    /**
+     * 更新指定等级的基线模板
+     * @param level
+     * @param templates
+     * @return
+     */
+    @Update("UPDATE base_lines b SET \n" +
+            "    templates=#{templates} \n" +
+            "WHERE level=#{level}\n")
+    int updateTemplate(@Param("level")int level, @Param("templates")String templates);
 }

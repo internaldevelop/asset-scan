@@ -1,4 +1,4 @@
-package com.toolkit.assetscan.service;
+package com.toolkit.assetscan.service.analyze;
 
 import com.alibaba.fastjson.JSONObject;
 import com.toolkit.assetscan.bean.dto.AssetScanRecordDto;
@@ -49,6 +49,18 @@ public class AssetScanDataService {
 
     @Autowired
     StartupConfig startupConfig;
+    @Autowired
+    AccountConfig accountConfig;
+    @Autowired
+    PasswordConfig passwordConfig;
+    @Autowired
+    ServiceConfig serviceConfig;
+    @Autowired
+    LoginConfig loginConfig;
+    @Autowired
+    SysLogConfig sysLogConfig;
+    @Autowired
+    IptablesConfig iptablesConfig;
 
     public ResponseBean addScanRecord(AssetScanDataPo scanDataPo) {
         // 设置扫描记录的 UUID 和创建时间
@@ -215,6 +227,41 @@ public class AssetScanDataService {
 
         // 检查自启动服务
         if (!startupConfig.checkSelfRunServices(scanInfo.getJSONArray("selfRunServices"), baseLine.getJSONObject("startup"))) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_FAIL_CHECK_SCAN_INFO);
+        }
+
+        // 检查账号配置
+        if (!accountConfig.checkAccounts(scanInfo.getJSONArray("accounts"), baseLine.getJSONObject("accounts"))) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_FAIL_CHECK_SCAN_INFO);
+        }
+
+        // 检查账户组配置
+        if (!accountConfig.checkGroupPwd(scanInfo.getJSONArray("groups"), baseLine.getJSONObject("accounts"))) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_FAIL_CHECK_SCAN_INFO);
+        }
+
+        // 检查密码配置
+        if (!passwordConfig.checkPassword(scanInfo.getJSONObject("passwordProps"), baseLine.getJSONObject("passowrd"))) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_FAIL_CHECK_SCAN_INFO);
+        }
+
+        // 检查服务安全配置
+        if (!serviceConfig.checkService(scanInfo, baseLine.getJSONObject("services"))) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_FAIL_CHECK_SCAN_INFO);
+        }
+
+        // 检查登录安全配置
+        if (!loginConfig.checkLogin(scanInfo.getJSONObject("login"), baseLine.getJSONObject("login"))) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_FAIL_CHECK_SCAN_INFO);
+        }
+
+        // 检查系统日志安全配置
+        if (!sysLogConfig.checkSysLog(scanInfo.getJSONObject("syslog"), baseLine.getJSONObject("syslog"))) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_FAIL_CHECK_SCAN_INFO);
+        }
+
+        // 检查iptables配置
+        if (!iptablesConfig.checkIptables(scanInfo.getJSONObject("iptablesConfig"), baseLine.getJSONObject("iptables"))) {
             return responseHelper.error(ErrorCodeEnum.ERROR_FAIL_CHECK_SCAN_INFO);
         }
 

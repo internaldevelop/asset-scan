@@ -5,8 +5,8 @@ import com.toolkit.assetscan.bean.po.ConfigCheckResultPo;
 import com.toolkit.assetscan.dao.mybatis.ConfigCheckMapper;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.response.ResponseHelper;
-import com.toolkit.assetscan.service.AssetScanDataService;
-import com.toolkit.assetscan.service.BaseLineTemplatesService;
+import com.toolkit.assetscan.service.analyze.AssetScanDataService;
+import com.toolkit.assetscan.service.analyze.BaseLineTemplatesService;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -118,4 +118,13 @@ public class BaseLinesApi {
         return scanDataService.runAssetScanCheck(assetUuid, baseLine);
     }
 
+    /**
+     * 10.8 初始化基线模板数据
+     * @return
+     */
+    @RequestMapping(value = "/init-baselines", method = RequestMethod.GET)
+    @ResponseBody
+    Object initBaselines() {
+        return baseLineTemplatesService.initBaselineTemplates();
+    }
 }

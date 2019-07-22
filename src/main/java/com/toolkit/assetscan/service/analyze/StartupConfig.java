@@ -2,8 +2,15 @@ package com.toolkit.assetscan.service.analyze;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.sun.xml.internal.fastinfoset.util.StringArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.swing.text.html.HTMLDocument;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 @Component
 public class StartupConfig {
@@ -25,16 +32,12 @@ public class StartupConfig {
      */
     public boolean checkSELinux(JSONObject seLinux, JSONObject checkItems) {
         resultOper.setConfigType("开机安全配置");
-        int riskLevel;
-        String riskDesc;
-        String solution;
-        String configInfo;
 
         // 检查SELinux的状态
-        if (checkItems.getString("SELinux_status") != null) {
+        if (resultOper.needCheck(checkItems, BaseLineItemEnum.SELINUX_STATUS)) {
             boolean status = seLinux.getBooleanValue("status");
-            resultOper.setCheckItem(checkItems.getString("SELinux_status"));
-            resultOper.setConfigInfo("SELinux_status: " + status);
+            resultOper.setCheckItem(resultOper.getCheckItemDesc(checkItems, BaseLineItemEnum.SELINUX_STATUS));
+            resultOper.setConfigInfo("SELinux状态: " + status);
             if (status == true) {
                 resultOper.setRiskLevel(0);
                 resultOper.setRiskDesc("被核查资产已开启强制访问控制安全系统（SELinux）。");
@@ -51,10 +54,10 @@ public class StartupConfig {
         }
 
         // 检查SELinux的模式
-        if (checkItems.getString("SELinux_mode") != null) {
+        if (resultOper.needCheck(checkItems, BaseLineItemEnum.SELINUX_MODE)) {
             String modeName = seLinux.getString("modeName");
-            resultOper.setCheckItem(checkItems.getString("SELinux_mode"));
-            resultOper.setConfigInfo("SELinux_mode: " + modeName);
+            resultOper.setCheckItem(resultOper.getCheckItemDesc(checkItems, BaseLineItemEnum.SELINUX_MODE));
+            resultOper.setConfigInfo("SELinux模式: " + modeName);
             if (modeName == "enforcing") {
                 resultOper.setRiskLevel(0);
                 resultOper.setRiskDesc("资产系统的SELinux模式已设置为强制模式。");
@@ -71,10 +74,10 @@ public class StartupConfig {
         }
 
         // 检查SELinux的保护类型
-        if (checkItems.getString("SELinux_policy") != null) {
+        if (resultOper.needCheck(checkItems, BaseLineItemEnum.SELINUX_POLICY)) {
             String policyName = seLinux.getString("policyName");
-            resultOper.setCheckItem(checkItems.getString("SELinux_policy"));
-            resultOper.setConfigInfo("SELinux_policy: " + policyName);
+            resultOper.setCheckItem(resultOper.getCheckItemDesc(checkItems, BaseLineItemEnum.SELINUX_POLICY));
+            resultOper.setConfigInfo("SELinux策略: " + policyName);
             if (policyName == "strict") {
                 resultOper.setRiskLevel(0);
                 resultOper.setRiskDesc("资产系统的SELinux策略已设置为对整个系统进行保护。");
@@ -106,16 +109,74 @@ public class StartupConfig {
      * @return
      */
     public boolean checkSelfRunServices(JSONArray services, JSONObject checkItems) {
-        String configType = "开机安全配置";
+        resultOper.setConfigType("开机安全配置");
+        String configInfo;
 
-        // 检查自启动服务中是否指定必须的服务
-        if (checkItems.getString("StartService_included") != null) {
+        // 检查自启动服务中是否包含防火墙服务
+        if (resultOper.needCheck(checkItems, BaseLineItemEnum.AUTORUN_FIREWALL)) {
+            boolean firewallServiceEnable = false;
+            configInfo = "未开启";
+            for (Iterator iter = services.iterator(); iter.hasNext(); ) {
+                JSONObject service = (JSONObject) iter.next();
+                String serviceName = service.getString("service");
+                if (serviceName.equals("firewalld") || serviceName.equals("iptables")) {
+                    firewallServiceEnable = true;
+                    configInfo = serviceName + " 运行级别 [" + service.getString("runLevel") + "]";
+                    break;
+                }
+            }
+            // 设置检查项：开机启动防火墙服务
+            resultOper.setCheckItem(resultOper.getCheckItemDesc(checkItems, BaseLineItemEnum.AUTORUN_FIREWALL));
+            resultOper.setConfigInfo("防火墙服务: " + configInfo);
+            if (firewallServiceEnable) {
+                resultOper.setRiskLevel(0);
+                resultOper.setRiskDesc("系统已设置开机启动防火墙服务。");
+                resultOper.setSolution("");
+            } else {
+                resultOper.setRiskLevel(2);
+                resultOper.setRiskDesc("系统启动后没有防火墙服务。");
+                resultOper.setSolution("建议安装 iptables-services，并将服务激活（systemctl enable iptables）；替代方案可激活 firewalld 服务（systemctl enable firewalld）。");
+            }
 
+            // 保存核查记录
+            if (!resultOper.saveCheckResult())
+                return false;
         }
 
         // 检查自启动服务中是否有不安全的服务
-        if (checkItems.getString("StartService_excluded") != null) {
+        if (resultOper.needCheck(checkItems, BaseLineItemEnum.AUTORUN_EXCLUDED)) {
+            String excludeServices = "lpd,telnet,routed,sendmail,Bluetooth,identd,xfs,rlogin,rwho,rsh,rexec,inetd,xinetd,daytime,chargen,echo";
+            List<String> excludeList = Arrays.asList(excludeServices.split(","));
+            List<String> riskServiceList = new ArrayList<>();
+            boolean hasRiskService = false;
+            configInfo = "";
+            for (Iterator iter = services.iterator(); iter.hasNext(); ) {
+                JSONObject service = (JSONObject) iter.next();
+                String serviceName = service.getString("service");
+                if (excludeList.contains(serviceName)) {
+                    hasRiskService = true;
+                    configInfo += serviceName + " 运行级别 [" + service.getString("runLevel") + "]；";
+                    riskServiceList.add(serviceName);
+                }
+            }
+            // 设置检查项：自启动服务的风险
+            resultOper.setCheckItem(resultOper.getCheckItemDesc(checkItems, BaseLineItemEnum.AUTORUN_EXCLUDED));
+            if (hasRiskService) {
+                resultOper.setConfigInfo("安全风险服务: " + configInfo);
+                resultOper.setRiskLevel(3);
+                String riskServices = String.join(" | ", riskServiceList);
+                resultOper.setRiskDesc("系统启动了有安全风险的服务：" + riskServices);
+                resultOper.setSolution("停止服务（systemctl stop [服务名称]）：" + riskServices + "。并使服务失效（systemctl disable [服务名称]）。");
+            } else {
+                resultOper.setConfigInfo("安全风险服务: 未发现");
+                resultOper.setRiskLevel(0);
+                resultOper.setRiskDesc("未发现系统存在有安全风险的开机启动服务。");
+                resultOper.setSolution("");
+            }
 
+            // 保存核查记录
+            if (!resultOper.saveCheckResult())
+                return false;
         }
         return true;
     }

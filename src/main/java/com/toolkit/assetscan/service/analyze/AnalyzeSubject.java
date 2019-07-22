@@ -1,5 +1,6 @@
 package com.toolkit.assetscan.service.analyze;
 
+import com.alibaba.fastjson.JSONObject;
 import com.toolkit.assetscan.bean.po.ConfigCheckResultPo;
 import com.toolkit.assetscan.dao.mybatis.ConfigCheckMapper;
 import com.toolkit.assetscan.global.params.Const;
@@ -43,5 +44,17 @@ public class AnalyzeSubject {
         resultPo.setCreator_uuid((String) httpServletRequest.getSession().getAttribute(Const.USER_UUID));
         resultPo.setCreate_time(MyUtils.getCurrentSystemTimestamp());
         return (configCheckMapper.addCheckResult(resultPo) == 1);
+    }
+
+    public String getCheckItemDesc(JSONObject items, BaseLineItemEnum itemEnum) {
+        return items.getString(itemEnum.getName());
+    }
+
+    public boolean needCheck(JSONObject items, BaseLineItemEnum itemEnum) {
+        return items.containsKey(itemEnum.getName());
+    }
+
+    public void saveCheckItem(JSONObject items, BaseLineItemEnum itemEnum) {
+        this.checkItem = getCheckItemDesc(items, itemEnum);
     }
 }
