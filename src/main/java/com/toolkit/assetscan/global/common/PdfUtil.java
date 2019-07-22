@@ -2,11 +2,14 @@ package com.toolkit.assetscan.global.common;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
+import com.itextpdf.text.pdf.draw.DottedLineSeparator;
+import com.itextpdf.text.pdf.draw.LineSeparator;
 import com.toolkit.assetscan.bean.dto.ExcelDataDto;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URLEncoder;
+import java.util.Date;
 import java.util.List;
 
 public class PdfUtil {
@@ -30,12 +33,13 @@ public class PdfUtil {
 
     private static void exportPdf(ExcelDataDto data, ServletOutputStream out, String fileName) throws Exception {
 
-//        BaseFont baseFont = BaseFont.createFont("STSong-Light", "UniGB-UCS2-H", BaseFont.NOT_EMBEDDED);
-        BaseFont baseFont = BaseFont.createFont("STSong-Light", "UniGB-UCS2-H", BaseFont.EMBEDDED);
+        BaseFont baseFont = BaseFont.createFont("simsun.ttc,1", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+//        BaseFont baseFont = BaseFont.createFont("STSong-Light", "UniGB-UCS2-H", BaseFont.EMBEDDED);
+
         Font font = new Font(baseFont, 14, Font.NORMAL);
 
         //创建文件
-        Document doc = new Document(new RectangleReadOnly(842F,595F));
+        Document doc = new Document(new RectangleReadOnly(842F,595F));  // 横版
         //建立一个书写器
         PdfWriter writer = PdfWriter.getInstance(doc, out);
         //打开文件
@@ -111,4 +115,95 @@ public class PdfUtil {
 
     }
 
+    public static void saveReportPDF(HttpServletResponse response, String fileName, ExcelDataDto data) throws Exception{
+        Date now = new Date();
+        // 告诉浏览器用什么软件可以打开此文件
+        response.setContentType("application/pdf;charset=UTF-8");
+        // 下载文件的默认名称
+        response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName + ".pdf", "utf-8"));
+
+        ServletOutputStream out = response.getOutputStream();
+        BaseFont baseFont = BaseFont.createFont("simsun.ttc,1", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+
+        //创建文件
+        Document doc = new Document(PageSize.A4);
+        //建立一个书写器
+        PdfWriter writer = PdfWriter.getInstance(doc, out);
+        //打开文件
+        doc.open();
+
+        Font font10 = new Font(baseFont, 10, Font.NORMAL);   // 10号字体
+        Font font14 = new Font(baseFont, 14, Font.NORMAL);   // 14号字体
+        Font font18 = new Font(baseFont, 18, Font.NORMAL);   // 18号字体
+        Font font28 = new Font(baseFont, 18, Font.BOLD);     // 28号加粗字体
+
+        Paragraph titleName = new Paragraph(fileName, font28);
+        titleName.setAlignment(Element.ALIGN_CENTER);  // 居中
+        doc.add(titleName);
+
+        Paragraph reportTime = new Paragraph("报告生成时间：" + DateFormat.dateToString(now, DateFormat.UTIL_FORMAT), font14);  //报告时间
+        reportTime.setAlignment(Element.ALIGN_RIGHT);  // 居右
+        doc.add(reportTime);
+        doc.add(new Chunk(new LineSeparator(2.0F, 100.0F, null, 1, 0.0F)));  // 单实线
+
+
+//        任务名称、检测目标、目标IP、问题类型、危害等级、问题描述、检测时间、建议方案
+        PdfPTable table = new PdfPTable(2);
+        table.setWidthPercentage(100); // 宽度100%填充
+
+        List<PdfPRow> listRow = table.getRows();
+
+        PdfPCell cel1 = new PdfPCell(new Paragraph("系统信息:Linux", font14));
+        cel1.disableBorderSide(15);
+        table.addCell(cel1);
+        PdfPCell cel2 = new PdfPCell(new Paragraph("系统版本:18.0.4", font14));
+        cel2.disableBorderSide(15);
+        table.addCell(cel2);
+        PdfPCell cel3 = new PdfPCell(new Paragraph("IP:127.0.0.1", font14));
+        cel3.disableBorderSide(15);
+        table.addCell(cel3);
+        PdfPCell cel4 = new PdfPCell(new Paragraph("问题数:20", font14));
+        cel4.disableBorderSide(15);
+        table.addCell(cel4);
+        PdfPCell cel5 = new PdfPCell(new Paragraph("检测时间:2019-07-08 15:00", font14));
+        cel5.disableBorderSide(15);
+        table.addCell(cel5);
+
+        PdfPCell cel6 = new PdfPCell(new Paragraph("检测时间:", font14));
+        cel6.disableBorderSide(15);
+        table.addCell(cel6);
+//        把表格添加到文件中
+        doc.add(table);
+
+        doc.add(new Chunk(new DottedLineSeparator()));
+
+        PdfPTable table2 = new PdfPTable(1);
+        table2.setWidthPercentage(100); // 宽度100%填充
+
+        List<PdfPRow> listRow2 = table2.getRows();
+
+        PdfPCell cel21 = new PdfPCell(new Paragraph("问题描述：", font18));
+        cel21.disableBorderSide(15);
+        table2.addCell(cel21);
+
+        String ss = "问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述";
+        PdfPCell cel22 = new PdfPCell(new Paragraph(ss, font14));
+        cel22.disableBorderSide(15);
+        table2.addCell(cel22);
+//        把表格添加到文件中
+        doc.add(table2);
+
+
+        doc.add(new Chunk(new LineSeparator(2.0F, 100.0F, null, 1, 0.0F)));  // 单实线
+        Paragraph jieshu = new Paragraph("报告结束", font10);
+        jieshu.setAlignment(Element.ALIGN_CENTER);  // 居中
+        doc.add(jieshu);
+
+        //关闭文档
+        doc.close();
+        //关闭书写器
+        writer.close();
+        out.close();
+
+    }
 }
