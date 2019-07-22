@@ -15,6 +15,7 @@ import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.params.Const;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
+import com.toolkit.assetscan.global.utils.SystemUtils;
 import com.toolkit.assetscan.service.analyze.AnalyzeSubject;
 import com.toolkit.assetscan.service.analyze.StartupConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -304,6 +305,11 @@ public class AssetScanDataService {
         if (!iptablesConfig.checkIptables(scanInfo.getJSONObject("iptablesConfig"), baseLine.getJSONObject("iptables"))) {
             return responseHelper.error(ErrorCodeEnum.ERROR_FAIL_CHECK_SCAN_INFO);
         }
+
+        // 邮件通知核查结果
+//        String userUuid = (String) httpServletRequest.getSession().getAttribute(Const.USER_UUID);
+//        String userAccount = (String) httpServletRequest.getSession().getAttribute(Const.ACCOUNT);
+
 
         return responseHelper.success();
     }
