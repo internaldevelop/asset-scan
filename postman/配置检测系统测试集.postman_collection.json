@@ -3058,7 +3058,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/baseline-check/run-asset-check?asset_uuid=a6ad16c4-05b1-4def-96f3-ed4d498e9f2d",
+							"raw": "{{base_url}}/baseline-check/run-asset-check?asset_uuid={{asset_uuid}}&base_line=1",
 							"host": [
 								"{{base_url}}"
 							],
@@ -3069,9 +3069,30 @@
 							"query": [
 								{
 									"key": "asset_uuid",
-									"value": "a6ad16c4-05b1-4def-96f3-ed4d498e9f2d",
-									"description": "scanUuid 和 resultUuid 二选一，不能都为空"
+									"value": "{{asset_uuid}}"
+								},
+								{
+									"key": "base_line",
+									"value": "1"
 								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "10.9 初始化基线模板数据",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/baseline-check/init-baselines",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"baseline-check",
+								"init-baselines"
 							]
 						}
 					},

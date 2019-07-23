@@ -35,7 +35,7 @@ public class ServiceConfig {
     }
 
     public boolean checkIptables(JSONObject iptables, JSONObject checkItems) {
-        resultOper.setConfigType("服务安全配置");
+        resultOper.setConfigType("services");
 
         // 检查 iptables 服务
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.SERVICE_IPTABLES)) {
@@ -70,7 +70,7 @@ public class ServiceConfig {
     }
 
     public boolean checkFirewalld(JSONObject firewalld, JSONObject checkItems) {
-        resultOper.setConfigType("服务安全配置");
+        resultOper.setConfigType("services");
 
         // 检查 firewalld 服务
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.SERVICE_FIREWALLD)) {
@@ -105,7 +105,7 @@ public class ServiceConfig {
     }
 
     private boolean checkSshDenyAll(JSONObject ssh, JSONObject checkItems) {
-        resultOper.setConfigType("服务安全配置");
+        resultOper.setConfigType("services");
 
         // 检查 ssh 服务拒绝黑名单配置
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.SERVICE_SSH_DENYALL)) {
@@ -130,7 +130,7 @@ public class ServiceConfig {
     }
 
     private boolean checkSshAllow(JSONObject ssh, JSONObject checkItems) {
-        resultOper.setConfigType("服务安全配置");
+        resultOper.setConfigType("services");
 
         // 检查 ssh 服务白名单配置
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.SERVICE_SSH_ALLOW)) {
@@ -161,7 +161,7 @@ public class ServiceConfig {
     }
 
     private boolean checkSshRootLogin(JSONObject ssh, JSONObject checkItems) {
-        resultOper.setConfigType("服务安全配置");
+        resultOper.setConfigType("services");
 
         // 检查 ssh 服务对root登录的配置
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.SERVICE_SSH_ROOT_LOGIN)) {
@@ -186,7 +186,7 @@ public class ServiceConfig {
     }
 
     private boolean checkSshRootPort(JSONObject ssh, JSONObject checkItems) {
-        resultOper.setConfigType("服务安全配置");
+        resultOper.setConfigType("services");
 
         // 检查 ssh 服务端口
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.SERVICE_SSH_PORT)) {

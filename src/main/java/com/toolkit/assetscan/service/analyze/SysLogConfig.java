@@ -44,7 +44,7 @@ public class SysLogConfig {
     }
 
     private boolean checkMessagesConfig(JSONArray rules, JSONObject checkItems) {
-        resultOper.setConfigType("日志安全配置");
+        resultOper.setConfigType("syslog");
 
         // 检查消息日志的配置
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.LOG_MESSAGES)) {
@@ -107,7 +107,7 @@ public class SysLogConfig {
     }
 
     private boolean checkSecureConfig(JSONArray rules, JSONObject checkItems) {
-        resultOper.setConfigType("日志安全配置");
+        resultOper.setConfigType("syslog");
 
         // 检查身份认证安全消息配置
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.LOG_SECURE)) {
@@ -147,7 +147,7 @@ public class SysLogConfig {
     }
 
     private boolean checkMailConfig(JSONArray rules, JSONObject checkItems) {
-        resultOper.setConfigType("日志安全配置");
+        resultOper.setConfigType("syslog");
 
         // 检查邮件类消息配置
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.LOG_MAILLOG)) {
@@ -187,7 +187,7 @@ public class SysLogConfig {
     }
 
     private boolean checkCronConfig(JSONArray rules, JSONObject checkItems) {
-        resultOper.setConfigType("日志安全配置");
+        resultOper.setConfigType("syslog");
 
         // 检查定时任务消息配置
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.LOG_CRON)) {
@@ -227,7 +227,7 @@ public class SysLogConfig {
     }
 
     private boolean checkEmergencyConfig(JSONArray rules, JSONObject checkItems) {
-        resultOper.setConfigType("日志安全配置");
+        resultOper.setConfigType("syslog");
 
         // 检查系统紧急消息配置
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.LOG_EMERGENCY)) {
@@ -266,7 +266,7 @@ public class SysLogConfig {
     }
 
     private boolean checkBootConfig(JSONArray rules, JSONObject checkItems) {
-        resultOper.setConfigType("日志安全配置");
+        resultOper.setConfigType("syslog");
 
         // 检查系统启动消息配置
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.LOG_BOOT)) {
@@ -306,7 +306,7 @@ public class SysLogConfig {
     }
 
     private boolean checkRotate(JSONObject rotate, JSONObject checkItems) {
-        resultOper.setConfigType("日志安全配置");
+        resultOper.setConfigType("syslog");
 
         // 检查消息轮转配置
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.LOG_ROTATE)) {

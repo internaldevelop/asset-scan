@@ -44,7 +44,7 @@ public class PasswordConfig {
     }
 
     private boolean checkPwdWarnAge(JSONObject pwdConfig, JSONObject checkItems) {
-        resultOper.setConfigType("密码配置");
+        resultOper.setConfigType("passowrd");
 
         // 检查密码到期提醒时间
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.PWD_WARN_AGE)) {
@@ -75,7 +75,7 @@ public class PasswordConfig {
     }
 
     private boolean checkPwdRetry(JSONObject pwdConfig, JSONObject checkItems) {
-        resultOper.setConfigType("密码配置");
+        resultOper.setConfigType("passowrd");
 
         // 检查密码重试次数
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.PWD_RETRY)) {
@@ -106,7 +106,7 @@ public class PasswordConfig {
     }
 
     private boolean checkPwdMinlen(JSONObject pwdConfig, JSONObject checkItems) {
-        resultOper.setConfigType("密码配置");
+        resultOper.setConfigType("passowrd");
 
         // 检查密码最小长度
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.PWD_MINLEN)) {
@@ -133,7 +133,7 @@ public class PasswordConfig {
     }
 
     private boolean checkPwdAge(JSONObject pwdConfig, JSONObject checkItems) {
-        resultOper.setConfigType("密码配置");
+        resultOper.setConfigType("passowrd");
 
         // 检查密码寿命
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.PWD_AGE)) {
@@ -173,7 +173,7 @@ public class PasswordConfig {
     }
 
     private boolean checkPwdDifok(JSONObject pwdConfig, JSONObject checkItems) {
-        resultOper.setConfigType("密码配置");
+        resultOper.setConfigType("passowrd");
 
         // 检查密码最少不同字符
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.PWD_DIFOK)) {
@@ -200,7 +200,7 @@ public class PasswordConfig {
     }
 
     private boolean checkPwdUcredit(JSONObject pwdConfig, JSONObject checkItems) {
-        resultOper.setConfigType("密码配置");
+        resultOper.setConfigType("passowrd");
 
         // 检查密码最少大写字母
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.PWD_U_CREDIT)) {
@@ -227,7 +227,7 @@ public class PasswordConfig {
     }
 
     private boolean checkPwdDcredit(JSONObject pwdConfig, JSONObject checkItems) {
-        resultOper.setConfigType("密码配置");
+        resultOper.setConfigType("passowrd");
 
         // 检查密码最少数字
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.PWD_D_CREDIT)) {
@@ -254,7 +254,7 @@ public class PasswordConfig {
     }
 
     private boolean checkPwdLcredit(JSONObject pwdConfig, JSONObject checkItems) {
-        resultOper.setConfigType("密码配置");
+        resultOper.setConfigType("passowrd");
 
         // 检查密码最少小写字母
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.PWD_L_CREDIT)) {

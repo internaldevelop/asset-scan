@@ -68,7 +68,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{asset_url}}/asset-sec-cfg/acquire?types=iptables",
+							"raw": "{{asset_url}}/asset-sec-cfg/acquire?types=service",
 							"host": [
 								"{{asset_url}}"
 							],
@@ -79,7 +79,7 @@
 							"query": [
 								{
 									"key": "types",
-									"value": "iptables",
+									"value": "service",
 									"description": "空串表示所有信息；否则以半角逗号分隔，比如：“startup,account,service”"
 								}
 							]
