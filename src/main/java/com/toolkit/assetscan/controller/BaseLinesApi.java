@@ -144,6 +144,16 @@ public class BaseLinesApi {
     }
 
     /**
+     * 10.10 生成核查报告
+     * @return
+     */
+    @RequestMapping(value = "/get-report", method = RequestMethod.GET)
+    @ResponseBody
+    Object getCheckReprot(@RequestParam(value = "scan_uuid", required = false) String scanUuid) {
+        return scanDataService.getCheckReprot(scanUuid);
+    }
+
+    /**
      * 10.10 获取资产最近一次核查统计数据
      * @param assetUuid
      * @return
