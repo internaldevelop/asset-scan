@@ -142,4 +142,14 @@ public class BaseLinesApi {
     Object initBaselines() {
         return baseLineTemplatesService.initBaselineTemplates();
     }
+
+    /**
+     * 10.10 生成核查报告
+     * @return
+     */
+    @RequestMapping(value = "/get-report", method = RequestMethod.GET)
+    @ResponseBody
+    Object getCheckReprot(@RequestParam(value = "scan_uuid", required = false) String scanUuid) {
+        return scanDataService.getCheckReprot(scanUuid);
+    }
 }

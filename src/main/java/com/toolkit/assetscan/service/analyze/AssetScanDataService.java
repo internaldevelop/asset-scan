@@ -2,20 +2,20 @@ package com.toolkit.assetscan.service.analyze;
 
 import com.alibaba.fastjson.JSONObject;
 import com.toolkit.assetscan.bean.dto.AssetScanRecordDto;
-import com.toolkit.assetscan.bean.po.AssetPo;
-import com.toolkit.assetscan.bean.po.AssetScanDataPo;
-import com.toolkit.assetscan.bean.po.BaseLinePo;
-import com.toolkit.assetscan.bean.po.ConfigCheckResultPo;
-import com.toolkit.assetscan.dao.mybatis.AssetScanDataMapper;
-import com.toolkit.assetscan.dao.mybatis.AssetsMapper;
-import com.toolkit.assetscan.dao.mybatis.BaseLineMapper;
-import com.toolkit.assetscan.dao.mybatis.ConfigCheckMapper;
+import com.toolkit.assetscan.bean.dto.ExcelDataDto;
+import com.toolkit.assetscan.bean.dto.TaskResultsDto;
+import com.toolkit.assetscan.bean.po.*;
+import com.toolkit.assetscan.dao.mybatis.*;
 import com.toolkit.assetscan.global.bean.ResponseBean;
+import com.toolkit.assetscan.global.common.PdfUtil;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.params.Const;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
 import com.toolkit.assetscan.global.utils.SystemUtils;
+import com.toolkit.assetscan.global.websocket.SockMsgTypeEnum;
+import com.toolkit.assetscan.global.websocket.WebSocketServer;
+import com.toolkit.assetscan.service.MailManageService;
 import com.toolkit.assetscan.service.analyze.AnalyzeSubject;
 import com.toolkit.assetscan.service.analyze.StartupConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +44,12 @@ public class AssetScanDataService {
     RestTemplate restTemplate;
     @Autowired
     BaseLineMapper baseLineMapper;
+    @Autowired
+    SystemConfigsMapper systemConfigsMapper;
+    @Autowired
+    UsersMapper usersMapper;
+    @Autowired
+    private MailManageService mailManageService;
 
     // 保存参数用于新建核查结果记录
     @Autowired
@@ -242,7 +248,75 @@ public class AssetScanDataService {
             return responseHelper.error(ErrorCodeEnum.ERROR_BASE_LINE_NOT_FOUND);
         }
 
-        return checkScanInfo(jsonScanInfo, jsonBaseline);
+        ResponseBean responseCheckScanInfo = checkScanInfo(jsonScanInfo, jsonBaseline);
+
+        if (scanUuid != null && !scanUuid.isEmpty()) {
+            List<ConfigCheckResultPo> resultPos = configCheckMapper.getScanResults(scanUuid);
+            if (resultPos != null || resultPos.size() > 0) {
+                // 邮件通知核查结果
+                sendCheckScanMail(resultPos);
+            }
+        }
+        return responseCheckScanInfo;
+    }
+
+    public ResponseBean getCheckReprot(String scanUuid) {
+        List<ConfigCheckResultPo> resultPos = configCheckMapper.getScanResults(scanUuid);
+        sendCheckScanMail(resultPos);
+        return responseHelper.success();
+    }
+
+    private void sendCheckScanMail(List<ConfigCheckResultPo> resultPos) {
+        String fileTitle = "资产扫描核查结果";
+        int riskCount = 0;
+        AssetPo assetPo = null;
+        for(ConfigCheckResultPo configCheckResultPo: resultPos) {
+            if (configCheckResultPo.getRisk_level() > 0) {
+                riskCount++;
+                if (assetPo == null) {
+                    assetPo = assetsMapper.getAssetByUuid(configCheckResultPo.getAsset_uuid());
+                }
+            }
+        }
+        try{
+            if (riskCount > 0) {
+                SystemConfigPo systemConfigPo = systemConfigsMapper.getSystemConfigByName("mail-to-user-on-off");
+                if (systemConfigPo != null && systemConfigPo.getValue().equals("on")) {
+                    String userUuid = (String) httpServletRequest.getSession().getAttribute(Const.USER_UUID);
+                    String account = (String) httpServletRequest.getSession().getAttribute(Const.ACCOUNT);
+                    UserPo userPo = usersMapper.getUserByUuid(userUuid);
+                    String email = null;
+                    if (userPo != null) {
+                        email = userPo.getEmail();
+                    }
+                    if (email != null) {
+
+                        String pathName = PdfUtil.saveReportPDF(fileTitle, account, resultPos, riskCount, assetPo);
+                        String content = "详情请查看附件。";
+                        mailManageService.sendSimpleTextMail(fileTitle,content,email, pathName);
+                    }
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private void getAssetInfo(String assetIP) {
+        // 构造URL
+        String ip = "http://" + assetIP + ":8191";
+        String url = ip + "/asset-info/acquire?types={types}";
+
+        // 构造参数map
+        HashMap<String, String> map = new HashMap<>();
+        map.put("types", "CPU,Mem,Net Config");
+
+        // 向节点发送请求，并返回节点的响应结果
+        ResponseEntity<ResponseBean> responseEntity = restTemplate.getForEntity(url, ResponseBean.class, map);
+        ResponseBean responseBean = (ResponseBean)responseEntity.getBody();
+        if (responseBean.getCode() == ErrorCodeEnum.ERROR_OK.getCode()) {
+            JSONObject jsonMsg = (JSONObject)JSONObject.toJSON(responseBean.getPayload());
+        }
     }
 
 
@@ -305,12 +379,6 @@ public class AssetScanDataService {
         if (!iptablesConfig.checkIptables(scanInfo.getJSONObject("iptablesConfig"), baseLine.getJSONObject("iptables"))) {
             return responseHelper.error(ErrorCodeEnum.ERROR_FAIL_CHECK_SCAN_INFO);
         }
-
-        // 邮件通知核查结果
-//        String userUuid = (String) httpServletRequest.getSession().getAttribute(Const.USER_UUID);
-//        String userAccount = (String) httpServletRequest.getSession().getAttribute(Const.ACCOUNT);
-
-
         return responseHelper.success();
     }
 }
