@@ -1,7 +1,9 @@
 package com.toolkit.assetscan.service.analyze;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.toolkit.assetscan.bean.dto.AssetScanRecordDto;
+import com.toolkit.assetscan.bean.dto.CheckStatisticsDto;
 import com.toolkit.assetscan.bean.po.AssetPo;
 import com.toolkit.assetscan.bean.po.AssetScanDataPo;
 import com.toolkit.assetscan.bean.po.BaseLinePo;
@@ -26,6 +28,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 @Component
@@ -176,6 +179,35 @@ public class AssetScanDataService {
         }
     }
 
+    public ResponseBean getAssetRecentScanRecord(String assetUuid) {
+        AssetScanRecordDto scanRecordDto = assetScanDataMapper.getAssetRecentScanInfo(assetUuid);
+        if (scanRecordDto == null) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_SCAN_NOT_FOUND);
+        } else {
+            return responseHelper.success(scanRecordDto);
+        }
+    }
+
+    public ResponseBean getAssetRecentCheckStat(String assetUuid) {
+        // 获取资产的最近一条扫描记录
+        AssetScanRecordDto scanRecordDto = assetScanDataMapper.getAssetRecentScanInfo(assetUuid);
+        if (scanRecordDto == null) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_SCAN_NOT_FOUND);
+        }
+
+        // 获取最近一次扫描的核查统计数据
+        List<CheckStatisticsDto> statisticsDtos = baseLineMapper.getCheckStatics(scanRecordDto.getUuid());
+        if (statisticsDtos == null || statisticsDtos.size() == 0) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_CHECK_RESULT_NOT_FOUND);
+        }
+
+        JSONObject result = new JSONObject();
+        result.put("recent", scanRecordDto);
+        result.put("statistics", statisticsDtos);
+
+        return responseHelper.success(result);
+    }
+
     public ResponseBean runAssetScanCheck(String assetUuid, int baseLine) {
         AssetPo assetPo = assetsMapper.getAssetByUuid(assetUuid);
         // 构造URL
@@ -196,6 +228,7 @@ public class AssetScanDataService {
         // 保存扫描信息
         AssetScanDataPo scanDataPo = new AssetScanDataPo();
         scanDataPo.setAsset_uuid(assetUuid);
+        scanDataPo.setBase_line(baseLine);
         scanDataPo.setCreator_uuid((String) httpServletRequest.getSession().getAttribute(Const.USER_UUID));
         scanDataPo.setScan_info(JSONObject.toJSONString(scanResponse.getPayload()));
         ResponseBean response = addScanRecord(scanDataPo);

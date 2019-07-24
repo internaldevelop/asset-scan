@@ -1,5 +1,6 @@
 package com.toolkit.assetscan.dao.mybatis;
 
+import com.toolkit.assetscan.bean.dto.CheckStatisticsDto;
 import com.toolkit.assetscan.bean.po.BaseLinePo;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -45,4 +46,14 @@ public interface BaseLineMapper {
             "    templates=#{templates} \n" +
             "WHERE level=#{level}\n")
     int updateTemplate(@Param("level")int level, @Param("templates")String templates);
+
+    @Select("SELECT \n" +
+            "\t\tcr.config_type,\n" +
+            "\t\tcr.risk_level,\n" +
+            "\t\tCOUNT(1) AS count\n" +
+            "FROM config_check_results cr\n" +
+            "WHERE cr.scan_uuid=#{scan_uuid}\n" +
+            "GROUP BY cr.config_type, cr.risk_level\n" +
+            "ORDER BY cr.config_type, cr.risk_level\n")
+    List<CheckStatisticsDto> getCheckStatics(@Param("scan_uuid")String scanUuid);
 }

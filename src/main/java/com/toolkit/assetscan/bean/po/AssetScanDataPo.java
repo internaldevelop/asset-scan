@@ -10,6 +10,7 @@ public class AssetScanDataPo {
     private int id;
     private String uuid;
     private String asset_uuid;
+    private int base_line;
     private String scan_info;
     private String creator_uuid;
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")

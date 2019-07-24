@@ -142,4 +142,16 @@ public class BaseLinesApi {
     Object initBaselines() {
         return baseLineTemplatesService.initBaselineTemplates();
     }
+
+    /**
+     * 10.10 获取资产最近一次核查统计数据
+     * @param assetUuid
+     * @return
+     */
+    @RequestMapping(value = "/asset-recent-check-stat", method = RequestMethod.GET)
+    @ResponseBody
+    Object getAssetRecentCheckStat(@RequestParam(value = "asset_uuid", defaultValue = "") String assetUuid) {
+        return scanDataService.getAssetRecentCheckStat(assetUuid);
+    }
+
 }
