@@ -2,7 +2,6 @@ package com.toolkit.assetscan.service.analyze;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.sun.xml.internal.fastinfoset.util.StringArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +30,7 @@ public class StartupConfig {
      * @return
      */
     public boolean checkSELinux(JSONObject seLinux, JSONObject checkItems) {
-        resultOper.setConfigType("开机安全配置");
+        resultOper.setConfigType("startup");
 
         // 检查SELinux的状态
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.SELINUX_STATUS)) {
@@ -109,7 +108,7 @@ public class StartupConfig {
      * @return
      */
     public boolean checkSelfRunServices(JSONArray services, JSONObject checkItems) {
-        resultOper.setConfigType("开机安全配置");
+        resultOper.setConfigType("startup");
         String configInfo;
 
         // 检查自启动服务中是否包含防火墙服务

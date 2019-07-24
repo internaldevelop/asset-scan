@@ -34,7 +34,7 @@ public class AccountConfig {
     }
 
     private boolean checkUselessAccounts(JSONArray accounts, JSONObject checkItems) {
-        resultOper.setConfigType("账户安全配置");
+        resultOper.setConfigType("accounts");
 
         // 检查系统的无用账户
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.ACCOUNTS_USELESS)) {
@@ -79,7 +79,7 @@ public class AccountConfig {
     }
 
     private boolean checkRedudantAccounts(JSONArray accounts, JSONObject checkItems) {
-        resultOper.setConfigType("账户安全配置");
+        resultOper.setConfigType("accounts");
 
         // 检查系统的冗余账户
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.ACCOUNTS_REDUNDANT)) {
@@ -119,7 +119,7 @@ public class AccountConfig {
     }
 
     private boolean checkPlainTextPwd(JSONArray accounts, JSONObject checkItems) {
-        resultOper.setConfigType("账户安全配置");
+        resultOper.setConfigType("accounts");
 
         // 检查账户是否明文密码
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.ACCOUNTS_PLAIN_PWD)) {
@@ -157,7 +157,7 @@ public class AccountConfig {
     }
 
     private boolean checkRootCount(JSONArray accounts, JSONObject checkItems) {
-        resultOper.setConfigType("账户安全配置");
+        resultOper.setConfigType("accounts");
 
         // 检查系统中root账户数量
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.ACCOUNTS_ROOT_NUM)) {
@@ -194,7 +194,7 @@ public class AccountConfig {
     }
 
     public boolean checkGroupPwd(JSONArray groups, JSONObject checkItems) {
-        resultOper.setConfigType("账户安全配置");
+        resultOper.setConfigType("accounts");
 
         // 检查账户组是否明文密码
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.GROUPS_PLAIN_PWD)) {

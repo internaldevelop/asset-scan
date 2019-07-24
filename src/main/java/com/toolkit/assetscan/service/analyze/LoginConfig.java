@@ -39,7 +39,7 @@ public class LoginConfig {
     }
 
     private boolean checkDenyRoot(JSONObject login, JSONObject checkItems) {
-        resultOper.setConfigType("登陆安全配置");
+        resultOper.setConfigType("login");
 
         // 检查root用户配置登陆失败锁定
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.LOGIN_DENY_ROOT)) {
@@ -64,7 +64,7 @@ public class LoginConfig {
     }
 
     private boolean checkDenyCount(JSONObject login, JSONObject checkItems) {
-        resultOper.setConfigType("登陆安全配置");
+        resultOper.setConfigType("login");
 
         // 检查登陆失败锁定的最大尝试次数
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.LOGIN_DENY_COUNT)) {
@@ -94,7 +94,7 @@ public class LoginConfig {
     }
 
     private boolean checkUnlockTime(JSONObject login, JSONObject checkItems) {
-        resultOper.setConfigType("登陆安全配置");
+        resultOper.setConfigType("login");
 
         // 检查用户登陆失败锁定时间
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.LOGIN_UNLOCK_TIME)) {
@@ -120,7 +120,7 @@ public class LoginConfig {
     }
 
     private boolean checkRootUnlockTime(JSONObject login, JSONObject checkItems) {
-        resultOper.setConfigType("登陆安全配置");
+        resultOper.setConfigType("login");
 
         // 检查root用户登陆失败锁定时间
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.LOGIN_ROOT_UNLOCK_TIME)) {

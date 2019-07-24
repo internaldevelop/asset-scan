@@ -49,7 +49,7 @@ public class IptablesConfig {
     }
 
     private boolean checkActive(boolean active, JSONObject checkItems) {
-        resultOper.setConfigType("iptables配置");
+        resultOper.setConfigType("iptables");
 
         // 检查消息日志的配置
         if (resultOper.needCheck(checkItems, BaseLineItemEnum.IPT_ACTIVE)) {
@@ -82,9 +82,9 @@ public class IptablesConfig {
         // 获取黑名单
         String blackList = blackList(inputChains);
 
-        resultOper.setConfigType("iptables配置");
+        resultOper.setConfigType("iptables");
         resultOper.saveCheckItem(checkItems, BaseLineItemEnum.IPT_INPUT_BLACKLIST);
-        resultOper.setConfigInfo(blackList);
+        resultOper.setConfigInfo("黑名单：" + blackList);
 
         if (blackList.isEmpty()) {
             resultOper.setRiskLevel(2);
@@ -111,9 +111,9 @@ public class IptablesConfig {
         // 获取白名单
         String whiteList = whiteList(inputChains);
 
-        resultOper.setConfigType("iptables配置");
+        resultOper.setConfigType("iptables");
         resultOper.saveCheckItem(checkItems, BaseLineItemEnum.IPT_INPUT_WHITELIST);
-        resultOper.setConfigInfo(whiteList);
+        resultOper.setConfigInfo("白名单：" + whiteList);
 
         if (whiteList.isEmpty()) {
             resultOper.setRiskLevel(1);
@@ -140,9 +140,9 @@ public class IptablesConfig {
         // 获取黑名单
         String blackList = getConfigInfo(outputChains, "DROP");
 
-        resultOper.setConfigType("iptables配置");
+        resultOper.setConfigType("iptables");
         resultOper.saveCheckItem(checkItems, BaseLineItemEnum.IPT_OUTPUT_BLACKLIST);
-        resultOper.setConfigInfo(blackList);
+        resultOper.setConfigInfo("黑名单：" + blackList);
 
         if (blackList.isEmpty()) {
             resultOper.setRiskLevel(2);
@@ -169,9 +169,9 @@ public class IptablesConfig {
         // 获取白名单
         String whiteList = whiteList(outputChains);
 
-        resultOper.setConfigType("iptables配置");
+        resultOper.setConfigType("iptables");
         resultOper.saveCheckItem(checkItems, BaseLineItemEnum.IPT_OUTPUT_WHITELIST);
-        resultOper.setConfigInfo(whiteList);
+        resultOper.setConfigInfo("白名单：" + whiteList);
 
         if (whiteList.isEmpty()) {
             resultOper.setRiskLevel(1);
@@ -198,9 +198,9 @@ public class IptablesConfig {
         // 获取黑名单
         String blackList = blackList(fwdChains);
 
-        resultOper.setConfigType("iptables配置");
+        resultOper.setConfigType("iptables");
         resultOper.saveCheckItem(checkItems, BaseLineItemEnum.IPT_FWD_BLACKLIST);
-        resultOper.setConfigInfo(blackList);
+        resultOper.setConfigInfo("黑名单：" + blackList);
 
         if (blackList.isEmpty()) {
             resultOper.setRiskLevel(2);
@@ -227,9 +227,9 @@ public class IptablesConfig {
         // 获取白名单
         String whiteList = whiteList(fwdChains);
 
-        resultOper.setConfigType("iptables配置");
+        resultOper.setConfigType("iptables");
         resultOper.saveCheckItem(checkItems, BaseLineItemEnum.IPT_FWD_WHITELIST);
-        resultOper.setConfigInfo(whiteList);
+        resultOper.setConfigInfo("白名单：" + whiteList);
 
         if (whiteList.isEmpty()) {
             resultOper.setRiskLevel(1);
@@ -257,12 +257,8 @@ public class IptablesConfig {
     }
 
     private String getConfigInfo(JSONArray rules, String target) {
-        String config;
-        if (target.equals("REJECT")) {
-            config = "黑名单：";
-        } else if (target.equals("ACCEPT")) {
-            config = "白名单：";
-        } else {
+        String config = "";
+        if (!target.equals("REJECT") && !target.equals("DROP") && !target.equals("ACCEPT")) {
             return "";
         }
 
@@ -280,14 +276,14 @@ public class IptablesConfig {
             if (dest.equals("0.0.0.0/0")) {
                 dest = "所有";
             }
-                config += "目标IP（" + dest + "），";
+            config += "目标IP（" + dest + "），";
 
             // 协议
             String protocol = rule.getString("protocol");
             if (protocol.equals("all")) {
                 protocol = "tcp/udp/icmp";
             }
-                config += "协议（" + protocol + "），";
+            config += "协议（" + protocol + "），";
 
             // 端口
             String port = rule.getString("port");
