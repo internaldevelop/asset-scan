@@ -40,7 +40,7 @@ public class SystemConfigApi {
     Object addSystemConfig(@ModelAttribute SystemConfigPo systemConfigPo, BindingResult bindingResult) {
         ResponseBean response = mSystemConfigService.addSystemConfig(systemConfigPo);
         // 增加一条系统配置
-        systemLogs.logEvent(response, "增加一条系统配置", "系统配置：" + systemConfigPo.getName() + ", " + systemConfigPo.getValue() + "）");
+        systemLogs.logEvent(response, "增加系统配置", "系统配置：" + systemConfigPo.getName() + ", " + systemConfigPo.getValue() + "）");
         return response;
     }
 

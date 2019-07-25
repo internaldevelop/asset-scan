@@ -3,6 +3,7 @@ package com.toolkit.assetscan.service.analyze;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.toolkit.assetscan.bean.dto.AssetScanRecordDto;
+import com.toolkit.assetscan.bean.dto.CheckStatisticsDto;
 import com.toolkit.assetscan.bean.dto.ExcelDataDto;
 import com.toolkit.assetscan.bean.dto.TaskResultsDto;
 import com.toolkit.assetscan.bean.po.*;

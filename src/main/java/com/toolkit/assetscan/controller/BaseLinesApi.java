@@ -1,8 +1,10 @@
 package com.toolkit.assetscan.controller;
 
+import com.toolkit.assetscan.Helper.SystemLogsHelper;
 import com.toolkit.assetscan.bean.po.AssetScanDataPo;
 import com.toolkit.assetscan.bean.po.ConfigCheckResultPo;
 import com.toolkit.assetscan.dao.mybatis.ConfigCheckMapper;
+import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.service.analyze.AssetScanDataService;
@@ -24,6 +26,8 @@ public class BaseLinesApi {
     ResponseHelper responseHelper;
     @Autowired
     ConfigCheckMapper configCheckMapper;
+    @Autowired
+    private SystemLogsHelper systemLogs;
 
     /**
      * 10.1 获取指定等级的基线
@@ -115,7 +119,10 @@ public class BaseLinesApi {
     @ResponseBody
     Object runScanCheck(@RequestParam(value = "asset_uuid", defaultValue = "") String assetUuid,
                           @RequestParam(value = "base_line") int baseLine) {
-        return scanDataService.runAssetScanCheck(assetUuid, baseLine);
+        ResponseBean response = scanDataService.runAssetScanCheck(assetUuid, baseLine);
+        systemLogs.logEvent(response, "资产基线核查", "资产ID：" + assetUuid +
+                ", 安全配置基线：" + baseLine + "级");
+        return response;
     }
 
     /**
@@ -125,12 +132,15 @@ public class BaseLinesApi {
      * @param assetUuidList
      * @return
      */
-    @RequestMapping(value = "/get-scan_records", method = RequestMethod.POST)
+    @RequestMapping(value = "/get-scan-records", method = RequestMethod.POST)
     public @ResponseBody
     Object getResultHistory(@RequestParam(value = "begin_time", required = false) java.sql.Timestamp beginTime,
                             @RequestParam(value = "end_time", required = false) java.sql.Timestamp endTime,
                             @RequestParam(value = "asset_uuid_list", required = false) String assetUuidList) {
-        return scanDataService.queryScanRecords(beginTime, endTime, assetUuidList);
+        ResponseBean response = scanDataService.queryScanRecords(beginTime, endTime, assetUuidList);
+        systemLogs.logEvent(response, "读取扫描记录", "记录时间范围：" + beginTime +
+                "--" + endTime);
+        return response;
     }
 
     /**
@@ -150,18 +160,22 @@ public class BaseLinesApi {
     @RequestMapping(value = "/get-report", method = RequestMethod.GET)
     @ResponseBody
     Object getCheckReprot(@RequestParam(value = "scan_uuid", required = false) String scanUuid) {
-        return scanDataService.getCheckReprot(scanUuid);
+        ResponseBean response = scanDataService.getCheckReprot(scanUuid);
+        systemLogs.logEvent(response, "生成核查报告", "系统扫描核查ID：" + scanUuid);
+        return response;
     }
 
     /**
-     * 10.10 获取资产最近一次核查统计数据
+     * 10.11 获取资产最近一次核查统计数据
      * @param assetUuid
      * @return
      */
     @RequestMapping(value = "/asset-recent-check-stat", method = RequestMethod.GET)
     @ResponseBody
     Object getAssetRecentCheckStat(@RequestParam(value = "asset_uuid", defaultValue = "") String assetUuid) {
-        return scanDataService.getAssetRecentCheckStat(assetUuid);
+        ResponseBean response = scanDataService.getAssetRecentCheckStat(assetUuid);
+        systemLogs.logEvent(response, "最近核查数据统计", "资产ID：" + assetUuid);
+        return response;
     }
 
 }
