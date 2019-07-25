@@ -1,5 +1,7 @@
 package com.toolkit.assetscan.global.common;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.draw.DottedLineSeparator;
@@ -212,7 +214,8 @@ public class PdfUtil {
         out.close();
     }
 
-    public static String saveReportPDF(String fileName, String userAccount, List<ConfigCheckResultPo> resultPos, int riskCount, AssetPo assetPo) throws Exception{
+    public static String saveReportPDF(String fileName, String userAccount, List<ConfigCheckResultPo> resultPos,
+                                       int riskCount, AssetPo assetPo, JSONObject jsonMsg) throws Exception{
         if(assetPo == null) {
             return null;
         }
@@ -264,22 +267,78 @@ public class PdfUtil {
         PdfPTable table = new PdfPTable(2);
         table.setWidthPercentage(100); // 宽度100%填充
 
-        PdfPCell cel0 = new PdfPCell(new Paragraph("资产名称: " + assetPo.getName(), font14));
+        PdfPCell cel0 = new PdfPCell(new Paragraph("资产名称: " + assetPo.getName(), font12));
         cel0.disableBorderSide(15);
         table.addCell(cel0);
 
         String osType = assetPo.getOs_type().equals("1") ? "Windows":"Linux";
-        PdfPCell cel1 = new PdfPCell(new Paragraph("系统类型: " + osType, font14));
+        PdfPCell cel1 = new PdfPCell(new Paragraph("系统类型: " + osType, font12));
         cel1.disableBorderSide(15);
         table.addCell(cel1);
 
-        PdfPCell cel2 = new PdfPCell(new Paragraph("系统版本: " + assetPo.getOs_ver(), font14));
+        PdfPCell cel2 = new PdfPCell(new Paragraph("系统版本: " + assetPo.getOs_ver(), font12));
         cel2.disableBorderSide(15);
         table.addCell(cel2);
 
-        PdfPCell cel3 = new PdfPCell(new Paragraph("资产IP: " + assetPo.getIp() + "\n\n\n", font14));
+        PdfPCell cel3 = new PdfPCell(new Paragraph("资产IP: " + assetPo.getIp(), font12));
         cel3.disableBorderSide(15);
         table.addCell(cel3);
+
+        if (jsonMsg != null) {
+            JSONArray CPUConfigs = jsonMsg.getJSONArray("CPU");
+            JSONObject MemConfigs = (JSONObject)(jsonMsg.get("Memory"));
+            JSONArray NetConfigs = jsonMsg.getJSONArray("Net Config");
+            if (CPUConfigs != null && CPUConfigs.size() > 0) {
+                String vendor = ((JSONObject) CPUConfigs.get(0)).get("vendor").toString();
+                String model = ((JSONObject) CPUConfigs.get(0)).get("model").toString();
+                String mhz = ((JSONObject) CPUConfigs.get(0)).get("mhz").toString();
+                String cacheSize = ((JSONObject) CPUConfigs.get(0)).get("cacheSize").toString();
+                String totalCores = ((JSONObject) CPUConfigs.get(0)).get("totalCores").toString();
+                String totalSockets = ((JSONObject) CPUConfigs.get(0)).get("totalSockets").toString();
+                String coresPerSocket = ((JSONObject) CPUConfigs.get(0)).get("coresPerSocket").toString();
+                PdfPCell cel4 = new PdfPCell(new Paragraph("CPU核: " + totalCores + "核", font12));
+                cel4.disableBorderSide(15);
+                table.addCell(cel4);
+                PdfPCell cel5 = new PdfPCell(new Paragraph("制造商: " + vendor, font12));
+                cel5.disableBorderSide(15);
+                table.addCell(cel5);
+                PdfPCell cel6 = new PdfPCell(new Paragraph("型号: " + model, font12));
+                cel6.disableBorderSide(15);
+                table.addCell(cel6);
+                PdfPCell cel7 = new PdfPCell(new Paragraph("主频: " + mhz, font12));
+                cel7.disableBorderSide(15);
+                table.addCell(cel7);
+            }
+            if (MemConfigs != null) {
+                String total = MemConfigs.get("total").toString();
+                String used = MemConfigs.get("used").toString();
+                String free = MemConfigs.get("free").toString();
+                String actualUsed = MemConfigs.get("actualUsed").toString();
+                String actualFree = MemConfigs.get("actualFree").toString();
+                String usedPercent = MemConfigs.get("usedPercent").toString();
+                String freePercent = MemConfigs.get("freePercent").toString();
+                PdfPCell cel8 = new PdfPCell(new Paragraph("内存总量: " + getFormatCapacity(total), font12));
+                cel8.disableBorderSide(15);
+                table.addCell(cel8);
+                PdfPCell cel9 = new PdfPCell(new Paragraph("已用占比: " + getFormatPercent(usedPercent), font12));
+                cel9.disableBorderSide(15);
+                table.addCell(cel9);
+            }
+            if (NetConfigs != null && NetConfigs.size() > 0) {
+                String name = ((JSONObject) NetConfigs.get(0)).get("name").toString();
+                String hwaddr = ((JSONObject) NetConfigs.get(0)).get("hwaddr").toString();
+                String type = ((JSONObject) NetConfigs.get(0)).get("type").toString();
+                String description = ((JSONObject) NetConfigs.get(0)).get("description").toString();
+                String address = ((JSONObject) NetConfigs.get(0)).get("address").toString();
+
+                PdfPCell cel10 = new PdfPCell(new Paragraph("MAC地址: " + hwaddr, font12));
+                cel10.disableBorderSide(15);
+                table.addCell(cel10);
+                PdfPCell cel11 = new PdfPCell(new Paragraph("网络类型: " + type + "\n\n\n", font12));
+                cel11.disableBorderSide(15);
+                table.addCell(cel11);
+            }
+        }
         doc.add(table);
 
         List<ConfigCheckResultPo> iptablesResultPos = new ArrayList();
@@ -349,6 +408,67 @@ public class PdfUtil {
         //关闭书写器
         writer.close();
         return pathName;
+    }
+
+    private static String getFormatCapacity(String capacityStr) {
+        double capacity = Double.parseDouble(capacityStr);
+        String result = "";
+        if (capacity > 1073741824) {
+            // GB
+            result = String.valueOf((float)capacity / 1073741824);
+            int trimIndex = result.length();
+            if (result.indexOf(".") >= 0) {
+                if (result.indexOf(".") + 2 > result.length()) {
+                    trimIndex = result.indexOf(".") + 2;
+                } else {
+                    trimIndex = result.indexOf(".") + 3;
+                }
+            }
+            result = result.substring(0, trimIndex) + " G";
+        } else if (capacity > 1048576) {
+            // MB
+            result = String.valueOf((float)capacity / 1048576);
+            int trimIndex = result.length();
+            if (result.indexOf(".") >= 0) {
+                if (result.indexOf(".") + 2 > result.length()) {
+                    trimIndex = result.indexOf(".") + 2;
+                } else {
+                    trimIndex = result.indexOf(".") + 3;
+                }
+            }
+            result = result.substring(0, trimIndex) + " M";
+        } else if (capacity > 1024) {
+            // KB
+            result = String.valueOf((float)capacity / 1024);
+            int trimIndex = result.length();
+            if (result.indexOf(".") >= 0) {
+                if (result.indexOf(".") + 2 > result.length()) {
+                    trimIndex = result.indexOf(".") + 2;
+                } else {
+                    trimIndex = result.indexOf(".") + 3;
+                }
+            }
+            result = result.substring(0, trimIndex) + " K";
+        } else {
+            result = capacityStr + " ";
+        }
+
+        return result + "B";
+    }
+
+    private static String getFormatPercent(String result) {
+        if (result != null) {
+            int trimIndex = result.length();
+            if (result.indexOf(".") >= 0) {
+                if (result.indexOf(".") + 2 > result.length()) {
+                    trimIndex = result.indexOf(".") + 2;
+                } else {
+                    trimIndex = result.indexOf(".") + 3;
+                }
+            }
+            result = result.substring(0, trimIndex) + " %";
+        }
+        return result;
     }
 
     private static PdfPTable getCheckTable(List<ConfigCheckResultPo> resultPos, Font headFont, Font cellFont) throws Exception{
