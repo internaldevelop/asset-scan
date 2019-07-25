@@ -323,8 +323,8 @@ public class AssetScanDataService {
                         email = userPo.getEmail();
                     }
                     if (email != null) {
-
-                        String pathName = PdfUtil.saveReportPDF(fileTitle, account, resultPos, riskCount, assetPo);
+                        //getAssetInfo("127.0.0.1")
+                        String pathName = PdfUtil.saveReportPDF(fileTitle, account, resultPos, riskCount, assetPo, getAssetInfo(assetPo.getIp()));
                         String content = "详情请查看附件。";
                         mailManageService.sendSimpleTextMail(fileTitle,content,email, pathName);
                     }
@@ -335,7 +335,7 @@ public class AssetScanDataService {
         }
     }
 
-    private void getAssetInfo(String assetIP) {
+    private JSONObject getAssetInfo(String assetIP) {
         // 构造URL
         String ip = "http://" + assetIP + ":8191";
         String url = ip + "/asset-info/acquire?types={types}";
@@ -345,10 +345,17 @@ public class AssetScanDataService {
         map.put("types", "CPU,Mem,Net Config");
 
         // 向节点发送请求，并返回节点的响应结果
-        ResponseEntity<ResponseBean> responseEntity = restTemplate.getForEntity(url, ResponseBean.class, map);
-        ResponseBean responseBean = (ResponseBean)responseEntity.getBody();
-        if (responseBean.getCode() == ErrorCodeEnum.ERROR_OK.getCode()) {
-            JSONObject jsonMsg = (JSONObject)JSONObject.toJSON(responseBean.getPayload());
+        try{
+            ResponseEntity<ResponseBean> responseEntity = restTemplate.getForEntity(url, ResponseBean.class, map);
+            ResponseBean responseBean = (ResponseBean)responseEntity.getBody();
+            if (responseBean.getCode() == ErrorCodeEnum.ERROR_OK.getCode()) {
+                JSONObject jsonMsg = (JSONObject)JSONObject.toJSON(responseBean.getPayload());
+                return jsonMsg;
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            return null;
         }
     }
 
