@@ -122,11 +122,11 @@ public class AssetScanDataService {
                 endTime = currentTime;
             }
             // 检验起止时间是否历史时间
-            if ( beginTime.after(currentTime)|| endTime.after(currentTime) )
+            if (beginTime.after(currentTime) || endTime.after(currentTime))
                 return responseHelper.error(ErrorCodeEnum.ERROR_TIME_AFTER_CURRENT);
 
             // 起始时间不能晚于结束时间
-            if ( beginTime.after(endTime))
+            if (beginTime.after(endTime))
                 return responseHelper.error(ErrorCodeEnum.ERROR_TIME_INCORRECT);
 
             // 如果策略 uuid 列表未提供，则用空字符串表示全部资产
@@ -134,9 +134,9 @@ public class AssetScanDataService {
                 assetUuidList = "";
 
             List<AssetScanRecordDto> results = new ArrayList<>();
-            for(AssetScanRecordDto scanRecord: recordDtos) {
+            for (AssetScanRecordDto scanRecord : recordDtos) {
                 if ((assetUuidList.contains(scanRecord.getAsset_uuid()) || assetUuidList.equals(""))
-                    && (scanRecord.getCreate_time().after(beginTime) && scanRecord.getCreate_time().before(endTime))) {
+                        && (scanRecord.getCreate_time().after(beginTime) && scanRecord.getCreate_time().before(endTime))) {
                     results.add(scanRecord);
                 }
             }
@@ -167,8 +167,13 @@ public class AssetScanDataService {
         }
     }
 
-    public ResponseBean getCheckResultByScanUuid(String scanUuid) {
-        List<ConfigCheckResultPo> resultPos = configCheckMapper.getScanResults(scanUuid);
+    public ResponseBean getCheckResultByScanUuid(String scanUuid, String group) {
+        List<ConfigCheckResultPo> resultPos;
+        if (group.isEmpty()) {
+            resultPos = configCheckMapper.getScanResults(scanUuid);
+        } else {
+            resultPos = configCheckMapper.getScanTypeResults(scanUuid, group);
+        }
         if (resultPos == null || resultPos.size() == 0) {
             return responseHelper.error(ErrorCodeEnum.ERROR_CHECK_RESULT_NOT_FOUND);
         } else {
@@ -226,7 +231,7 @@ public class AssetScanDataService {
 
         // 向节点发送请求，并返回节点的响应结果
         ResponseEntity<ResponseBean> responseEntity = restTemplate.getForEntity(url, ResponseBean.class, map);
-        ResponseBean scanResponse = (ResponseBean)responseEntity.getBody();
+        ResponseBean scanResponse = (ResponseBean) responseEntity.getBody();
         if (scanResponse.getCode() != ErrorCodeEnum.ERROR_OK.getCode()) {
             return scanResponse;
         }
@@ -283,12 +288,11 @@ public class AssetScanDataService {
 
         ResponseBean responseCheckScanInfo = checkScanInfo(jsonScanInfo, jsonBaseline);
 
-        if (scanUuid != null && !scanUuid.isEmpty()) {
-            List<ConfigCheckResultPo> resultPos = configCheckMapper.getScanResults(scanUuid);
-            if (resultPos != null || resultPos.size() > 0) {
-                // 邮件通知核查结果
-                sendCheckScanMail(resultPos);
-            }
+        // 发核查报告邮件
+        List<ConfigCheckResultPo> resultPos = configCheckMapper.getScanResults(resultOper.getScanUuid());
+        if (resultPos != null || resultPos.size() > 0) {
+            // 邮件通知核查结果
+            sendCheckScanMail(resultPos);
         }
         return responseCheckScanInfo;
     }
@@ -303,7 +307,7 @@ public class AssetScanDataService {
         String fileTitle = "资产扫描核查结果";
         int riskCount = 0;
         AssetPo assetPo = null;
-        for(ConfigCheckResultPo configCheckResultPo: resultPos) {
+        for (ConfigCheckResultPo configCheckResultPo : resultPos) {
             if (configCheckResultPo.getRisk_level() > 0) {
                 riskCount++;
                 if (assetPo == null) {
@@ -311,7 +315,7 @@ public class AssetScanDataService {
                 }
             }
         }
-        try{
+        try {
             if (riskCount > 0) {
                 SystemConfigPo systemConfigPo = systemConfigsMapper.getSystemConfigByName("mail-to-user-on-off");
                 if (systemConfigPo != null && systemConfigPo.getValue().equals("on")) {
@@ -326,11 +330,11 @@ public class AssetScanDataService {
                         //getAssetInfo("127.0.0.1")
                         String pathName = PdfUtil.saveReportPDF(fileTitle, account, resultPos, riskCount, assetPo, getAssetInfo(assetPo.getIp()));
                         String content = "详情请查看附件。";
-                        mailManageService.sendSimpleTextMail(fileTitle,content,email, pathName);
+                        mailManageService.sendSimpleTextMail(fileTitle, content, email, pathName);
                     }
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -345,14 +349,14 @@ public class AssetScanDataService {
         map.put("types", "CPU,Mem,Net Config");
 
         // 向节点发送请求，并返回节点的响应结果
-        try{
+        try {
             ResponseEntity<ResponseBean> responseEntity = restTemplate.getForEntity(url, ResponseBean.class, map);
-            ResponseBean responseBean = (ResponseBean)responseEntity.getBody();
+            ResponseBean responseBean = (ResponseBean) responseEntity.getBody();
             if (responseBean.getCode() == ErrorCodeEnum.ERROR_OK.getCode()) {
-                JSONObject jsonMsg = (JSONObject)JSONObject.toJSON(responseBean.getPayload());
+                JSONObject jsonMsg = (JSONObject) JSONObject.toJSON(responseBean.getPayload());
                 return jsonMsg;
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             return null;
@@ -363,13 +367,14 @@ public class AssetScanDataService {
     /**
      * baseline 格式如下：
      * {
-     *     startup: {
-     *         SELinux_status: "检查SELinux是否开启",
-     *         SELinux_mode: "检查SELinux模式是否为enforcing",
-     *         SELinux_policy: "检查SELinux策略是否为strict",
-     *         ......
-     *     }
+     * startup: {
+     * SELinux_status: "检查SELinux是否开启",
+     * SELinux_mode: "检查SELinux模式是否为enforcing",
+     * SELinux_policy: "检查SELinux策略是否为strict",
+     * ......
      * }
+     * }
+     *
      * @param scanInfo
      * @param baseLine
      * @return

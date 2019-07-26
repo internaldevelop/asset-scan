@@ -93,16 +93,18 @@ public class BaseLinesApi {
     /**
      * 10.6 查询核查结果
      * scanUuid 和 resultUuid 二选一，不能都为空
-     * @param scanUuid
-     * @param resultUuid
+     * @param scanUuid scanUuid 结合 group，group 为空时，查询所有类别的核查结果
+     * @param resultUuid 某条核查结果的 UUID
+     * @param group scanUuid 结合 group，group 为空时，查询所有类别的核查结果
      * @return
      */
     @RequestMapping(value = "/check-result", method = RequestMethod.GET)
     @ResponseBody
     Object getCheckResult(@RequestParam(value = "scan_uuid", defaultValue = "") String scanUuid,
-                          @RequestParam(value = "result_uuid", defaultValue = "") String resultUuid) {
+                          @RequestParam(value = "result_uuid", defaultValue = "") String resultUuid,
+                          @RequestParam(value = "group", defaultValue = "") String group) {
         if (scanUuid != null && !scanUuid.isEmpty()) {
-            return scanDataService.getCheckResultByScanUuid(scanUuid);
+            return scanDataService.getCheckResultByScanUuid(scanUuid, group);
         } else if (resultUuid != null && !resultUuid.isEmpty()) {
             return scanDataService.getCheckResultByResultUuid(resultUuid);
         } else {
@@ -177,5 +179,18 @@ public class BaseLinesApi {
         systemLogs.logEvent(response, "最近核查数据统计", "资产ID：" + assetUuid);
         return response;
     }
+//
+//    /**
+//     * 10.12 获取某次核查的结果
+//     * @param scanUuid  某次核查的uuid
+//     * @param group   本次核查中的某一个类别
+//     * @return
+//     */
+//    @RequestMapping(value = "/check-result", method = RequestMethod.GET)
+//    @ResponseBody
+//    Object getAssetCheckResult(@RequestParam(value = "scan_uuid", defaultValue = "") String scanUuid,
+//                               @RequestParam(value = "group", defaultValue = "") String group) {
+//        return null;
+//    }
 
 }

@@ -2887,6 +2887,11 @@
 									"key": "creator_uuid",
 									"value": "{{user_uuid}}",
 									"type": "text"
+								},
+								{
+									"key": "base_line",
+									"value": "2",
+									"type": "text"
 								}
 							]
 						},
@@ -3029,7 +3034,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/baseline-check/check-result?scan_uuid=b0619854-d2aa-455b-93c0-b8a9cbb52f72&result_uuid=3694bb72-0322-43fc-9d38-f3fb481bf7a4",
+							"raw": "{{base_url}}/baseline-check/check-result?scan_uuid=f8c4a22a-a144-45b6-bad2-104e47f5a6d6&result_uuid=&group=startup",
 							"host": [
 								"{{base_url}}"
 							],
@@ -3040,12 +3045,16 @@
 							"query": [
 								{
 									"key": "scan_uuid",
-									"value": "b0619854-d2aa-455b-93c0-b8a9cbb52f72",
+									"value": "f8c4a22a-a144-45b6-bad2-104e47f5a6d6",
 									"description": "scanUuid 和 resultUuid 二选一，不能都为空"
 								},
 								{
 									"key": "result_uuid",
-									"value": "3694bb72-0322-43fc-9d38-f3fb481bf7a4"
+									"value": ""
+								},
+								{
+									"key": "group",
+									"value": "startup"
 								}
 							]
 						}
@@ -3093,6 +3102,30 @@
 							"path": [
 								"baseline-check",
 								"init-baselines"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "10.11 获取资产最近一次核查统计数据",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/baseline-check/asset-recent-check-stat?asset_uuid={{asset_uuid}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"baseline-check",
+								"asset-recent-check-stat"
+							],
+							"query": [
+								{
+									"key": "asset_uuid",
+									"value": "{{asset_uuid}}"
+								}
 							]
 						}
 					},

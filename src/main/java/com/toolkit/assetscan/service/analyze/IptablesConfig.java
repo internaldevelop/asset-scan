@@ -17,6 +17,8 @@ public class IptablesConfig {
         if (!checkActive(active, checkItems)) {
             return false;
         }
+        // 未激活时，完成配置检查
+        if (!active) return true;
 
         // 核查 Input chain 规则配置
         JSONArray inputChains = iptables.getJSONArray("Chain INPUT");
