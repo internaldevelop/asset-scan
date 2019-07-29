@@ -2,6 +2,7 @@ package com.toolkit.assetscan.service.analyze;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.toolkit.assetscan.Helper.SystemLogsHelper;
 import com.toolkit.assetscan.bean.dto.AssetScanRecordDto;
 import com.toolkit.assetscan.bean.dto.CheckStatisticsDto;
 import com.toolkit.assetscan.bean.dto.ExcelDataDto;
@@ -72,6 +73,8 @@ public class AssetScanDataService {
     SysLogConfig sysLogConfig;
     @Autowired
     IptablesConfig iptablesConfig;
+    @Autowired
+    private SystemLogsHelper systemLogs;
 
     public ResponseBean addScanRecord(AssetScanDataPo scanDataPo) {
         // 设置扫描记录的 UUID 和创建时间
@@ -329,8 +332,9 @@ public class AssetScanDataService {
                     if (email != null) {
                         //getAssetInfo("127.0.0.1")
                         String pathName = PdfUtil.saveReportPDF(fileTitle, account, resultPos, riskCount, assetPo, getAssetInfo(assetPo.getIp()));
-                        String content = "详情请查看附件。";
+                        String content = "资产扫描核查结果，详情请查看附件。";
                         mailManageService.sendSimpleTextMail(fileTitle, content, email, pathName);
+                        systemLogs.logEvent(responseHelper.success(), "发送邮件", content);
                     }
                 }
             }

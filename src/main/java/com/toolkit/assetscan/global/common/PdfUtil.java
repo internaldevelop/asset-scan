@@ -227,7 +227,12 @@ public class PdfUtil {
         SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
         String dateName = sdfName.format(new Date());
         String date = sdfDate.format(new Date());
-        File file = new File(fileName + dateName + ".pdf");
+        File currentPath = new File("");
+        File currentDir = new File(currentPath.getAbsolutePath(), "reports");
+        if (!currentDir.exists()) {
+            currentDir.mkdir();
+        }
+        File file = new File(currentDir, fileName + dateName + ".pdf");
         String pathName = file.getAbsolutePath();
         //建立一个书写器
         PdfWriter writer = PdfWriter.getInstance(doc, new FileOutputStream(file));
