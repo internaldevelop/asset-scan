@@ -121,4 +121,19 @@ public class AssetManageApi {
         return mResponseHelper.error(ErrorCodeEnum.ERROR_PARAMETER);
     }
 
+    /**
+     * 6.7 设置资产账号密码
+     * @param assetUuid  资产的UUID
+     * @param account  资产系统中新建账号或已有账号
+     * @param password   给账号设定的新密码
+     * @return
+     */
+    @RequestMapping(value = "/set-account-pwd", method = RequestMethod.POST)
+    @ResponseBody
+    Object setUserAccountPwd(@RequestParam("asset_uuid") String assetUuid,
+                             @RequestParam("account") String account,
+                             @RequestParam("password") String password) {
+        return mAssetManageService.setAccountPassword(assetUuid, account, password);
+    }
+
 }

@@ -179,18 +179,6 @@ public class BaseLinesApi {
         systemLogs.logEvent(response, "最近核查数据统计", "资产ID：" + assetUuid);
         return response;
     }
-//
-//    /**
-//     * 10.12 获取某次核查的结果
-//     * @param scanUuid  某次核查的uuid
-//     * @param group   本次核查中的某一个类别
-//     * @return
-//     */
-//    @RequestMapping(value = "/check-result", method = RequestMethod.GET)
-//    @ResponseBody
-//    Object getAssetCheckResult(@RequestParam(value = "scan_uuid", defaultValue = "") String scanUuid,
-//                               @RequestParam(value = "group", defaultValue = "") String group) {
-//        return null;
-//    }
+
 
 }
