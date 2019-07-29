@@ -72,6 +72,8 @@ public class AssetScanDataService {
     SysLogConfig sysLogConfig;
     @Autowired
     IptablesConfig iptablesConfig;
+    @Autowired
+    AssetInfoService assetInfoService;
 
     public ResponseBean addScanRecord(AssetScanDataPo scanDataPo) {
         // 设置扫描记录的 UUID 和创建时间
@@ -200,19 +202,26 @@ public class AssetScanDataService {
     }
 
     public ResponseBean getAssetRecentCheckStat(String assetUuid) {
+        // 获取资产系统信息
+        AssetPo assetPo = assetsMapper.getAssetByUuid(assetUuid);
+        if (assetPo == null) {
+            return responseHelper.error(ErrorCodeEnum.ERROR_ASSET_NOT_FOUND);
+        }
+        JSONObject infoObj = assetInfoService.getAssetInfo(assetPo.getIp(), "System");
+
         // 获取资产的最近一条扫描记录
         AssetScanRecordDto scanRecordDto = assetScanDataMapper.getAssetRecentScanInfo(assetUuid);
-        if (scanRecordDto == null) {
-            return responseHelper.error(ErrorCodeEnum.ERROR_SCAN_NOT_FOUND);
-        }
-
-        // 获取最近一次扫描的核查统计数据
-        List<CheckStatisticsDto> statisticsDtos = baseLineMapper.getCheckStatics(scanRecordDto.getUuid());
-        if (statisticsDtos == null || statisticsDtos.size() == 0) {
-            return responseHelper.error(ErrorCodeEnum.ERROR_CHECK_RESULT_NOT_FOUND);
+        List<CheckStatisticsDto> statisticsDtos = null;
+        if (scanRecordDto != null) {
+            // 获取最近一次扫描的核查统计数据
+            statisticsDtos = baseLineMapper.getCheckStatics(scanRecordDto.getUuid());
+//            if (statisticsDtos == null || statisticsDtos.size() == 0) {
+//                return responseHelper.error(ErrorCodeEnum.ERROR_CHECK_RESULT_NOT_FOUND);
+//            }
         }
 
         JSONObject result = new JSONObject();
+        result.put("system", infoObj);
         result.put("recent", scanRecordDto);
         result.put("statistics", statisticsDtos);
 
@@ -328,7 +337,8 @@ public class AssetScanDataService {
                     }
                     if (email != null) {
                         //getAssetInfo("127.0.0.1")
-                        String pathName = PdfUtil.saveReportPDF(fileTitle, account, resultPos, riskCount, assetPo, getAssetInfo(assetPo.getIp()));
+                        String pathName = PdfUtil.saveReportPDF(fileTitle, account, resultPos, riskCount, assetPo,
+                                assetInfoService.getAssetInfo(assetPo.getIp(), "CPU,Mem,Net Config"));
                         String content = "详情请查看附件。";
                         mailManageService.sendSimpleTextMail(fileTitle, content, email, pathName);
                     }
@@ -339,29 +349,6 @@ public class AssetScanDataService {
         }
     }
 
-    private JSONObject getAssetInfo(String assetIP) {
-        // 构造URL
-        String ip = "http://" + assetIP + ":8191";
-        String url = ip + "/asset-info/acquire?types={types}";
-
-        // 构造参数map
-        HashMap<String, String> map = new HashMap<>();
-        map.put("types", "CPU,Mem,Net Config");
-
-        // 向节点发送请求，并返回节点的响应结果
-        try {
-            ResponseEntity<ResponseBean> responseEntity = restTemplate.getForEntity(url, ResponseBean.class, map);
-            ResponseBean responseBean = (ResponseBean) responseEntity.getBody();
-            if (responseBean.getCode() == ErrorCodeEnum.ERROR_OK.getCode()) {
-                JSONObject jsonMsg = (JSONObject) JSONObject.toJSON(responseBean.getPayload());
-                return jsonMsg;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            return null;
-        }
-    }
 
 
     /**

@@ -1,6 +1,7 @@
 package com.toolkit.assetscan.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.toolkit.assetscan.bean.dto.AssetAccountDto;
 import com.toolkit.assetscan.bean.po.AssetPo;
 import com.toolkit.assetscan.dao.mybatis.AssetsMapper;
 import com.toolkit.assetscan.global.bean.ResponseBean;
@@ -8,8 +9,16 @@ import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.List;
 
 @Component
@@ -18,6 +27,8 @@ public class AssetManageService {
     private final ResponseHelper mResponseHelper;
     @Autowired
     AssetCollectScheduler assetCollectScheduler;
+    @Autowired
+    RestTemplate restTemplate;
 
     public AssetManageService(AssetsMapper assetsMapper, ResponseHelper responseHelper) {
         mAssetsMapper = assetsMapper;
@@ -122,6 +133,36 @@ public class AssetManageService {
 
     public ResponseBean stopRealTimeInfo(String assetUuid) {
         assetCollectScheduler.stopTask(assetUuid);
+        return mResponseHelper.success();
+    }
+
+    public ResponseBean setAccountPassword(String assetUuid, String account, String password) {
+        // 获取资产信息
+        AssetPo assetPo = mAssetsMapper.getAssetByUuid(assetUuid);
+        if (assetPo == null) {
+            return mResponseHelper.error(ErrorCodeEnum.ERROR_ASSET_NOT_FOUND);
+        }
+
+        // 构造URL
+        String ip = "http://" + assetPo.getIp() + ":8191";
+        String url = ip + "/asset-sec-cfg/set-user-pwd";
+
+        // 构造参数map：使用RestTemplate发送multipart/form-data格式的数据
+        MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
+        map.add("asset_uuid", assetUuid);
+        map.add("account", account);
+        map.add("password", password);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers);
+
+        // 向节点发送请求，并返回节点的响应结果
+        ResponseEntity<ResponseBean> responseEntity = restTemplate.postForEntity(url, request, ResponseBean.class);
+        ResponseBean scanResponse = (ResponseBean) responseEntity.getBody();
+        if (scanResponse.getCode() != ErrorCodeEnum.ERROR_OK.getCode()) {
+            return scanResponse;
+        }
+
         return mResponseHelper.success();
     }
 
