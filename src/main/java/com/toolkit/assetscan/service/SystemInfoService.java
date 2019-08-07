@@ -42,4 +42,16 @@ public class SystemInfoService {
         return responseHelper.success(sysInfo);
     }
 
+    public ResponseBean getHostPerformanceSystemInfo() {
+        JSONObject sysInfo = new JSONObject();
+        sysInfo.put("sysName", "主站性能测试工具");
+        sysInfo.put("desc", "对目标主站设备，进行硬件参数（处理器、内存、硬盘）、网络参数进行性能测试，生成测试报告。");
+        sysInfo.put("sysVer", "1.0.0.201");
+        sysInfo.put("copyright", "Copyright ©2019-2022 中国电科院");
+        sysInfo.put("status", "运行中");
+        sysInfo.put("overview", "采用kali2 、Java、公司自主可控 MySQL 开发，系统实现收集设备处理器参数、内存参数、硬盘使用情况，" +
+                "以及网络性能进行测试分析，完成测试报告生成、文件导出功能。");
+
+        return responseHelper.success(sysInfo);
+    }
 }

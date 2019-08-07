@@ -32,6 +32,9 @@ public class SystemInfoApi {
         } else if (systemType == 2) {
             return systemInfoService.getTerminalSystemInfo();
         }
+        else if(systemType == 3) {
+            return systemInfoService.getHostPerformanceSystemInfo();
+        }
 
         return responseHelper.error(ErrorCodeEnum.ERROR_PARAMETER);
     }
