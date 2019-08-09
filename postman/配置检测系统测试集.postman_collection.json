@@ -3281,7 +3281,7 @@
 									"host": [
 										"localhost"
 									],
-									"port": "8191",
+									"port": "",
 									"path": [
 										"nodes",
 										"manage",
@@ -3308,12 +3308,12 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8191/test/os",
+									"raw": "http://localhost:/test/os",
 									"protocol": "http",
 									"host": [
 										"localhost"
 									],
-									"port": "8191",
+									"port": "",
 									"path": [
 										"test",
 										"os"
