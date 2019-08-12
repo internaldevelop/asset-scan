@@ -31,6 +31,8 @@ public class SystemInfoApi {
             return systemInfoService.getHostSystemInfo();
         } else if (systemType == 2) {
             return systemInfoService.getTerminalSystemInfo();
+        } else if (systemType == 3) {
+            return systemInfoService.getHostPerformanceSystemInfo();
         }
         else if(systemType == 3) {
             return systemInfoService.getHostPerformanceSystemInfo();

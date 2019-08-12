@@ -57,7 +57,7 @@ public class AssetCollectScheduler {
     public boolean startTask(String assetUuid, String assetIp, String infoTypes) {
         // 未指定信息类别时，默认收集CPU使用率和内存使用率
         if (infoTypes == null || infoTypes.isEmpty())
-            infoTypes = "Proc CPU Ranking,Proc Memory Ranking,CPU Usage,Mem";
+            infoTypes = "Proc CPU Ranking,Proc Memory Ranking,CPU Usage,Mem, FST";
 
         // 创建一个 Runnable ，设置：任务和项目的 UUID
         MyRunnable runnable = new MyRunnable();
