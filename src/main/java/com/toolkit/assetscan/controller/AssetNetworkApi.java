@@ -28,14 +28,15 @@ public class AssetNetworkApi {
 
     /**
      * 12.1 获取网络性能
-     * @param assetUuid
+     * @param sourceAssetUuid 源资产
+     * @param objAssetUuid 目的资产
      * @param type 1:延时; 2:吞吐量; 3:带宽;
      * @return
      */
     @RequestMapping(value="/delay", method = RequestMethod.GET)
     @ResponseBody
-    public Object getDelayInfo(@RequestParam("asset_uuid") String assetUuid, @RequestParam("type") String type) {
-        return assetNetworkService.getDelayInfo(assetUuid, type);
+    public Object getDelayInfo(@RequestParam("source_asset_uuid") String sourceAssetUuid, @RequestParam("obj_asset_uuid") String objAssetUuid, @RequestParam("type") String type) {
+        return assetNetworkService.getDelayInfo(sourceAssetUuid, objAssetUuid, type);
     }
 
 }

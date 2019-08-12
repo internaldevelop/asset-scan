@@ -33,15 +33,21 @@ public class AssetNetworkService {
         mResponseHelper = responseHelper;
     }
 
-    public ResponseBean getDelayInfo(String assetUuid, String type) {
-        AssetPo assetPo = mAssetsMapper.getAssetByUuid(assetUuid);
-        if (assetPo == null && "".equals(assetPo.getIp())){
+    public ResponseBean getDelayInfo(String sourceAssetUuid, String objAssetUuid, String type) {
+        AssetPo sAssetPo = mAssetsMapper.getAssetByUuid(sourceAssetUuid);  // 源资产
+        if (sAssetPo == null && "".equals(sAssetPo.getIp())){
             return null;
         }
-        String ip = assetPo.getIp();
+        String sip = sAssetPo.getIp();
+
+        AssetPo oAssetPo = mAssetsMapper.getAssetByUuid(objAssetUuid);  // 目的资产
+        if (oAssetPo == null && "".equals(oAssetPo.getIp())){
+            return null;
+        }
+        String oip = oAssetPo.getIp();
 
         // 构造URL
-        String url = "http://" + ip + ":8191/asset-network-info/delay?type=" + type + "&ip=" + ip;
+        String url = "http://" + sip + ":8191/asset-network-info/delay?type=" + type + "&ip=" + oip;
 
         // 向节点发送请求，并返回节点的响应结果
         ResponseEntity<ResponseBean> responseEntity = restTemplate.getForEntity(url, ResponseBean.class);
