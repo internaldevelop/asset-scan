@@ -32,14 +32,14 @@ public class AssetNetworkService {
 
     public ResponseBean getDelayInfo(String sourceAssetUuid, String objAssetUuid, String type) {
         AssetPo sAssetPo = mAssetsMapper.getAssetByUuid(sourceAssetUuid);  // 源资产
-        if (sAssetPo == null && "".equals(sAssetPo.getIp())){
-            return null;
+        if (sAssetPo == null || "".equals(sAssetPo.getIp())){
+            return responseHelper.error(ErrorCodeEnum.ERROR_ASSET_NOT_FOUND);
         }
         String sip = sAssetPo.getIp();
 
         AssetPo oAssetPo = mAssetsMapper.getAssetByUuid(objAssetUuid);  // 目的资产
-        if (oAssetPo == null && "".equals(oAssetPo.getIp())){
-            return null;
+        if (oAssetPo == null || "".equals(oAssetPo.getIp())){
+            return responseHelper.error(ErrorCodeEnum.ERROR_ASSET_NOT_FOUND);
         }
         String oip = oAssetPo.getIp();
 

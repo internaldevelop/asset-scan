@@ -125,4 +125,21 @@ public class NetConnectService {
     }
 
 
+    public ResponseBean urlResp(String assetUuid, String tUrl) {
+        AssetPo assetPo = mAssetsMapper.getAssetByUuid(assetUuid);  // 源资产
+        if (assetPo == null || "".equals(assetPo.getIp())){
+            return mResponseHelper.error(ErrorCodeEnum.ERROR_ASSET_NOT_FOUND);
+        }
+
+        // 构造URL
+        String url = "http://" + assetPo.getIp() + ":8191/netconnect/url-resp?url=" + tUrl;
+
+        // 向节点发送请求，并返回节点的响应结果
+        ResponseEntity<ResponseBean> responseEntity = restTemplate.getForEntity(url, ResponseBean.class);
+        ResponseBean scanResponse = (ResponseBean) responseEntity.getBody();
+        if (scanResponse.getCode() != ErrorCodeEnum.ERROR_OK.getCode()) {
+            return scanResponse;
+        }
+        return scanResponse;
     }
+}

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @CrossOrigin(origins = "*",maxAge = 3600)
 @RequestMapping(value = "/api/assets-network")
-@Api(value = "12. 网络性能接口", tags = "12-Assets Network API")
+@Api(value = "13. 网络性能接口", tags = "12-Assets Network API")
 public class AssetNetworkApi {
     private Logger logger = LoggerFactory.getLogger(AssetNetworkApi.class);
     private final AssetNetworkService assetNetworkService;
@@ -27,7 +27,7 @@ public class AssetNetworkApi {
     }
 
     /**
-     * 12.1 获取网络性能
+     * 13.1 获取网络性能
      * @param sourceAssetUuid 源资产
      * @param objAssetUuid 目的资产
      * @param type 1:延时; 2:吞吐量; 3:带宽;
@@ -39,6 +39,13 @@ public class AssetNetworkApi {
         return assetNetworkService.getDelayInfo(sourceAssetUuid, objAssetUuid, type);
     }
 
+    /**
+     * 13.2 查看历史数据(CPU、内存、硬盘使用率)
+     * @param beginTime
+     * @param endTime
+     * @param assetUuid
+     * @return
+     */
     @RequestMapping(value="/his-perf", method = RequestMethod.GET)
     @ResponseBody
     public Object getHistoryPerfinfo(@RequestParam(value = "begin_time", required = false) java.sql.Timestamp beginTime,

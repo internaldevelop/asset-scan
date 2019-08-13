@@ -39,4 +39,19 @@ public class NetConnectApi {
         return response;
     }
 
+    /**
+     * 测试指定url访问时长
+     * @param url
+     * @return
+     */
+    @RequestMapping(value = "/url-resp", method = RequestMethod.GET)
+    public @ResponseBody Object urlResp(@RequestParam("asset_uuid") String assetUuid, @RequestParam("url") String url) {
+        ResponseBean response = netconnectService.urlResp(assetUuid, url);
+        return response;
+    }
+
+
+
+
+
 }
