@@ -39,4 +39,14 @@ public class AssetNetworkApi {
         return assetNetworkService.getDelayInfo(sourceAssetUuid, objAssetUuid, type);
     }
 
+    @RequestMapping(value="/his-perf", method = RequestMethod.GET)
+    @ResponseBody
+    public Object getHistoryPerfinfo(@RequestParam(value = "begin_time", required = false) java.sql.Timestamp beginTime,
+                                     @RequestParam(value = "end_time", required = false) java.sql.Timestamp endTime,
+                                     @RequestParam(value = "asset_uuid", required = false) String assetUuid) {
+        return assetNetworkService.getHistoryPerfinfo(beginTime, endTime, assetUuid);
+    }
+
+
+
 }
