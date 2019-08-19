@@ -111,7 +111,7 @@ public class NetConnectService {
 
         // 构造URL
         String strip = "http://" + assetPo.getIp() + ":8191";
-        String url = strip + "/netconnect/param?ip="+ip;
+        String url = strip + "/netconnect/ping?ip="+ip;
 
         // 向节点发送请求，并返回节点的响应结果
         ResponseEntity<ResponseBean> responseEntity = restTemplate.getForEntity(url, ResponseBean.class);

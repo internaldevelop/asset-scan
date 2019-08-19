@@ -26,12 +26,13 @@ public class NetConnectApi {
 
     /**
      *12.1 网络路径连通性测试
-     * @param ip 系统配置名称
+     * @param ip 连通测试 IP
+     * @param uuid  节点设备UUID
      * @return payload
      */
-    @RequestMapping(value = "/param", method = RequestMethod.GET)
+    @RequestMapping(value = "/ping", method = RequestMethod.GET)
     public @ResponseBody
-    Object netConnect(@RequestParam("uuid") String uuid,
+    Object netConnect(@RequestParam("asset_uuid") String uuid,
                       @RequestParam("ip") String ip) {
         //ResponseBean response = netconnectService.ping(ip);
         ResponseBean response = netconnectService.assetping(uuid,ip);
