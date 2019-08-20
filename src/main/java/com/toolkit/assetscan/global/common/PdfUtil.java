@@ -6,15 +6,20 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.draw.DottedLineSeparator;
 import com.itextpdf.text.pdf.draw.LineSeparator;
+import com.toolkit.assetscan.bean.dto.AssetScanRecordDto;
 import com.toolkit.assetscan.bean.dto.ExcelDataDto;
+import com.toolkit.assetscan.bean.po.AssetNetWorkPo;
+import com.toolkit.assetscan.bean.po.AssetPerfDataPo;
 import com.toolkit.assetscan.bean.po.AssetPo;
 import com.toolkit.assetscan.bean.po.ConfigCheckResultPo;
+import sun.plugin2.os.windows.Windows;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URLEncoder;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -123,7 +128,7 @@ public class PdfUtil {
 
     }
 
-    public static void saveReportPDF(HttpServletResponse response, String fileName, ExcelDataDto data) throws Exception{
+    public static void savePerfReportPDF(HttpServletResponse response, String fileName, AssetPo assetPo, AssetNetWorkPo anwPo, AssetPerfDataPo apInfo) throws Exception{
         Date now = new Date();
         // 告诉浏览器用什么软件可以打开此文件
         response.setContentType("application/pdf;charset=UTF-8");
@@ -161,45 +166,80 @@ public class PdfUtil {
 
         List<PdfPRow> listRow = table.getRows();
 
-        PdfPCell cel1 = new PdfPCell(new Paragraph("系统信息:Linux", font14));
+        PdfPCell cel1 = new PdfPCell(new Paragraph("资产名称:" + assetPo.getName(), font14));
         cel1.disableBorderSide(15);
         table.addCell(cel1);
-        PdfPCell cel2 = new PdfPCell(new Paragraph("系统版本:18.0.4", font14));
+        PdfPCell cel2 = new PdfPCell(new Paragraph("系统信息:" + ("1".equals(assetPo.getOs_type()) ? "Windows": "Linux"), font14));
         cel2.disableBorderSide(15);
         table.addCell(cel2);
-        PdfPCell cel3 = new PdfPCell(new Paragraph("IP:127.0.0.1", font14));
+        PdfPCell cel3 = new PdfPCell(new Paragraph("系统版本:" + assetPo.getOs_ver(), font14));
         cel3.disableBorderSide(15);
         table.addCell(cel3);
-        PdfPCell cel4 = new PdfPCell(new Paragraph("问题数:20", font14));
+        PdfPCell cel4 = new PdfPCell(new Paragraph("IP:" + assetPo.getIp(), font14));
         cel4.disableBorderSide(15);
         table.addCell(cel4);
-        PdfPCell cel5 = new PdfPCell(new Paragraph("检测时间:2019-07-08 15:00", font14));
-        cel5.disableBorderSide(15);
-        table.addCell(cel5);
-
-        PdfPCell cel6 = new PdfPCell(new Paragraph("检测时间:", font14));
-        cel6.disableBorderSide(15);
-        table.addCell(cel6);
+//        PdfPCell cel5 = new PdfPCell(new Paragraph("问题数:20", font14));
+//        cel5.disableBorderSide(15);
+//        table.addCell(cel5);
+//        PdfPCell cel6 = new PdfPCell(new Paragraph("检测时间:2019-07-08 15:00", font14));
+//        cel6.disableBorderSide(15);
+//        table.addCell(cel6);
+//
+//        PdfPCell cel7 = new PdfPCell(new Paragraph("检测时间:", font14));
+//        cel7.disableBorderSide(15);
+//        table.addCell(cel7);
 //        把表格添加到文件中
         doc.add(table);
 
         doc.add(new Chunk(new DottedLineSeparator()));
 
-        PdfPTable table2 = new PdfPTable(1);
+        PdfPTable table2 = new PdfPTable(2);
         table2.setWidthPercentage(100); // 宽度100%填充
 
         List<PdfPRow> listRow2 = table2.getRows();
 
-        PdfPCell cel21 = new PdfPCell(new Paragraph("问题描述：", font18));
-        cel21.disableBorderSide(15);
-        table2.addCell(cel21);
+//        PdfPCell cel21 = new PdfPCell(new Paragraph("问题描述：", font18));
+//        cel21.disableBorderSide(15);
+//        table2.addCell(cel21);
 
-        String ss = "问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述";
-        PdfPCell cel22 = new PdfPCell(new Paragraph(ss, font14));
-        cel22.disableBorderSide(15);
-        table2.addCell(cel22);
-//        把表格添加到文件中
+        DecimalFormat df = new DecimalFormat("#.00");
+
+        Double cupUsed = Double.parseDouble(apInfo.getCpu_used_percent());
+        String format1 = String.format("%.3f", cupUsed);
+        PdfPCell cel8 = new PdfPCell(new Paragraph("CPU 使用率:" + String.format("%.3f", cupUsed) + "%", font14));
+        cel8.disableBorderSide(15);
+        table2.addCell(cel8);
+        PdfPCell cel9 = new PdfPCell(new Paragraph("CPU 空闲率:" + String.format("%.3f", 100 - cupUsed) + "%", font14));
+        cel9.disableBorderSide(15);
+        table2.addCell(cel9);
+
+        Double memoryUsed = Double.parseDouble(apInfo.getMemory_used_percent());
+        PdfPCell cel10 = new PdfPCell(new Paragraph("内存使用率:" + String.format("%.3f", memoryUsed) + "%", font14));
+        cel10.disableBorderSide(15);
+        table2.addCell(cel10);
+        PdfPCell cel11 = new PdfPCell(new Paragraph("内存空闲率:" + String.format("%.3f", 100 - memoryUsed) + "%", font14));
+        cel11.disableBorderSide(15);
+        table2.addCell(cel11);
+
+        Double diskUsed = Double.parseDouble(apInfo.getDisk_used_percent());
+        PdfPCell cel12 = new PdfPCell(new Paragraph("磁盘使用率:" + String.format("%.3f", diskUsed) + "%", font14));
+        cel12.disableBorderSide(15);
+        table2.addCell(cel12);
+        PdfPCell cel13 = new PdfPCell(new Paragraph("磁盘空闲率:" + String.format("%.3f", 100 - diskUsed) + "%", font14));
+        cel13.disableBorderSide(15);
+        table2.addCell(cel13);
+
         doc.add(table2);
+
+//        doc.add(new Chunk(new DottedLineSeparator()));
+
+//        PdfPTable table3 = new PdfPTable(2);
+//        String ss = "问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述问题描述";
+//        PdfPCell cel22 = new PdfPCell(new Paragraph(ss, font14));
+//        cel22.disableBorderSide(15);
+//        table3.addCell(cel22);
+////        把表格添加到文件中
+//        doc.add(table3);
 
 
         doc.add(new Chunk(new LineSeparator(2.0F, 100.0F, null, 1, 0.0F)));  // 单实线

@@ -4,10 +4,14 @@ import com.toolkit.assetscan.dao.mybatis.AssetsMapper;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.service.AssetNetworkService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @CrossOrigin(origins = "*",maxAge = 3600)
@@ -52,6 +56,19 @@ public class AssetNetworkApi {
                                      @RequestParam(value = "end_time", required = false) java.sql.Timestamp endTime,
                                      @RequestParam(value = "asset_uuid", required = false) String assetUuid) {
         return assetNetworkService.getHistoryPerfinfo(beginTime, endTime, assetUuid);
+    }
+
+    /**
+     * 导出报告
+     * @param response
+     * @param asset_uuid
+     */
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "asset_uuid", value = "资产UUID", required = true, dataType = "String", paramType="query")
+    })
+    @RequestMapping(value = "/export", method = RequestMethod.GET)
+    public void exportPdf(HttpServletResponse response, String asset_uuid) throws Exception {
+        assetNetworkService.exportPdf(response, asset_uuid);
     }
 
 

@@ -1,34 +1,28 @@
 package com.toolkit.assetscan.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.toolkit.assetscan.bean.dto.TaskInfosDto;
-import com.toolkit.assetscan.bean.dto.TaskRunStatusDto;
+import com.toolkit.assetscan.bean.po.AssetNetWorkPo;
 import com.toolkit.assetscan.bean.po.AssetPo;
+import com.toolkit.assetscan.dao.mybatis.AssetNetworkMapper;
 import com.toolkit.assetscan.dao.mybatis.AssetsMapper;
 import com.toolkit.assetscan.dao.helper.TasksManageHelper;
-import com.toolkit.assetscan.dao.mybatis.AssetsMapper;
 import com.toolkit.assetscan.dao.mybatis.TasksMapper;
 import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
-import com.toolkit.assetscan.global.enumeration.TaskRunStatusEnum;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.List;
+import java.sql.Timestamp;
+import java.util.Map;
+import java.util.UUID;
 
 @Component
 public class NetConnectService {
@@ -36,17 +30,19 @@ public class NetConnectService {
     private final ResponseHelper mResponseHelper;
     private final TasksMapper mtasksMapper;
     private final TasksManageHelper mtasksManageHelper;
+    private final AssetNetworkMapper assetNetworkMapper;
 
     @Autowired
     AssetCollectScheduler assetCollectScheduler;
     @Autowired
     RestTemplate restTemplate;
 
-    public NetConnectService(TasksMapper tasksMapper, TasksManageHelper tasksManageHelper, AssetsMapper assetsMapper, ResponseHelper responseHelper) {
+    public NetConnectService(TasksMapper tasksMapper, TasksManageHelper tasksManageHelper, AssetsMapper assetsMapper, ResponseHelper responseHelper, AssetNetworkMapper assetNetworkMapper) {
         mtasksMapper = tasksMapper;
         mtasksManageHelper = tasksManageHelper;
         mAssetsMapper = assetsMapper;
         mResponseHelper = responseHelper;
+        this.assetNetworkMapper = assetNetworkMapper;
     }
 
     private ResponseBean successPing(String ip, boolean isconnect) {
@@ -108,6 +104,9 @@ public class NetConnectService {
      */
     public ResponseBean assetping(String uuid,String ip) {
         AssetPo assetPo = mAssetsMapper.getAssetByUuid(uuid);
+        if (assetPo == null || "".equals(assetPo.getIp())) {
+            return mResponseHelper.error(ErrorCodeEnum.ERROR_ASSET_NOT_FOUND);
+        }
 
         // 构造URL
         String strip = "http://" + assetPo.getIp() + ":8191";
@@ -120,7 +119,24 @@ public class NetConnectService {
 
         JSONObject jsonMsg = (JSONObject)JSONObject.toJSON(responseEntity.getBody());
 
-        jsonData.put("isconnect", jsonMsg.getJSONObject("payload").getString("isconnect"));
+        JSONObject payloadObj = jsonMsg.getJSONObject("payload");
+        jsonData.put("isconnect", payloadObj.getString("isconnect"));
+
+        Timestamp now = MyUtils.getCurrentSystemTimestamp();
+        AssetNetWorkPo anwPo = assetNetworkMapper.getNetWorkinfo(uuid);
+        if (anwPo == null) {
+            anwPo = new AssetNetWorkPo();
+            anwPo.setAsset_uuid(uuid);
+            anwPo.setUuid(UUID.randomUUID().toString());
+            anwPo.setCreate_time(now);
+        }
+
+        anwPo.setConnect_ip(ip);
+        anwPo.setConnect_flag(payloadObj.getString("isconnect"));
+        anwPo.setConnect_time(now);
+
+        assetNetworkMapper.addNetWOrkData(anwPo);
+
         return mResponseHelper.success(jsonData);
     }
 
@@ -137,7 +153,22 @@ public class NetConnectService {
         // 向节点发送请求，并返回节点的响应结果
         ResponseEntity<ResponseBean> responseEntity = restTemplate.getForEntity(url, ResponseBean.class);
         ResponseBean scanResponse = (ResponseBean) responseEntity.getBody();
-        if (scanResponse.getCode() != ErrorCodeEnum.ERROR_OK.getCode()) {
+        if (scanResponse.getCode() == ErrorCodeEnum.ERROR_OK.getCode()) {
+            Timestamp now = MyUtils.getCurrentSystemTimestamp();
+            AssetNetWorkPo anwPo = assetNetworkMapper.getNetWorkinfo(assetUuid);
+            if (anwPo == null) {
+                anwPo = new AssetNetWorkPo();
+                anwPo.setAsset_uuid(assetUuid);
+                anwPo.setUuid(UUID.randomUUID().toString());
+                anwPo.setCreate_time(now);
+            }
+
+            Map<String,String> payloadMap = (Map<String, String>) scanResponse.getPayload();
+            anwPo.setUrl(tUrl);
+            anwPo.setUrl_duration(payloadMap.get("total_time"));
+            anwPo.setUrl_time(now);
+
+            assetNetworkMapper.addNetWOrkData(anwPo);
             return scanResponse;
         }
         return scanResponse;
