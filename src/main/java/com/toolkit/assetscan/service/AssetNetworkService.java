@@ -1,18 +1,19 @@
 package com.toolkit.assetscan.service;
 
-import com.toolkit.assetscan.bean.dto.AssetScanRecordDto;
+import com.alibaba.fastjson.JSONObject;
 import com.toolkit.assetscan.bean.po.AssetNetWorkPo;
 import com.toolkit.assetscan.bean.po.AssetPerfDataPo;
 import com.toolkit.assetscan.bean.po.AssetPo;
 import com.toolkit.assetscan.dao.mybatis.AssetNetworkMapper;
 import com.toolkit.assetscan.dao.mybatis.AssetPerfDataMapper;
-import com.toolkit.assetscan.dao.mybatis.AssetScanDataMapper;
 import com.toolkit.assetscan.dao.mybatis.AssetsMapper;
 import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.common.PdfUtil;
 import com.toolkit.assetscan.global.enumeration.ErrorCodeEnum;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
+import com.toolkit.assetscan.global.utils.StringUtils;
+import com.toolkit.assetscan.service.analyze.AssetInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -30,15 +31,17 @@ public class AssetNetworkService {
     private final ResponseHelper responseHelper;
     private final AssetPerfDataMapper assetPerfDataMapper;
     private final AssetNetworkMapper assetNetworkMapper;
+    private final AssetInfoService assetInfoService;
 
     @Autowired
     RestTemplate restTemplate;
 
-    public AssetNetworkService(AssetsMapper assetsMapper, ResponseHelper responseHelper, AssetPerfDataMapper assetPerfDataMapper, AssetNetworkMapper assetNetworkMapper) {
+    public AssetNetworkService(AssetsMapper assetsMapper, ResponseHelper responseHelper, AssetPerfDataMapper assetPerfDataMapper, AssetNetworkMapper assetNetworkMapper, AssetInfoService assetInfoService) {
         mAssetsMapper = assetsMapper;
         this.responseHelper = responseHelper;
         this.assetPerfDataMapper = assetPerfDataMapper;
         this.assetNetworkMapper = assetNetworkMapper;
+        this.assetInfoService = assetInfoService;
     }
 
     public ResponseBean getDelayInfo(String sourceAssetUuid, String objAssetUuid, String type) {
@@ -103,6 +106,12 @@ public class AssetNetworkService {
         AssetNetWorkPo anwPo = assetNetworkMapper.getNetWorkinfo(assetUuid);
         AssetPerfDataPo apInfo = assetPerfDataMapper.getAssetPerfInfo(assetUuid);
 
-        PdfUtil.savePerfReportPDF(response, "系统性能检查报告", assetInfo, anwPo, apInfo);
+        JSONObject assetMesg = null;
+        String assetIP = null;
+        if ( null != assetInfo && StringUtils.isValid( assetIP = assetInfo.getIp() ) ) {
+            assetMesg = assetInfoService.getAssetInfo(assetIP, "FS,Proc CPU Ranking,Proc Memory Ranking");
+        }
+
+        PdfUtil.savePerfReportPDF(response, "系统性能检查报告", assetInfo, anwPo, apInfo, assetMesg);
     }
 }
