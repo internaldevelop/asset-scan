@@ -248,7 +248,7 @@ public class UserManageApi {
     }
 
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
-    public @ResponseBody
+    public synchronized  @ResponseBody
     Object logout(@RequestParam(value = "user_uuid") String userUuid,
                   HttpServletRequest request) {
         // 系统日志

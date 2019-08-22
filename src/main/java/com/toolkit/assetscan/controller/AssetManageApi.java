@@ -54,7 +54,7 @@ public class AssetManageApi {
      */
     @RequestMapping(value = "/all", method = RequestMethod.GET)
     @ResponseBody
-    public Object getAllAssets() {
+    public synchronized Object getAllAssets() {
         ResponseBean response = mAssetManageService.getAllAssets();
         return response;
     }

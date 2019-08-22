@@ -99,7 +99,7 @@ public class BaseLinesApi {
      * @return
      */
     @RequestMapping(value = "/check-result", method = RequestMethod.GET)
-    @ResponseBody
+    public synchronized @ResponseBody
     Object getCheckResult(@RequestParam(value = "scan_uuid", defaultValue = "") String scanUuid,
                           @RequestParam(value = "result_uuid", defaultValue = "") String resultUuid,
                           @RequestParam(value = "group", defaultValue = "") String group) {
@@ -173,7 +173,7 @@ public class BaseLinesApi {
      * @return
      */
     @RequestMapping(value = "/asset-recent-check-stat", method = RequestMethod.GET)
-    @ResponseBody
+    public synchronized @ResponseBody
     Object getAssetRecentCheckStat(@RequestParam(value = "asset_uuid", defaultValue = "") String assetUuid) {
         ResponseBean response = scanDataService.getAssetRecentCheckStat(assetUuid);
         systemLogs.logEvent(response, "最近核查数据统计", "资产ID：" + assetUuid);
