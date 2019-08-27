@@ -120,7 +120,7 @@ public class UserManageApi {
      * @return payload: 账户名和系统分配的用户UUID
      */
     @RequestMapping(value = "/verify-pwd", method = RequestMethod.POST)
-    public @ResponseBody
+    public synchronized @ResponseBody
     Object verifyPassword(
             @RequestParam(value = "uuid", required = false) String userUuid,
             @RequestParam(value = "account", required = false) String account,

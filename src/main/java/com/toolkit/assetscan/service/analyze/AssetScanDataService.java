@@ -343,6 +343,7 @@ public class AssetScanDataService {
                         String pathName = PdfUtil.saveReportPDF(fileTitle, account, resultPos, riskCount, assetPo,
                                 assetInfoService.getAssetInfo(assetPo.getIp(), "CPU,Mem,Net Config"));
                         String content = "资产扫描核查结果，详情请查看附件。";
+                        System.setProperty("mail.mime.splitlongparameters","false");
                         mailManageService.sendSimpleTextMail(fileTitle, content, email, pathName);
                         systemLogs.logEvent(responseHelper.success(), "发送邮件", content);
                     }
