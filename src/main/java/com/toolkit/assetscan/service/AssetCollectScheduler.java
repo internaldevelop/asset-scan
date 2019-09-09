@@ -91,7 +91,7 @@ public class AssetCollectScheduler {
                 // 如果任务和资产的 UUID 匹配，则取消该任务计划
                 ScheduledFuture<?> future = timerTask.getFuture();
                 if (future != null)
-                    future.cancel(true);
+                    future.cancel(false);
                 // 移除任务计划
                 timerTaskList.remove(timerTask);
                 return true;

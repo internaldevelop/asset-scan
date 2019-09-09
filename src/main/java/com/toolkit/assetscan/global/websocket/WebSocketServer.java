@@ -135,7 +135,7 @@ public class WebSocketServer {
      * @param msgType
      * @param object
      */
-    public static void broadcastAssetInfo(SockMsgTypeEnum msgType, Object object) {
+    public synchronized static void broadcastAssetInfo(SockMsgTypeEnum msgType, Object object) {
         for (WebSocketServer item : webSocketSet) {
                 if (item.sid.startsWith("asset_info") || item.sid.startsWith("accept_all"))
                     item.sendMessage(msgType, object);
