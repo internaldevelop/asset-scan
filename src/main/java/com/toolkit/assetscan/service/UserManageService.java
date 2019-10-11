@@ -244,22 +244,22 @@ public class UserManageService {
         }
     }
 
-    public ResponseBean activateUserByAccount(String account) {
+    public ResponseBean activateUserByAccount(String account, int status) {
         String userUuid = usersMapper.getUserUuidByAccount(account);
         if (!StringUtils.isValid(userUuid))
             return responseHelper.error(ErrorCodeEnum.ERROR_USER_NOT_FOUND);
 
-        return activateUserByUuid(userUuid);
+        return activateUserByUuid(userUuid, status);
     }
 
-    public ResponseBean activateUserByUuid(String userUuid) {
-        int rv = usersMapper.updateStatus(userUuid, UserStatusEnum.USER_ACTIVE.getStatus());
+    public ResponseBean activateUserByUuid(String userUuid, int status) {
+        int rv = usersMapper.updateStatus(userUuid, status/*UserStatusEnum.USER_ACTIVE.getStatus()*/);
         if (rv != 1)
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
 
         JSONObject jsonData = new JSONObject();
         jsonData.put("user_uuid", userUuid);
-        jsonData.put("status", UserStatusEnum.USER_ACTIVE.getStatus());
+        jsonData.put("status", status/*UserStatusEnum.USER_ACTIVE.getStatus()*/);
         return responseHelper.success(jsonData);
     }
 

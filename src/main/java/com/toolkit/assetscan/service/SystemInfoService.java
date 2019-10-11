@@ -54,4 +54,17 @@ public class SystemInfoService {
 
         return responseHelper.success(sysInfo);
     }
+
+    public ResponseBean getVulnerManageSystemInfo() {
+        JSONObject sysInfo = new JSONObject();
+        sysInfo.put("sysName", "电力终端系统漏洞利用工具");
+        sysInfo.put("desc", "对终端设备进行完整系统的漏洞扫描，然后对扫描出的漏洞进行验证和利用。");
+        sysInfo.put("sysVer", "1.0.0.201");
+        sysInfo.put("copyright", "Copyright ©2019-2022 中国电科院");
+        sysInfo.put("status", "运行中");
+        sysInfo.put("overview", "采用kali2 、Java、Python、公司自主可控的 MySQL和 Mongo 开发，系统实现对终端设备进行完整系统的漏洞扫描，" +
+                "然后对扫描出的漏洞进行利用查询以及管理功能。");
+
+        return responseHelper.success(sysInfo);
+    }
 }

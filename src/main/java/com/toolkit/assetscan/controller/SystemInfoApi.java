@@ -33,9 +33,8 @@ public class SystemInfoApi {
             return systemInfoService.getTerminalSystemInfo();
         } else if (systemType == 3) {
             return systemInfoService.getHostPerformanceSystemInfo();
-        }
-        else if(systemType == 3) {
-            return systemInfoService.getHostPerformanceSystemInfo();
+        } else if (systemType == 4) {
+            return systemInfoService.getVulnerManageSystemInfo();
         }
 
         return responseHelper.error(ErrorCodeEnum.ERROR_PARAMETER);

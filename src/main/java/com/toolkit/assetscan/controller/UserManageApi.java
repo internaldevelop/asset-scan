@@ -188,17 +188,18 @@ public class UserManageApi {
     public @ResponseBody
     Object activateUser(
             @RequestParam(value = "uuid", required = false) String userUuid,
-            @RequestParam(value = "account", required = false) String account) {
+            @RequestParam(value = "account", required = false) String account,
+            @RequestParam(value = "status", required = false) int status) {
         ResponseBean response;
         if ( StringUtils.isValid(userUuid) )
-            response = userManageService.activateUserByUuid( userUuid );
+            response = userManageService.activateUserByUuid( userUuid, status );
         else if ( StringUtils.isValid(account) )
-            response = userManageService.activateUserByAccount( account );
+            response = userManageService.activateUserByAccount( account, status );
         else
             return responseHelper.error(ErrorCodeEnum.ERROR_NEED_PARAMETER);
 
         // 系统日志
-        systemLogs.logEvent(response, "账号激活", "激活账号：" + account + "。");
+        systemLogs.logEvent(response, "账号激活/回收", "激活/回收账号：" + account + "。");
         return response;
     }
 
