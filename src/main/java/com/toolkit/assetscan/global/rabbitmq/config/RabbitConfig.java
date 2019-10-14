@@ -33,10 +33,10 @@ public class RabbitConfig {
     public static final String MAIN_EXCHANGE = "main-mq-exchange";
 
     public static final String DEFAULT_TOPIC = "topic.main";
-    public static final String TASK_RUN_STATUS_TOPIC = "topic.run-status1";
+    public static final String TASK_RUN_STATUS_TOPIC = "topic.run-status";
 
     public static final String MAIN_ROUTINGKEY = "topic.main";
-    public static final String TASK_RUN_STATUS_ROUTINGKEY = "topic.run-status1";
+    public static final String TASK_RUN_STATUS_ROUTINGKEY = "topic.run-status";
 
     @Bean
     public ConnectionFactory connectionFactory() {
