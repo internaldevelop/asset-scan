@@ -25,6 +25,11 @@ public class UsersManageHelper {
         return (rv > 0);
     }
 
+    public boolean deleteUser(String userUuid) {
+        int rv = usersMapper.deleteUser(userUuid);
+        return (rv > 0);
+    }
+
     public boolean updateUserByUuid(UserPo userPo) {
         int rv = usersMapper.updateUserByUuid(userPo);
         return (rv > 0);

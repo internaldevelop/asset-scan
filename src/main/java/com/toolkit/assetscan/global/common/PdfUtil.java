@@ -127,6 +127,283 @@ public class PdfUtil {
 
     }
 
+    public static void savePerfReportPDF2(String fileName, AssetPo assetPo, AssetNetWorkPo anwPo, AssetPerfDataPo apInfo, JSONObject assetMesg) throws Exception{
+        Date now = new Date();
+        BaseFont baseFont = BaseFont.createFont("simsun.ttc,1", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+
+        //创建文件
+        Document doc = new Document(PageSize.A4);
+        // 文件名
+        SimpleDateFormat sdfName = new SimpleDateFormat("yyyyMMddHHmmss");
+        SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
+        String dateName = sdfName.format(new Date());
+        String date = sdfDate.format(new Date());
+        File currentPath = new File("");
+        File currentDir = new File(currentPath.getAbsolutePath(), "reports");
+        if (!currentDir.exists()) {
+            currentDir.mkdir();
+        }
+        File file = new File(currentDir, fileName + dateName + ".pdf");
+        String pathName = file.getAbsolutePath();
+        //建立一个书写器
+        PdfWriter writer = PdfWriter.getInstance(doc, new FileOutputStream(file));
+
+        //打开文件
+        doc.open();
+
+        Font font10 = new Font(baseFont, 10, Font.NORMAL);   // 10号字体
+        Font font12 = new Font(baseFont, 12, Font.NORMAL);   // 10号字体
+        Font font14 = new Font(baseFont, 14, Font.NORMAL);   // 14号字体
+        Font font16 = new Font(baseFont, 16, Font.NORMAL);   // 18号字体
+        Font font18 = new Font(baseFont, 18, Font.NORMAL);   // 18号字体
+        Font font28 = new Font(baseFont, 18, Font.BOLD);     // 28号加粗字体
+
+        Paragraph titleName = new Paragraph(fileName, font28);
+        titleName.setAlignment(Element.ALIGN_CENTER);  // 居中
+        doc.add(titleName);
+
+        Paragraph reportTime = new Paragraph("报告生成时间：" + DateFormat.dateToString(now, DateFormat.UTIL_FORMAT), font14);  //报告时间
+        reportTime.setAlignment(Element.ALIGN_RIGHT);  // 居右
+        doc.add(reportTime);
+        doc.add(new Chunk(new LineSeparator(2.0F, 100.0F, null, 1, 0.0F)));  // 单实线
+
+        String assetIP = "";
+        if (null != assetPo) {
+            PdfPTable table = new PdfPTable(2);
+            table.setWidthPercentage(100); // 宽度100%填充
+
+            PdfPCell cel1 = new PdfPCell(new Paragraph("资产名称:" + assetPo.getName(), font14));
+            cel1.disableBorderSide(15);
+            table.addCell(cel1);
+            PdfPCell cel2 = new PdfPCell(new Paragraph("系统信息:" + ("1".equals(assetPo.getOs_type()) ? "Windows": "Linux"), font14));
+            cel2.disableBorderSide(15);
+            table.addCell(cel2);
+            PdfPCell cel3 = new PdfPCell(new Paragraph("系统版本:" + assetPo.getOs_ver(), font14));
+            cel3.disableBorderSide(15);
+            table.addCell(cel3);
+            PdfPCell cel4 = new PdfPCell(new Paragraph("IP:" + (assetIP = assetPo.getIp()), font14));
+            cel4.disableBorderSide(15);
+            table.addCell(cel4);
+
+//            把表格添加到文件中
+            doc.add(table);
+        }
+
+        if ( null != anwPo) {
+            doc.add(new Chunk(new DottedLineSeparator()));  // 虚线
+
+            PdfPTable table3 = new PdfPTable(1);
+            table3.setWidthPercentage(100); // 宽度100%填充
+
+            String connectFlag = "";
+            String connectIp = "";
+            if ( StringUtils.isValid(connectIp = anwPo.getConnect_ip()) && StringUtils.isValid(connectFlag = anwPo.getConnect_flag()) ) {
+                PdfPCell cel1 = new PdfPCell(new Paragraph("与IP(" + connectIp + ")" + ("1".equals(connectFlag) ? "是" : "未") + "连通", font14));
+                cel1.disableBorderSide(15);
+                table3.addCell(cel1);
+            }
+
+            String urlDuration = "";
+            if (StringUtils.isValid( urlDuration = anwPo.getUrl_duration())) {
+                PdfPCell cel2 = new PdfPCell(new Paragraph("该URL(" + anwPo.getUrl() + ")访问时长是" + urlDuration, font14));
+                cel2.disableBorderSide(15);
+                table3.addCell(cel2);
+            }
+
+            String delay = "";
+            if (StringUtils.isValid( delay = anwPo.getDelay())) {
+                PdfPCell cel3 = new PdfPCell(new Paragraph("网络延时时长:" + delay, font14));
+                cel3.disableBorderSide(15);
+                table3.addCell(cel3);
+            }
+
+            String throughput = "";
+            if ( StringUtils.isValid( throughput = anwPo.getThroughput())) {
+                PdfPCell cel4 = new PdfPCell(new Paragraph("吞吐量为:" + throughput, font14));
+                cel4.disableBorderSide(15);
+                table3.addCell(cel4);
+            }
+
+            String bandWidth = "";
+            if ( StringUtils.isValid(bandWidth = anwPo.getBandwidth())) {
+                PdfPCell cel5 = new PdfPCell(new Paragraph("带宽容量:" + bandWidth, font14));
+                cel5.disableBorderSide(15);
+                table3.addCell(cel5);
+            }
+
+//            把表格添加到文件中
+            doc.add(table3);
+        }
+
+        if (null != apInfo) {
+            doc.add(new Chunk(new DottedLineSeparator()));  // 虚线
+
+            PdfPTable table2 = new PdfPTable(2);
+            table2.setWidthPercentage(100); // 宽度100%填充
+
+            Double cupUsed = Double.parseDouble(apInfo.getCpu_used_percent());
+            String format1 = String.format("%.3f", cupUsed);
+            PdfPCell cel8 = new PdfPCell(new Paragraph("CPU 使用率:" + String.format("%.3f", cupUsed) + "%", font14));
+            cel8.disableBorderSide(15);
+            table2.addCell(cel8);
+            PdfPCell cel9 = new PdfPCell(new Paragraph("CPU 空闲率:" + String.format("%.3f", 100 - cupUsed) + "%", font14));
+            cel9.disableBorderSide(15);
+            table2.addCell(cel9);
+
+            Double memoryUsed = Double.parseDouble(apInfo.getMemory_used_percent());
+            PdfPCell cel10 = new PdfPCell(new Paragraph("内存使用率:" + String.format("%.3f", memoryUsed) + "%", font14));
+            cel10.disableBorderSide(15);
+            table2.addCell(cel10);
+            PdfPCell cel11 = new PdfPCell(new Paragraph("内存空闲率:" + String.format("%.3f", 100 - memoryUsed) + "%", font14));
+            cel11.disableBorderSide(15);
+            table2.addCell(cel11);
+
+            Double diskUsed = Double.parseDouble(apInfo.getDisk_used_percent());
+            PdfPCell cel12 = new PdfPCell(new Paragraph("磁盘使用率:" + String.format("%.3f", diskUsed) + "%", font14));
+            cel12.disableBorderSide(15);
+            table2.addCell(cel12);
+            PdfPCell cel13 = new PdfPCell(new Paragraph("磁盘空闲率:" + String.format("%.3f", 100 - diskUsed) + "%", font14));
+            cel13.disableBorderSide(15);
+            table2.addCell(cel13);
+
+            doc.add(table2);
+
+        }
+
+        if (StringUtils.isValid(assetIP) && null != assetMesg) {
+            doc.add(new Chunk(new DottedLineSeparator()));  // 虚线
+
+            Paragraph letterTitle = new Paragraph("磁盘详情", font16);
+            letterTitle.setAlignment(Element.ALIGN_LEFT);  // 居中
+            doc.add(letterTitle);
+
+            PdfPTable table = new PdfPTable(6);
+            table.setWidthPercentage(100); // 宽度100%填充
+            float[] columnWidths = { 3f, 1f, 1f, 1f, 1f, 3f };
+            table.setWidths(columnWidths);
+
+            JSONArray infos = (JSONArray) assetMesg.get("FS");   // 磁盘
+
+            String[] tits = {"文件系统", "容量", "已用", "可用", "已用%", "挂载点"};
+
+            for (String tit : tits) {
+                PdfPCell cell = new PdfPCell(new Paragraph(tit, font14));
+                cell.disableBorderSide(15);
+                table.addCell(cell);
+            }
+
+            for (Iterator it = infos.iterator(); it.hasNext(); ) {
+                JSONObject fs = (JSONObject) it.next();
+
+                if (fs.getIntValue("type") == 2) {
+
+                    PdfPCell cel1 = new PdfPCell(new Paragraph(fs.getString("devName"), font12));
+                    cel1.disableBorderSide(15);
+                    table.addCell(cel1);
+
+                    double total = Double.parseDouble(fs.getString("total")) / (1024 * 1024);
+                    double used = Double.parseDouble(fs.getString("used")) / (1024 * 1024);
+
+                    PdfPCell cel2 = new PdfPCell(new Paragraph(String.format("%.2f", total) + "G", font12));
+                    cel2.disableBorderSide(15);
+                    table.addCell(cel2);
+                    PdfPCell cel3 = new PdfPCell(new Paragraph(String.format("%.2f", used) + "G", font12));
+                    cel3.disableBorderSide(15);
+                    table.addCell(cel3);
+                    PdfPCell cel4 = new PdfPCell(new Paragraph(String.format("%.2f", (total - used)) + "G", font12));
+                    cel4.disableBorderSide(15);
+                    table.addCell(cel4);
+                    PdfPCell cel5 = new PdfPCell(new Paragraph(String.format("%.2f", (used * 100 / total)) + "%", font12));
+                    cel5.disableBorderSide(15);
+                    table.addCell(cel5);
+                    PdfPCell cel6 = new PdfPCell(new Paragraph(fs.getString("dirName"), font12));
+                    cel6.disableBorderSide(15);
+                    table.addCell(cel6);
+
+                }
+
+            }
+            doc.add(table);
+
+            doc.add(new Chunk(new DottedLineSeparator()));  // 虚线
+
+            PdfPTable table1 = new PdfPTable(5);
+            table1.setWidthPercentage(100); // 宽度100%填充
+            float[] t1ColumnWidths = { 0.3f, 2f, 2f, 2f, 1f };
+            table1.setWidths(t1ColumnWidths);
+
+            String[] titsCpuMem = {"", "CPU占用率排行", "", "内存占用率排行", ""};
+
+            for (String tit : titsCpuMem) {
+                PdfPCell cell = new PdfPCell(new Paragraph(tit, font16));
+                cell.disableBorderSide(15);
+                table1.addCell(cell);
+            }
+
+            JSONArray infoCpus = (JSONArray) assetMesg.get("Proc CPU Ranking");   // 资源占有率
+            JSONArray infoMeM = (JSONArray) assetMesg.get("Proc Memory Ranking");   // 资源占有率
+
+            int sizeCpu = infoCpus.size();
+            int sizeMem = infoMeM.size();
+            for (int i=0; i<10; i++) {
+
+                PdfPCell cel = new PdfPCell(new Paragraph((i+1) +"", font12));
+                cel.disableBorderSide(15);
+
+                boolean sFlag = false;
+                PdfPCell cel1 = new PdfPCell(new Paragraph("", font12));
+                if (sizeCpu > i){
+                    JSONObject fsCpu = (JSONObject)infoCpus.get(i);
+                    cel1 = new PdfPCell(new Paragraph(fsCpu.getString("name"), font12));
+                    sFlag = true;
+                }
+                cel1.disableBorderSide(15);
+
+                PdfPCell cel2 = new PdfPCell(new Paragraph("", font12));
+                if (sizeCpu > i){
+                    JSONObject fsCpu = (JSONObject)infoCpus.get(i);
+                    cel2 = new PdfPCell(new Paragraph(String.format("%.2f", Double.parseDouble(fsCpu.getString("percent")) * 100) + "%", font12));
+                }
+                cel2.disableBorderSide(15);
+
+                PdfPCell cel3 = new PdfPCell(new Paragraph("", font12));
+                if (sizeMem > i){
+                    JSONObject fsMem = (JSONObject)infoMeM.get(i);
+                    cel3 = new PdfPCell(new Paragraph(fsMem.getString("name"), font12));
+                    sFlag = true;
+                }
+                cel3.disableBorderSide(15);
+
+                PdfPCell cel4 = new PdfPCell(new Paragraph("", font12));
+                if (sizeMem > i){
+                    JSONObject fsMem = (JSONObject)infoMeM.get(i);
+                    cel4 = new PdfPCell(new Paragraph(String.format("%.2f", Double.parseDouble(fsMem.getString("percent")) * 100) + "%", font12));
+                }
+                cel4.disableBorderSide(15);
+                if (sFlag) {
+                    table1.addCell(cel);
+                    table1.addCell(cel1);
+                    table1.addCell(cel2);
+                    table1.addCell(cel3);
+                    table1.addCell(cel4);
+                }
+
+            }
+            doc.add(table1);
+
+        }
+
+        doc.add(new Chunk(new LineSeparator(2.0F, 100.0F, null, 1, 0.0F)));  // 单实线
+        Paragraph jieshu = new Paragraph("报告结束", font10);
+        jieshu.setAlignment(Element.ALIGN_CENTER);  // 居中
+        doc.add(jieshu);
+
+        //关闭文档
+        doc.close();
+        //关闭书写器
+        writer.close();
+    }
+
     public static void savePerfReportPDF(HttpServletResponse response, String fileName, AssetPo assetPo, AssetNetWorkPo anwPo, AssetPerfDataPo apInfo, JSONObject assetMesg) throws Exception{
         Date now = new Date();
         // 告诉浏览器用什么软件可以打开此文件

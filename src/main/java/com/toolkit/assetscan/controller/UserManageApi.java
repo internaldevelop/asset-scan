@@ -261,4 +261,17 @@ public class UserManageApi {
         return responseHelper.success();
     }
 
+    /**
+     * 2.12 删除一个用户
+     * @param userUuid 用户的 UUID
+     * @return payload: 无
+     */
+    @RequestMapping(value = "/remove", method = RequestMethod.POST)
+    public @ResponseBody
+    Object removeUser(@RequestParam("uuid") String userUuid) {
+        ResponseBean response = userManageService.deleteUser(userUuid);
+        // 系统日志
+        systemLogs.logEvent(response, "删除用户", "删除用户（ID：" + userUuid + "）");
+        return response;
+    }
 }

@@ -1,6 +1,7 @@
 package com.toolkit.assetscan.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.toolkit.assetscan.Helper.SystemLogsHelper;
 import com.toolkit.assetscan.bean.po.AssetNetWorkPo;
 import com.toolkit.assetscan.bean.po.AssetPerfDataPo;
 import com.toolkit.assetscan.bean.po.AssetPo;
@@ -35,6 +36,8 @@ public class AssetNetworkService {
 
     @Autowired
     RestTemplate restTemplate;
+    @Autowired
+    private SystemLogsHelper systemLogs;
 
     public AssetNetworkService(AssetsMapper assetsMapper, ResponseHelper responseHelper, AssetPerfDataMapper assetPerfDataMapper, AssetNetworkMapper assetNetworkMapper, AssetInfoService assetInfoService) {
         mAssetsMapper = assetsMapper;
@@ -78,12 +81,15 @@ public class AssetNetworkService {
             if ("1".equals(type)) {
                 anwPo.setDelay(payloadMap.get("tcp_lat"));
                 anwPo.setDelay_time(now);
+                systemLogs.logEvent(scanResponse, "网络延时检测", "网络延时检测");
             } else if ("2".equals(type)) {
                 anwPo.setThroughput(payloadMap.get("tcp_bw_throughput"));
                 anwPo.setThroughput_time(now);
+                systemLogs.logEvent(scanResponse, "吞吐量检测", "吞吐量测试");
             } else if ("3".equals(type)) {
                 anwPo.setBandwidth(payloadMap.get("tcp_bw"));
                 anwPo.setBandwidth_time(now);
+                systemLogs.logEvent(scanResponse, "通信能力检测", "通信能力测试");
             }
 
             assetNetworkMapper.addNetWOrkData(anwPo);
@@ -96,7 +102,9 @@ public class AssetNetworkService {
 
     public ResponseBean getHistoryPerfinfo(Timestamp beginTime, Timestamp endTime, String assetUuid) {
         List<AssetPerfDataPo> historyPerfList = assetPerfDataMapper.getHistoryPerfinfo(assetUuid, beginTime, endTime);
-        return responseHelper.success(historyPerfList);
+        ResponseBean response = responseHelper.success(historyPerfList);
+        systemLogs.logEvent(response, "历史性能数据查询", "历史性能数据");
+        return response;
     }
 
 
@@ -113,5 +121,20 @@ public class AssetNetworkService {
         }
 
         PdfUtil.savePerfReportPDF(response, "系统性能检查报告", assetInfo, anwPo, apInfo, assetMesg);
+    }
+
+    public void savePdf(String assetUuid) throws Exception {
+
+        AssetPo assetInfo = mAssetsMapper.getAssetByUuid(assetUuid);
+        AssetNetWorkPo anwPo = assetNetworkMapper.getNetWorkinfo(assetUuid);
+        AssetPerfDataPo apInfo = assetPerfDataMapper.getAssetPerfInfo(assetUuid);
+
+        JSONObject assetMesg = null;
+        String assetIP = null;
+        if ( null != assetInfo && StringUtils.isValid( assetIP = assetInfo.getIp() ) ) {
+            assetMesg = assetInfoService.getAssetInfo(assetIP, "FS,Proc CPU Ranking,Proc Memory Ranking");
+        }
+
+        PdfUtil.savePerfReportPDF2("系统性能检查报告", assetInfo, anwPo, apInfo, assetMesg);
     }
 }

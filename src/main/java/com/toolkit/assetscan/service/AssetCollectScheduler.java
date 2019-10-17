@@ -66,6 +66,16 @@ public class AssetCollectScheduler {
         runnable.setInfoTypes(infoTypes);
 
         // 制定任务计划
+        // TODO by tangqin, for 性能测试, 原来每3s刷新一次数据, 改成每3分钟0 0/3 * * * *
+        /** new CronTrigger("0/3 * * * * *")表达式解释：
+         * 1. 秒 (Seconds) //上面表达式表示3s
+         * 2. 分钟 (Minutes)
+         * 3. 小时 (Hours)
+         * 4. 日(一个月的一天) (Day-of-Month)
+         * 5. 月份    (Month)
+         * 6. 周(一周的一天) (Day-of-Week)
+         * 7. 年份(可选的) (Year)
+         */
         ScheduledFuture<?> future = threadPoolTaskScheduler.schedule(runnable, new CronTrigger("0/3 * * * * *"));
         if (future == null)
             return false;

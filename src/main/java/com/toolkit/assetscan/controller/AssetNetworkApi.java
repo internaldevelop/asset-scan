@@ -1,6 +1,7 @@
 package com.toolkit.assetscan.controller;
 
 import com.toolkit.assetscan.dao.mybatis.AssetsMapper;
+import com.toolkit.assetscan.global.bean.ResponseBean;
 import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.service.AssetNetworkService;
 import io.swagger.annotations.Api;
@@ -20,9 +21,11 @@ import javax.servlet.http.HttpServletResponse;
 public class AssetNetworkApi {
     private Logger logger = LoggerFactory.getLogger(AssetNetworkApi.class);
     private final AssetNetworkService assetNetworkService;
+    @Autowired
     private final ResponseHelper mResponseHelper;
     @Autowired
     AssetsMapper assetsMapper;
+
 
     @Autowired
     public AssetNetworkApi(AssetNetworkService assetNetworkService, ResponseHelper responseHelper) {
@@ -71,6 +74,15 @@ public class AssetNetworkApi {
         assetNetworkService.exportPdf(response, asset_uuid);
     }
 
-
+    /**
+     * 生成报告
+     * @param asset_uuid
+     */
+    @RequestMapping(value = "/save-report", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseBean savePdf(@RequestParam(value = "asset_uuid", required = true) String asset_uuid) throws Exception {
+        assetNetworkService.savePdf(asset_uuid);
+        return mResponseHelper.success();
+    }
 
 }

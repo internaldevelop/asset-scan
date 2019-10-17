@@ -2,10 +2,7 @@ package com.toolkit.assetscan.dao.mybatis;
 
 import com.toolkit.assetscan.bean.po.PasswordPo;
 import com.toolkit.assetscan.bean.po.UserPo;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -58,6 +55,14 @@ public interface UsersMapper {
                 "#{phone}, #{description}, #{user_group}, " +
                 "#{expire_time, jdbcType=TIMESTAMP}, #{create_time, jdbcType=TIMESTAMP}) ")
     int addUser(UserPo userPo);
+
+    /**
+     * 根据指定的UUID删除一个用户
+     * @param userUuid 用户UUID
+     * @return 影响的记录数， >0 表示成功
+     */
+    @Delete("DELETE FROM users WHERE uuid=#{uuid}")
+    int deleteUser(@Param("uuid") String userUuid);
 
     /**
      * 更新用户记录，但不更新密码

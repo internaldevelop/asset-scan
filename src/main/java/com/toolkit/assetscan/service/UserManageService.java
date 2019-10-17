@@ -100,6 +100,18 @@ public class UserManageService {
         return successReturnUserInfo(userPo.getAccount(), userPo.getUuid());
     }
 
+    public ResponseBean deleteUser(String userUuid) {
+        UserPo userPo = usersMapper.getUserByUuid(userUuid);
+        if (!checkParams.isValidUserUuid(userUuid))
+            return responseHelper.error(ErrorCodeEnum.ERROR_PARAMETER);
+
+        //    删除任务
+        if (!usersManageHelper.deleteUser(userUuid))
+            return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
+
+        return successReturnUserInfo(userPo.getAccount(), userPo.getUuid());
+}
+
     /**
      * 根据指定的用户 UUID 查找用户记录
      * @param uuid 用户 UUID
