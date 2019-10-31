@@ -1,6 +1,7 @@
 package com.toolkit.assetscan.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.toolkit.assetscan.Helper.SystemLogsHelper;
 import com.toolkit.assetscan.bean.po.PasswordPo;
 import com.toolkit.assetscan.bean.po.UserPo;
 import com.toolkit.assetscan.dao.helper.UsersManageHelper;
@@ -14,6 +15,7 @@ import com.toolkit.assetscan.global.response.ResponseHelper;
 import com.toolkit.assetscan.global.security.VerifyHelper;
 import com.toolkit.assetscan.global.utils.MyUtils;
 import com.toolkit.assetscan.global.utils.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -26,6 +28,8 @@ public class UserManageService {
     private final ResponseHelper responseHelper;
     private final CheckParams checkParams;
     private final VerifyHelper verifyHelper;
+    @Autowired
+    private SystemLogsHelper systemLogsHelper;
 
     public UserManageService(UsersManageHelper usersManageHelper, UsersMapper usersMapper, ResponseHelper responseHelper, CheckParams checkParams, VerifyHelper verifyHelper) {
         this.usersManageHelper = usersManageHelper;
@@ -71,12 +75,16 @@ public class UserManageService {
             return responseBean;
 
         // 检查新建账户名是否已存在
-        if (usersManageHelper.isAccountExist(userPo.getAccount()))
+        if (usersManageHelper.isAccountExist(userPo.getAccount())) {
+            systemLogsHelper.warning("注册用户", ErrorCodeEnum.ERROR_USER_REGISTERED.getMsg());
             return responseHelper.error(ErrorCodeEnum.ERROR_USER_REGISTERED);
+        }
 
         // 检查用户名是否已存在
-        if (usersMapper.getExistAccountCount(userPo.getName()) > 0)
+        if (usersMapper.getExistAccountCount(userPo.getName()) > 0) {
+            systemLogsHelper.warning("注册用户", ErrorCodeEnum.ERROR_USERNAME_USED.getMsg());
             return responseHelper.error(ErrorCodeEnum.ERROR_USERNAME_USED);
+        }
 
         // 设置新用户的创建时间和失效时间
         java.sql.Timestamp currentTime = MyUtils.getCurrentSystemTimestamp();
@@ -94,8 +102,10 @@ public class UserManageService {
         userPo.setStatus(UserStatusEnum.USER_INACTIVE.getStatus());
 
         // 添加新用户的记录
-        if ( !usersManageHelper.addUser(userPo) )
+        if ( !usersManageHelper.addUser(userPo) ) {
+            systemLogsHelper.sysError("注册用户", ErrorCodeEnum.ERROR_INTERNAL_ERROR.getMsg());
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
+        }
 
         return successReturnUserInfo(userPo.getAccount(), userPo.getUuid());
     }
@@ -106,8 +116,10 @@ public class UserManageService {
             return responseHelper.error(ErrorCodeEnum.ERROR_PARAMETER);
 
         //    删除任务
-        if (!usersManageHelper.deleteUser(userUuid))
+        if (!usersManageHelper.deleteUser(userUuid)) {
+            systemLogsHelper.sysError("删除用户", ErrorCodeEnum.ERROR_INTERNAL_ERROR.getMsg());
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
+        }
 
         return successReturnUserInfo(userPo.getAccount(), userPo.getUuid());
 }
@@ -157,8 +169,10 @@ public class UserManageService {
         if (usersMapper.checkNameInOtherUsers(userPo.getName(), userPo.getUuid()) > 0)
             return responseHelper.error(ErrorCodeEnum.ERROR_USERNAME_USED);
 
-        if ( !usersManageHelper.updateUserByUuid(userPo) )
+        if ( !usersManageHelper.updateUserByUuid(userPo) ) {
+            systemLogsHelper.sysError("更新用户", ErrorCodeEnum.ERROR_INTERNAL_ERROR.getMsg());
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
+        }
 
         return successReturnUserInfo(userPo.getAccount(), userPo.getUuid());
     }
@@ -221,11 +235,14 @@ public class UserManageService {
 
         // 获取用户密码参数
         PasswordPo passwordPo = usersMapper.getPasswordByUuid(userUuid);
-        if (passwordPo.getUser_status() <= 0)
+        if (passwordPo.getUser_status() <= 0) {
+            systemLogsHelper.warning("校验用户", ErrorCodeEnum.ERROR_USER_INACTIVE.getMsg());
             return responseHelper.error(ErrorCodeEnum.ERROR_USER_INACTIVE);
+        }
 
         // 剩余尝试次数为0时，表示密码已锁定
         if (passwordPo.getPwd_rat() == 0) {
+            systemLogsHelper.warning("校验用户", ErrorCodeEnum.ERROR_USER_PASSWORD_LOCKED.getMsg());
             return _buildVerifyResponse(ErrorCodeEnum.ERROR_USER_PASSWORD_LOCKED, passwordPo);
         }
 
@@ -234,15 +251,19 @@ public class UserManageService {
 
         if (errorCode != ErrorCodeEnum.ERROR_OK) {
             // 校验密码失败，减密码尝试次数
-            if (!usersManageHelper.decreasePasswordRAT(userUuid, passwordPo.getPwd_rat()))
+            if (!usersManageHelper.decreasePasswordRAT(userUuid, passwordPo.getPwd_rat())) {
+                systemLogsHelper.warning("校验用户", ErrorCodeEnum.ERROR_INTERNAL_ERROR.getMsg());
                 return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
+            }
 
             // 再检查是否已触发锁定条件
             int currentRAT = passwordPo.getPwd_rat() - 1;
             passwordPo.setPwd_rat(currentRAT);
             if ( currentRAT <= 0) {
+                systemLogsHelper.warning("校验用户", ErrorCodeEnum.ERROR_USER_PASSWORD_LOCKED.getMsg());
                 return _buildVerifyResponse(ErrorCodeEnum.ERROR_USER_PASSWORD_LOCKED, passwordPo);
             } else {
+                systemLogsHelper.warning("校验用户", ErrorCodeEnum.ERROR_INVALID_PASSWORD.getMsg());
                 return _buildVerifyResponse(ErrorCodeEnum.ERROR_INVALID_PASSWORD, passwordPo);
             }
         } else {
@@ -266,8 +287,10 @@ public class UserManageService {
 
     public ResponseBean activateUserByUuid(String userUuid, int status) {
         int rv = usersMapper.updateStatus(userUuid, status/*UserStatusEnum.USER_ACTIVE.getStatus()*/);
-        if (rv != 1)
+        if (rv != 1) {
+            systemLogsHelper.sysError("激活用户", ErrorCodeEnum.ERROR_INTERNAL_ERROR.getMsg());
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
+        }
 
         JSONObject jsonData = new JSONObject();
         jsonData.put("user_uuid", userUuid);

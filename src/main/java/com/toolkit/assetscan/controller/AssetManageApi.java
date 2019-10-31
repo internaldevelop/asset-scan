@@ -55,6 +55,11 @@ public class AssetManageApi {
     @RequestMapping(value = "/all", method = RequestMethod.GET)
     @ResponseBody
     public synchronized Object getAllAssets() {
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         ResponseBean response = mAssetManageService.getAllAssets();
         return response;
     }

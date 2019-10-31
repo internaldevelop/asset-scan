@@ -32,6 +32,7 @@ public interface SystemLogsMapper {
             "    u.name AS create_user_name \n" +
             "FROM system_logs s \n" +
             "LEFT JOIN users u ON u.uuid=s.create_user_uuid \n" +
-            "ORDER BY s.create_time DESC ")
+            "ORDER BY s.create_time DESC " +
+            "limit 2000")
     List<SystemLogsDto> getAllLogs();
 }

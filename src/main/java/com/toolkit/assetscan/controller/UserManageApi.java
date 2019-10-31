@@ -138,6 +138,7 @@ public class UserManageApi {
             resp = userManageService.verifyPasswordByAccount(account, password);
             userAccount = account;
         } else {
+            systemLogs.sysError("校验用户", ErrorCodeEnum.ERROR_NEED_PARAMETER.getMsg());
             return responseHelper.error(ErrorCodeEnum.ERROR_NEED_PARAMETER);
         }
 
@@ -157,12 +158,12 @@ public class UserManageApi {
             JSONObject jsonData = (JSONObject)resp.getPayload();
             String contents = String.format("账号：%4$s，%1$s，最大密码尝试次数：%2$d，剩余次数：%3$d", resp.getError(),
                     jsonData.getIntValue("mat"), jsonData.getIntValue("rat"), userAccount);
-            systemLogs.exception("登录", contents);
+            systemLogs.warning("登录", contents);
         } else if (resp.getCode() == ErrorCodeEnum.ERROR_USER_PASSWORD_LOCKED.getCode()) {
             JSONObject jsonData = (JSONObject)resp.getPayload();
             String contents = String.format("账号：%4$s，%1$s，最大密码尝试次数：%2$d，剩余次数：%3$d", resp.getError(),
                     jsonData.getIntValue("mat"), jsonData.getIntValue("rat"), userAccount);
-            systemLogs.exception("登录", contents);
+            systemLogs.warning("登录", contents);
         }
         return resp;
     }
@@ -195,8 +196,10 @@ public class UserManageApi {
             response = userManageService.activateUserByUuid( userUuid, status );
         else if ( StringUtils.isValid(account) )
             response = userManageService.activateUserByAccount( account, status );
-        else
+        else {
+            systemLogs.sysError("激活用户", ErrorCodeEnum.ERROR_NEED_PARAMETER.getMsg());
             return responseHelper.error(ErrorCodeEnum.ERROR_NEED_PARAMETER);
+        }
 
         // 系统日志
         systemLogs.logEvent(response, "账号激活/回收", "激活/回收账号：" + account + "。");
@@ -252,6 +255,11 @@ public class UserManageApi {
     public synchronized  @ResponseBody
     Object logout(@RequestParam(value = "user_uuid") String userUuid,
                   HttpServletRequest request) {
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         // 系统日志
         systemLogs.success("登出", "用户已退出系统");
 
