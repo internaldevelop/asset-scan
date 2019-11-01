@@ -153,7 +153,12 @@ public class UserManageApi {
         }
 
         // 系统日志
-        systemLogs.logEvent(resp, "登录", "用户登录系统（账号：" + userAccount + "）");
+        if (resp.getCode() == ErrorCodeEnum.ERROR_OK.getCode()) {
+            systemLogs.login("登入", "用户登录系统（账号：" + userAccount + "）");
+        } else {
+            systemLogs.fail("登录", "用户登录系统（账号：" + userAccount + "）" + "失败，错误码：" + resp.getCode());
+        }
+        //systemLogs.logEvent(resp, "登录", "用户登录系统（账号：" + userAccount + "）");
         if (resp.getCode() == ErrorCodeEnum.ERROR_INVALID_PASSWORD.getCode()) {
             JSONObject jsonData = (JSONObject)resp.getPayload();
             String contents = String.format("账号：%4$s，%1$s，最大密码尝试次数：%2$d，剩余次数：%3$d", resp.getError(),
@@ -200,9 +205,6 @@ public class UserManageApi {
             systemLogs.sysError("激活用户", ErrorCodeEnum.ERROR_NEED_PARAMETER.getMsg());
             return responseHelper.error(ErrorCodeEnum.ERROR_NEED_PARAMETER);
         }
-
-        // 系统日志
-        systemLogs.logEvent(response, "账号激活/回收", "激活/回收账号：" + account + "。");
         return response;
     }
 
@@ -261,7 +263,8 @@ public class UserManageApi {
             e.printStackTrace();
         }
         // 系统日志
-        systemLogs.success("登出", "用户已退出系统");
+        systemLogs.login("登出", "用户已退出系统");
+        //systemLogs.success("登出", "用户已退出系统");
 
         request.getSession().setAttribute(Const.ACCOUNT, "");
         request.getSession().setAttribute(Const.USER_UUID, "");

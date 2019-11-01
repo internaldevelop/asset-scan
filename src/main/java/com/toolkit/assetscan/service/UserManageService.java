@@ -281,7 +281,8 @@ public class UserManageService {
         String userUuid = usersMapper.getUserUuidByAccount(account);
         if (!StringUtils.isValid(userUuid))
             return responseHelper.error(ErrorCodeEnum.ERROR_USER_NOT_FOUND);
-
+        // 系统日志
+        systemLogsHelper.success("账号激活/回收", "激活/回收账号：" + account);
         return activateUserByUuid(userUuid, status);
     }
 
@@ -291,6 +292,9 @@ public class UserManageService {
             systemLogsHelper.sysError("激活用户", ErrorCodeEnum.ERROR_INTERNAL_ERROR.getMsg());
             return responseHelper.error(ErrorCodeEnum.ERROR_INTERNAL_ERROR);
         }
+        // 系统日志
+        UserPo userPo = usersMapper.getUserByUuid(userUuid);
+        systemLogsHelper.success("账号激活/回收", "激活/回收账号：" + userPo.getAccount());
 
         JSONObject jsonData = new JSONObject();
         jsonData.put("user_uuid", userUuid);

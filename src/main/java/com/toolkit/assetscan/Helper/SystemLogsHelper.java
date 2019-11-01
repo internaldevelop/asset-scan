@@ -21,6 +21,7 @@ public class SystemLogsHelper {
     @Autowired
     private HttpServletRequest httpServletRequest;
 
+    public final int LOGIN = 0;
     public final int SUCCESS = 1;
     public final int FAIL = 2;
     public final int SYS_ERROR = 3;
@@ -39,7 +40,9 @@ public class SystemLogsHelper {
         int ret = systemLogsMapper.addLog(systemLogPo);
         return (ret == 1);
     }
-
+    public boolean login(String title, String contents) {
+        return addLog(LOGIN, title, contents);
+    }
     public boolean success(String title, String contents) {
         return addLog(SUCCESS, title, contents);
     }
